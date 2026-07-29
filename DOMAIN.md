@@ -28,7 +28,22 @@
 In-app model: `src/lib/marketplace/hosts.ts` + `LVL_NETWORK` / `CLOUDFLARE_MAP` in `src/lib/merch/printify.ts`.  
 Host rewrite: `HostRewrite` maps dedicated subdomain `/` → surface home.
 
-### Marketplace surfaces (paths)
+#
+### Edge Suite hosts (new)
+
+| Host | Role | App home |
+|------|------|----------|
+| **https://drops.lvlltd.com** | Live flash drops | `/drops` |
+| **https://pulse.lvlltd.com** | Network activity stream | `/pulse` |
+| **https://studio.lvlltd.com** | Imagine design studio | `/studio` |
+| **https://relay.lvlltd.com** | A2A agent commerce relay | `/relay` |
+| **https://bundles.lvlltd.com** | Multi-SKU stack packs | `/bundles` |
+| **https://radar.lvlltd.com** | Restock watches | `/radar` |
+
+Edge paths also live on factory: `/drops` `/pulse` `/studio` `/relay` `/bundles` `/radar`.  
+Loyalty + gift checkout: `/account` · `/checkout`. Fit assistant on apparel PDPs. ⌘K command palette.
+
+## Marketplace surfaces (paths)
 
 | Path | Purpose |
 |------|---------|

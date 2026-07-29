@@ -5,6 +5,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { Toaster } from "sonner";
+import { CommandPalette } from "@/components/edge/command-palette";
 import { AppShell } from "@/components/factory/app-shell";
 import { HostRewrite } from "@/components/marketplace/host-rewrite";
 import appCss from "../styles.css?url";
@@ -42,6 +43,7 @@ function RootComponent() {
         <AppShell>
           <Outlet />
         </AppShell>
+        <CommandPalette />
         <Toaster
           theme="dark"
           position="bottom-right"

@@ -16,7 +16,13 @@ export type MarketplaceSurface =
   | "music"
   | "factory"
   | "api"
-  | "printify_external";
+  | "printify_external"
+  | "drops"
+  | "pulse"
+  | "studio"
+  | "relay"
+  | "bundles"
+  | "radar";
 
 export type HostEntry = {
   host: string;
@@ -93,7 +99,7 @@ export const MARKETPLACE_HOSTS: HostEntry[] = [
     surface: "account",
     homePath: "/account",
     role: "buyer_account",
-    description: "Buyer account, wishlist, orders",
+    description: "Buyer account, loyalty, wishlist, orders",
     audience: "buyer",
     publicUrl: "https://account.lvlltd.com",
   },
@@ -134,6 +140,60 @@ export const MARKETPLACE_HOSTS: HostEntry[] = [
     publicUrl: "https://agents.lvlltd.com",
   },
   {
+    host: "drops.lvlltd.com",
+    surface: "drops",
+    homePath: "/drops",
+    role: "live_drops",
+    description: "Timed flash drops + limited inventory",
+    audience: "buyer",
+    publicUrl: "https://drops.lvlltd.com",
+  },
+  {
+    host: "pulse.lvlltd.com",
+    surface: "pulse",
+    homePath: "/pulse",
+    role: "network_pulse",
+    description: "Live domain activity stream",
+    audience: "buyer",
+    publicUrl: "https://pulse.lvlltd.com",
+  },
+  {
+    host: "studio.lvlltd.com",
+    surface: "studio",
+    homePath: "/studio",
+    role: "design_studio",
+    description: "Imagine design briefs for merch pipeline",
+    audience: "buyer",
+    publicUrl: "https://studio.lvlltd.com",
+  },
+  {
+    host: "relay.lvlltd.com",
+    surface: "relay",
+    homePath: "/relay",
+    role: "agent_relay",
+    description: "A2A commerce intents → multi-rail pay",
+    audience: "agent",
+    publicUrl: "https://relay.lvlltd.com",
+  },
+  {
+    host: "bundles.lvlltd.com",
+    surface: "bundles",
+    homePath: "/bundles",
+    role: "stack_packs",
+    description: "Curated multi-SKU bundles with stack discounts",
+    audience: "buyer",
+    publicUrl: "https://bundles.lvlltd.com",
+  },
+  {
+    host: "radar.lvlltd.com",
+    surface: "radar",
+    homePath: "/radar",
+    role: "restock_radar",
+    description: "Restock watches for drops & SKUs",
+    audience: "buyer",
+    publicUrl: "https://radar.lvlltd.com",
+  },
+  {
     host: "music.lvlltd.com",
     surface: "music",
     homePath: "/music",
@@ -170,6 +230,12 @@ export const BUYER_PATH_PREFIXES = [
   "/orders",
   "/checkout",
   "/pay",
+  "/drops",
+  "/pulse",
+  "/studio",
+  "/relay",
+  "/bundles",
+  "/radar",
 ] as const;
 
 export function isBuyerPath(pathname: string): boolean {
@@ -216,9 +282,16 @@ export const MARKETPLACE_URLS = {
   seller: "https://seller.lvlltd.com",
   admin: "https://admin.lvlltd.com",
   agents: "https://agents.lvlltd.com",
+  drops: "https://drops.lvlltd.com",
+  pulse: "https://pulse.lvlltd.com",
+  studio: "https://studio.lvlltd.com",
+  relay: "https://relay.lvlltd.com",
+  bundles: "https://bundles.lvlltd.com",
+  radar: "https://radar.lvlltd.com",
   music: "https://music.lvlltd.com",
   factory: "https://factory.lvlltd.com",
   catalogApi: "https://api.lvlltd.com/api/store/catalog",
+  agentCard: "https://api.lvlltd.com/api/agent/card",
   printify: "https://lvlxltd.printify.me",
   hubMarketplaceLegacy: "https://lvlltd.com/hub/marketplace/",
 } as const;
@@ -234,11 +307,27 @@ export const MARKETPLACE_TOOLS = [
     audience: "buyer" as const,
   },
   {
+    id: "drops",
+    title: "Live drops",
+    path: "/drops",
+    host: "drops.lvlltd.com",
+    blurb: "Timed flash inventory · claim → cart",
+    audience: "buyer" as const,
+  },
+  {
+    id: "bundles",
+    title: "Stack packs",
+    path: "/bundles",
+    host: "bundles.lvlltd.com",
+    blurb: "Multi-SKU bundles with stack discounts",
+    audience: "buyer" as const,
+  },
+  {
     id: "checkout",
     title: "Checkout",
     path: "/checkout",
     host: "checkout.lvlltd.com",
-    blurb: "Cart review → POD or multi-rail pay",
+    blurb: "Gift mode · credits · POD or multi-rail",
     audience: "buyer" as const,
   },
   {
@@ -251,10 +340,10 @@ export const MARKETPLACE_TOOLS = [
   },
   {
     id: "account",
-    title: "Account",
+    title: "Account & loyalty",
     path: "/account",
     host: "account.lvlltd.com",
-    blurb: "Profile, wishlist, order shortcuts",
+    blurb: "Credits, tiers, referrals, wishlist",
     audience: "buyer" as const,
   },
   {
@@ -266,11 +355,43 @@ export const MARKETPLACE_TOOLS = [
     audience: "buyer" as const,
   },
   {
+    id: "radar",
+    title: "Restock radar",
+    path: "/radar",
+    host: "radar.lvlltd.com",
+    blurb: "Watch sold-out drops for re-opens",
+    audience: "buyer" as const,
+  },
+  {
+    id: "pulse",
+    title: "Network pulse",
+    path: "/pulse",
+    host: "pulse.lvlltd.com",
+    blurb: "Live activity across the domain net",
+    audience: "buyer" as const,
+  },
+  {
+    id: "studio",
+    title: "Design studio",
+    path: "/studio",
+    host: "studio.lvlltd.com",
+    blurb: "Imagine briefs → merch pipeline",
+    audience: "buyer" as const,
+  },
+  {
     id: "agents",
     title: "Agent shop",
     path: "/agent/merch",
     host: "agents.lvlltd.com",
     blurb: "lvl-merch-v1 protocol + catalog API",
+    audience: "agent" as const,
+  },
+  {
+    id: "relay",
+    title: "Agent relay",
+    path: "/relay",
+    host: "relay.lvlltd.com",
+    blurb: "A2A intents · sign · handoff to pay",
     audience: "agent" as const,
   },
   {

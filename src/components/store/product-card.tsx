@@ -26,7 +26,7 @@ export function ProductCard({
         <Link
           to="/shop/$slug"
           params={{ slug: product.slug }}
-          className="relative block overflow-hidden rounded-xl border border-border bg-surface focus-ring"
+          className="relative block overflow-hidden rounded-xl border border-border bg-surface shadow-soft focus-ring transition-[box-shadow,transform] duration-200 group-hover:shadow-lift"
         >
           <div className="aspect-[4/5] overflow-hidden">
             <ProductImage
@@ -98,11 +98,18 @@ export function ProductGrid({
 }) {
   if (!products.length) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-surface px-6 py-16 text-center">
-        <p className="text-sm font-medium text-fg">No products in this view</p>
-        <p className="mt-1 text-sm text-muted">
-          Try another collection or check back after the next drop.
-        </p>
+      <div className="relative overflow-hidden rounded-xl border border-dashed border-border bg-surface px-6 py-16 text-center shadow-soft">
+        <img
+          src="/brand/collection-tees.jpg"
+          alt=""
+          className="absolute inset-0 size-full object-cover opacity-20"
+        />
+        <div className="relative z-[1]">
+          <p className="text-sm font-medium text-fg">No products in this view</p>
+          <p className="mt-1 text-sm text-muted">
+            Try another collection or check back after the next drop.
+          </p>
+        </div>
       </div>
     );
   }

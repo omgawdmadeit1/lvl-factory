@@ -1,9 +1,43 @@
 /**
  * Storefront image helpers (client + server safe).
- * Printify images-api often returns empty body; resolve via S3 or /api/store/image.
+ * Prefer local Grok Imagine mockups in /public/merch, then Printify S3 / proxy.
  */
 
-/** Known S3 seeds (fast path; expire ~weekly — proxy refreshes). */
+/** Local Imagine product mockups (always available, no CDN hop). */
+export const LOCAL_MOCKUPS: Record<string, string> = {
+  "boston-native-logo-t-shirt": "/merch/boston-native-logo-t-shirt.jpg",
+  "copy-of-boston-native-logo-t-shirt":
+    "/merch/copy-of-boston-native-logo-t-shirt.jpg",
+  "main-character": "/merch/main-character.jpg",
+  "main-character-2": "/merch/main-character-2.jpg",
+  "serotonin-dealer": "/merch/serotonin-dealer.jpg",
+  "soft-era": "/merch/soft-era.jpg",
+};
+
+/** Brand / marketing art generated with Grok Imagine */
+export const BRAND_ART = {
+  heroNetwork: "/brand/hero-network.jpg",
+  heroFactory: "/brand/hero-factory.jpg",
+  collectionTees: "/brand/collection-tees.jpg",
+  collectionArt: "/brand/collection-art.jpg",
+  collectionAgent: "/brand/collection-agent.jpg",
+  markAgent: "/brand/mark-agent.jpg",
+  softEraArt: "/merch/soft-era-art.jpg",
+  blankTeeBlack: "/merch/blank-tee-black.jpg",
+  blankTeeWhite: "/merch/blank-tee-white.jpg",
+} as const;
+
+/** Collection cover map (handle → image) */
+export const COLLECTION_COVERS: Record<string, string> = {
+  all: BRAND_ART.collectionTees,
+  tees: BRAND_ART.collectionTees,
+  art: BRAND_ART.collectionArt,
+  statement: "/merch/main-character.jpg",
+  agent: BRAND_ART.collectionAgent,
+  boston: "/merch/boston-native-logo-t-shirt.jpg",
+};
+
+/** Known S3 seeds (fast path when local missing; expire ~weekly). */
 export const RESOLVED_MOCKUPS: Record<string, string> = {
   "boston-native-logo-t-shirt":
     "https://pfy-prod-automaton-cache.s3.us-east-2.amazonaws.com/mockup/706/6a6a3fb4b321eb70a0045515/73207/98445/11363530777891837245_1200.jpeg",
@@ -32,6 +66,9 @@ export function proxyStoreImage(
 ): string {
   if (!sourceUrl) return "";
   if (sourceUrl.startsWith("/api/store/image")) return sourceUrl;
+  if (sourceUrl.startsWith("/merch/") || sourceUrl.startsWith("/brand/")) {
+    return sourceUrl;
+  }
   // S3 direct is fastest when available
   if (
     mode === "redirect" &&
@@ -48,8 +85,9 @@ export function proxyStoreImage(
 
 /**
  * Best image URL for a product:
- * 1) seeded S3 (0 hop)
- * 2) proxy of Printify images-api (1 hop resolve + 302)
+ * 1) local Imagine mockup (0 hop, always works)
+ * 2) seeded S3 (0 hop when CDN ok)
+ * 3) proxy of Printify images-api
  */
 export function productImageSrc(opts: {
   slug: string;
@@ -57,6 +95,9 @@ export function productImageSrc(opts: {
   /** Force same-origin stream (rare) */
   stream?: boolean;
 }): string {
+  const local = LOCAL_MOCKUPS[opts.slug];
+  if (local) return local;
+
   const mode: ProxyMode = opts.stream ? "stream" : "redirect";
   const resolved = RESOLVED_MOCKUPS[opts.slug];
   if (resolved) {

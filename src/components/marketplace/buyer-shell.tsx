@@ -1,18 +1,26 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   CreditCard,
+  Layers,
   LayoutGrid,
   Package,
+  Radio,
   ShoppingBag,
   Store,
+  Timer,
   User,
 } from "lucide-react";
+import { BrandMark } from "@/components/brand/visual-hero";
+import { useLoyaltyStore } from "@/lib/edge/loyalty";
 import { useCartStore } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/marketplace" as const, label: "Hub", icon: LayoutGrid },
   { to: "/shop" as const, label: "Shop", icon: Store },
+  { to: "/drops" as const, label: "Drops", icon: Timer },
+  { to: "/bundles" as const, label: "Stacks", icon: Layers },
+  { to: "/pulse" as const, label: "Pulse", icon: Radio },
   { to: "/checkout" as const, label: "Checkout", icon: ShoppingBag },
   { to: "/pay" as const, label: "Pay", icon: CreditCard },
   { to: "/orders" as const, label: "Orders", icon: Package },
@@ -22,23 +30,30 @@ const NAV = [
 export function BuyerShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const count = useCartStore((s) => s.count());
+  const credits = useLoyaltyStore((s) => s.balance);
 
   return (
     <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
       <div className="border-b border-border bg-surface-2 px-4 py-2 text-center text-xs text-muted">
-        LVL marketplace · multi-rail + Printify POD ·{" "}
+        LVL edge · drops · stacks · pulse · multi-rail + Printify ·{" "}
         <span className="text-fg">lvlltd.com</span>
+        {credits > 0 ? (
+          <>
+            {" · "}
+            <span className="tabular text-fg">{credits} cr</span>
+          </>
+        ) : null}
       </div>
       <header className="sticky top-0 z-30 border-b border-border bg-bg/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link to="/marketplace" className="flex items-center gap-2">
-            <LayoutGrid className="size-5" />
+          <Link to="/marketplace" className="flex items-center gap-2.5">
+            <BrandMark size="sm" />
             <div>
               <p className="text-sm font-semibold tracking-tight">LVL Market</p>
               <p className="text-[11px] text-subtle">lvlltd.com network</p>
             </div>
           </Link>
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-1 lg:flex">
             {NAV.map((item) => {
               const active =
                 item.to === "/marketplace"
@@ -50,7 +65,7 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                    "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm transition-colors",
                     active
                       ? "bg-surface-2 text-fg"
                       : "text-muted hover:bg-surface hover:text-fg",
@@ -69,12 +84,12 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
           </nav>
           <Link
             to="/checkout"
-            className="rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs text-fg md:hidden"
+            className="rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs text-fg lg:hidden"
           >
             Cart {count > 0 ? `(${count})` : ""}
           </Link>
         </div>
-        <nav className="flex gap-1 overflow-x-auto border-t border-border px-2 py-2 md:hidden">
+        <nav className="flex gap-1 overflow-x-auto border-t border-border px-2 py-2 lg:hidden">
           {NAV.map((item) => {
             const active =
               pathname === item.to || pathname.startsWith(`${item.to}/`);
@@ -95,7 +110,9 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        {children}
+      </main>
     </div>
   );
 }

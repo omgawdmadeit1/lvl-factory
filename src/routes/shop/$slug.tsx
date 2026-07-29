@@ -1,10 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bot, ExternalLink, Heart, Link2, ShoppingBag, Wallet } from "lucide-react";
+import {
+  Bell,
+  Bot,
+  ExternalLink,
+  Heart,
+  Link2,
+  ShoppingBag,
+  Wallet,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { FitAssistant } from "@/components/edge/fit-assistant";
 import { ProductGrid } from "@/components/store/product-card";
 import { ProductImage } from "@/components/store/product-image";
 import { Button } from "@/components/ui/button";
+import { useFitMemoryStore } from "@/lib/edge/fit-memory";
+import { useRadarStore } from "@/lib/edge/radar";
 import { useMerchStore } from "@/lib/merch/store";
 import { useCartStore, type CartSize } from "@/lib/store/cart";
 import { useRecentStore } from "@/lib/store/recent";
@@ -30,6 +41,11 @@ function ProductDetailPage() {
   const wished = useWishlistStore((s) =>
     product ? s.has(product.id) : false,
   );
+  const lastSize = useFitMemoryStore((s) => s.lastSize);
+  const watch = useRadarStore((s) => s.watch);
+  const watching = useRadarStore((s) =>
+    product ? s.has(product.slug) : false,
+  );
 
   useEffect(() => {
     if (product) pushRecent(product.slug);
@@ -40,6 +56,15 @@ function ProductDetailPage() {
     : false;
   const [size, setSize] = useState<CartSize>("M");
   const [qty, setQty] = useState(1);
+
+  useEffect(() => {
+    if (
+      lastSize &&
+      APPAREL_SIZES.includes(lastSize as CartSize)
+    ) {
+      setSize(lastSize as CartSize);
+    }
+  }, [lastSize]);
 
   const related = useMemo(() => {
     if (!product) return [];
@@ -81,13 +106,14 @@ function ProductDetailPage() {
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-        <div className="overflow-hidden rounded-xl border border-border bg-surface-2">
+        <div className="overflow-hidden rounded-2xl border border-border bg-surface-2 shadow-lift">
           <div className="aspect-[4/5]">
             <ProductImage
               slug={product.slug}
               mockupUrl={product.mockupUrl}
               alt={product.title}
               priority
+              sizes="(max-width: 1024px) 100vw, 520px"
             />
           </div>
         </div>
@@ -99,18 +125,22 @@ function ProductDetailPage() {
           <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             {product.title}
           </h1>
-          <p className="mt-3 tabular text-xl text-fg">
+          <p className="mt-3 text-xl tabular text-fg">
             {storeMoney(product.priceUsd)}
           </p>
           <p className="mt-4 text-sm leading-relaxed text-muted">
             {product.description}
           </p>
 
+          {product.agentShopable ? (
+            <p className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-muted">
+              <Bot className="size-3" /> Agent shopable
+            </p>
+          ) : null}
+
           {isApparel ? (
             <div className="mt-6 space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wider text-subtle">
-                Size
-              </p>
+              <p className="text-xs font-medium text-muted">Size</p>
               <div className="flex flex-wrap gap-2">
                 {APPAREL_SIZES.map((s) => (
                   <button
@@ -118,10 +148,10 @@ function ProductDetailPage() {
                     type="button"
                     onClick={() => setSize(s)}
                     className={cn(
-                      "min-h-11 min-w-11 rounded-lg border px-3 text-sm font-medium transition-colors",
+                      "min-h-11 min-w-11 rounded-lg border px-3 text-sm transition-colors",
                       size === s
-                        ? "border-fg bg-fg text-bg"
-                        : "border-border bg-surface text-muted hover:border-border-strong hover:text-fg",
+                        ? "border-border-strong bg-surface-2 text-fg"
+                        : "border-border text-muted hover:bg-surface",
                     )}
                   >
                     {s}
@@ -132,162 +162,120 @@ function ProductDetailPage() {
           ) : null}
 
           <div className="mt-6 space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wider text-subtle">
-              Quantity
-            </p>
-            <div className="flex items-center gap-2">
+            <p className="text-xs font-medium text-muted">Quantity</p>
+            <div className="inline-flex items-center rounded-lg border border-border">
               <button
                 type="button"
-                className="flex size-11 items-center justify-center rounded-lg border border-border text-muted hover:text-fg"
+                className="flex size-11 items-center justify-center text-muted hover:text-fg"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
+                aria-label="Decrease quantity"
               >
                 −
               </button>
-              <span className="tabular w-10 text-center text-sm">{qty}</span>
+              <span className="w-10 text-center text-sm tabular">{qty}</span>
               <button
                 type="button"
-                className="flex size-11 items-center justify-center rounded-lg border border-border text-muted hover:text-fg"
+                className="flex size-11 items-center justify-center text-muted hover:text-fg"
                 onClick={() => setQty((q) => Math.min(10, q + 1))}
+                aria-label="Increase quantity"
               >
                 +
               </button>
             </div>
           </div>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-wrap gap-2">
             <Button
-              className="min-h-12 flex-1"
-              onClick={() =>
-                add(product, {
-                  size: isApparel ? size : "OS",
-                  qty,
-                })
-              }
+              className="min-h-11 flex-1 sm:flex-none"
+              onClick={() => {
+                add(product, { size: isApparel ? size : undefined, qty });
+                toast.success("Added to cart");
+              }}
             >
               <ShoppingBag className="size-4" />
               Add to cart
             </Button>
             <Button
               variant="secondary"
-              className="min-h-12"
+              className="min-h-11"
               onClick={() => toggleWish(product)}
               aria-pressed={wished}
             >
-              <Heart className={wished ? "size-4 fill-current" : "size-4"} />
+              <Heart className={cn("size-4", wished && "fill-current")} />
               {wished ? "Saved" : "Save"}
             </Button>
             <Button
-              variant="secondary"
-              className="min-h-12"
-              onClick={async () => {
-                const url =
-                  typeof window !== "undefined"
-                    ? window.location.href
-                    : `https://factory.lvlltd.com/shop/${product.slug}`;
-                try {
-                  await navigator.clipboard.writeText(url);
-                  toast.success("Link copied");
-                } catch {
-                  toast.message(url);
-                }
+              type="button"
+              variant="ghost"
+              className="min-h-11"
+              disabled={watching}
+              onClick={() => {
+                watch({
+                  productSlug: product.slug,
+                  title: product.title,
+                  source: "pdp",
+                });
+                toast.success("On restock radar");
               }}
             >
-              <Link2 className="size-4" />
-              Share
+              <Bell className="size-4" />
+              {watching ? "Watching" : "Watch"}
             </Button>
-            {product.printifyUrl ? (
-              <Button variant="secondary" className="min-h-12 flex-1" asChild>
-                <a
-                  href={product.printifyUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <ExternalLink className="size-4" />
-                  Printify
-                </a>
-              </Button>
-            ) : null}
           </div>
 
           {isApparel ? (
-            <details className="mt-6 rounded-xl border border-border bg-surface p-4 text-sm">
-              <summary className="cursor-pointer font-medium">Size guide</summary>
-              <div className="mt-3 overflow-x-auto">
-                <table className="w-full text-left text-xs text-muted">
-                  <thead>
-                    <tr className="border-b border-border text-subtle">
-                      <th className="py-2 pr-3 font-medium">Size</th>
-                      <th className="py-2 pr-3 font-medium">Chest</th>
-                      <th className="py-2 font-medium">Length</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      ["S", "34–37\"", "27\""],
-                      ["M", "38–41\"", "28\""],
-                      ["L", "42–45\"", "29\""],
-                      ["XL", "46–49\"", "30\""],
-                      ["XXL", "50–53\"", "31\""],
-                    ].map((row) => (
-                      <tr key={row[0]} className="border-b border-border/60">
-                        <td className="py-2 pr-3 font-medium text-fg">{row[0]}</td>
-                        <td className="py-2 pr-3">{row[1]}</td>
-                        <td className="py-2">{row[2]}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <p className="mt-2 text-xs text-subtle">
-                  Unisex fit · inches · measure garment flat. Printify blanks vary slightly by provider.
-                </p>
-              </div>
-            </details>
+            <div className="mt-8">
+              <FitAssistant
+                onRecommend={(s) => {
+                  if (APPAREL_SIZES.includes(s as CartSize)) {
+                    setSize(s as CartSize);
+                    toast.success(`Size set to ${s}`);
+                  }
+                }}
+              />
+            </div>
           ) : null}
 
-          {product.agentShopable ? (
-            <div className="mt-6 rounded-xl border border-border bg-surface p-4">
-              <p className="flex items-center gap-2 text-sm font-medium">
-                <Bot className="size-4" /> Agent checkout
-              </p>
-              <p className="mt-1 text-xs text-muted">
-                Settle multi-rail at face price via /pay. Catalog protocol
-                lvl-merch-v1.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Button size="sm" variant="secondary" asChild>
-                  <Link
-                    to="/pay"
-                    search={{
-                      skill: product.sku,
-                      amount: product.priceUsd,
-                      canceled: false,
-                    }}
+          <div className="mt-8 space-y-2 border-t border-border pt-6 text-xs text-muted">
+            <p className="font-medium text-fg">Settlement & fulfillment</p>
+            <ul className="space-y-1.5">
+              <li className="flex items-center gap-2">
+                <Wallet className="size-3.5 shrink-0" />
+                Multi-rail pay at face {storeMoney(product.priceUsd)}
+              </li>
+              <li className="flex items-center gap-2">
+                <Bot className="size-3.5 shrink-0" />
+                Agent catalog · lvl-merch-v1
+              </li>
+              {product.printifyUrl ? (
+                <li>
+                  <a
+                    href={product.printifyUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-fg underline-offset-2 hover:underline"
                   >
-                    <Wallet className="size-3.5" />
-                    Pay {storeMoney(product.priceUsd)}
-                  </Link>
-                </Button>
-                <Button size="sm" variant="secondary" asChild>
-                  <Link to="/agent/merch">Agent JSON</Link>
-                </Button>
-              </div>
-            </div>
-          ) : null}
-
-          <dl className="mt-8 grid gap-3 border-t border-border pt-6 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt className="text-subtle">Fulfillment</dt>
-              <dd className="text-muted">Printify POD</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-subtle">Channel</dt>
-              <dd className="text-muted">{product.channel}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-subtle">Domain</dt>
-              <dd className="text-muted">factory.lvlltd.com/shop</dd>
-            </div>
-          </dl>
+                    <ExternalLink className="size-3.5" />
+                    Printify storefront
+                  </a>
+                </li>
+              ) : null}
+              <li>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 text-fg underline-offset-2 hover:underline"
+                  onClick={async () => {
+                    const url = `${window.location.origin}/shop/${product.slug}`;
+                    await navigator.clipboard.writeText(url);
+                    toast.success("Link copied");
+                  }}
+                >
+                  <Link2 className="size-3.5" />
+                  Copy product link
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 

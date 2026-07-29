@@ -9,6 +9,7 @@ import {
   collectionByHandle,
   STORE_COLLECTIONS,
 } from "@/lib/store/collections";
+import { BRAND_ART, COLLECTION_COVERS } from "@/lib/store/images";
 import {
   filterProducts,
   sortProducts,
@@ -19,6 +20,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/shop/collections/$handle")({
   component: CollectionPage,
 });
+
+const SORTS: Array<{ key: SortKey; label: string }> = [
+  { key: "featured", label: "Featured" },
+  { key: "price_asc", label: "Price ↑" },
+  { key: "price_desc", label: "Price ↓" },
+  { key: "title", label: "Title" },
+];
 
 function CollectionPage() {
   const { handle } = Route.useParams();
@@ -52,19 +60,31 @@ function CollectionPage() {
     );
   }
 
+  const cover = COLLECTION_COVERS[handle] ?? BRAND_ART.collectionTees;
+
   return (
     <div className="space-y-8">
-      <header className="max-w-2xl space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wider text-subtle">
-          Collection
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          {collection.title}
-        </h1>
-        <p className="text-sm text-muted">{collection.description}</p>
-        <p className="text-xs text-subtle tabular">
-          {filtered.length} product{filtered.length === 1 ? "" : "s"}
-        </p>
+      <header className="relative overflow-hidden rounded-2xl border border-border shadow-soft">
+        <img
+          src={cover}
+          alt=""
+          className="absolute inset-0 size-full object-cover"
+          loading="eager"
+        />
+        <div className="hero-scrim absolute inset-0" />
+        <div className="hero-scrim-bottom absolute inset-x-0 bottom-0 h-3/4" />
+        <div className="relative z-[1] flex min-h-[180px] flex-col justify-end gap-2 p-6 sm:min-h-[220px] sm:p-8">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted">
+            Collection
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {collection.title}
+          </h1>
+          <p className="max-w-xl text-sm text-muted">{collection.description}</p>
+          <p className="text-xs text-subtle tabular">
+            {filtered.length} product{filtered.length === 1 ? "" : "s"}
+          </p>
+        </div>
       </header>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -78,19 +98,23 @@ function CollectionPage() {
             aria-label="Search products"
           />
         </div>
-        <label className="flex items-center gap-2 text-xs text-muted">
-          Sort
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortKey)}
-            className="min-h-11 rounded-lg border border-border bg-surface px-3 text-sm text-fg"
-          >
-            <option value="featured">Featured</option>
-            <option value="price_asc">Price · low to high</option>
-            <option value="price_desc">Price · high to low</option>
-            <option value="title">Title</option>
-          </select>
-        </label>
+        <div className="flex flex-wrap gap-2">
+          {SORTS.map((s) => (
+            <button
+              key={s.key}
+              type="button"
+              onClick={() => setSort(s.key)}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-xs transition-colors",
+                sort === s.key
+                  ? "border-border-strong bg-surface-2 text-fg"
+                  : "border-border text-muted hover:bg-surface",
+              )}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -102,8 +126,8 @@ function CollectionPage() {
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs transition-colors",
               c.handle === handle
-                ? "border-fg bg-fg text-bg"
-                : "border-border text-muted hover:border-border-strong hover:text-fg",
+                ? "border-border-strong bg-surface-2 text-fg"
+                : "border-border text-muted hover:bg-surface",
             )}
           >
             {c.title}

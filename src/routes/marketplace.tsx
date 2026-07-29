@@ -2,8 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   Bot,
-  CreditCard,
-  LayoutGrid,
   Package,
   Shield,
   Store,
@@ -11,6 +9,7 @@ import {
   Wallet,
   Workflow,
 } from "lucide-react";
+import { BrandMark, VisualHero } from "@/components/brand/visual-hero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +26,7 @@ import {
 } from "@/lib/marketplace/hosts";
 import { LVL_PAYMENT } from "@/lib/factory/payment";
 import { PRINTIFY_STORE } from "@/lib/merch/printify";
+import { BRAND_ART } from "@/lib/store/images";
 
 export const Route = createFileRoute("/marketplace")({
   head: () => ({
@@ -55,40 +55,46 @@ function MarketplaceHubPage() {
 
   return (
     <div className="space-y-10">
-      <header className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="info">lvlltd.com</Badge>
-          <Badge variant="default">{LVL_PAYMENT.label}</Badge>
-          <Badge variant="warning">marketplace hub</Badge>
-        </div>
-        <div className="max-w-2xl space-y-3">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Shop, settle, ship — one LVL network
-          </h1>
-          <p className="text-sm text-muted sm:text-base">
+      <VisualHero
+        image={BRAND_ART.heroNetwork}
+        eyebrow="lvlltd.com · marketplace hub"
+        title="Shop, settle, ship — one LVL network"
+        description={
+          <>
             Merch & art via Printify POD, multi-rail crypto/card pay for agents
             and humans, seller pipeline, and operator factory — wired across{" "}
             <span className="text-fg">lvlltd.com</span> subdomains.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button asChild>
-            <Link to="/shop">
-              <Store className="size-4" />
-              Open store
-            </Link>
-          </Button>
-          <Button asChild variant="secondary">
-            <Link to="/checkout">Checkout</Link>
-          </Button>
-          <Button asChild variant="secondary">
-            <Link to="/agent/merch">
-              <Bot className="size-4" />
-              Agent shop
-            </Link>
-          </Button>
-        </div>
-      </header>
+          </>
+        }
+        actions={
+          <>
+            <Button asChild>
+              <Link to="/shop">
+                <Store className="size-4" />
+                Open store
+              </Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link to="/drops">Live drops</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link to="/bundles">Stacks</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link to="/agent/merch">
+                <Bot className="size-4" />
+                Agent shop
+              </Link>
+            </Button>
+          </>
+        }
+      />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="info">lvlltd.com</Badge>
+        <Badge variant="default">{LVL_PAYMENT.label}</Badge>
+        <Badge variant="warning">marketplace hub</Badge>
+      </div>
 
       <section className="grid gap-3 sm:grid-cols-3">
         {[
@@ -96,20 +102,35 @@ function MarketplaceHubPage() {
             icon: Store,
             title: "Catalog",
             body: "LVL Store collections, search, wishlist, agent SKUs",
+            img: BRAND_ART.collectionTees,
           },
           {
             icon: Wallet,
             title: "Settlement",
             body: `${LVL_PAYMENT.label} · multi-chain USDC/USDT · Stripe card`,
+            img: BRAND_ART.heroFactory,
           },
           {
             icon: Truck,
             title: "Fulfillment",
             body: `${PRINTIFY_STORE.brand} POD · webhooks on factory`,
+            img: BRAND_ART.collectionArt,
           },
         ].map((f) => (
-          <Card key={f.title} className="border-border bg-surface">
-            <CardHeader className="pb-2">
+          <Card
+            key={f.title}
+            className="overflow-hidden border-border bg-surface shadow-soft"
+          >
+            <div className="relative h-24 overflow-hidden bg-surface-2">
+              <img
+                src={f.img}
+                alt=""
+                className="size-full object-cover opacity-80"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent" />
+            </div>
+            <CardHeader className="pb-2 pt-3">
               <div className="mb-2 flex size-9 items-center justify-center rounded-lg border border-border bg-surface-2">
                 <f.icon className="size-4" />
               </div>
@@ -123,10 +144,7 @@ function MarketplaceHubPage() {
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-2">
           <h2 className="text-lg font-semibold tracking-tight">Buy</h2>
-          <Link
-            to="/shop"
-            className="text-xs text-muted hover:text-fg"
-          >
+          <Link to="/shop" className="text-xs text-muted hover:text-fg">
             Browse all <ArrowRight className="inline size-3" />
           </Link>
         </div>
@@ -135,13 +153,14 @@ function MarketplaceHubPage() {
             <Link
               key={t.id}
               to={t.path}
-              className="group rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-surface-2"
+              className="group rounded-xl border border-border bg-surface p-4 shadow-soft transition-colors hover:bg-surface-2"
             >
-              <p className="text-sm font-semibold tracking-tight">{t.title}</p>
-              <p className="mt-1 text-xs text-muted">{t.blurb}</p>
-              <p className="mt-3 font-mono text-[11px] text-subtle">
-                {t.host}
-              </p>
+              <div className="mb-3 flex items-center gap-2">
+                <BrandMark size="sm" />
+                <p className="text-sm font-semibold tracking-tight">{t.title}</p>
+              </div>
+              <p className="text-xs text-muted">{t.blurb}</p>
+              <p className="mt-3 font-mono text-[11px] text-subtle">{t.host}</p>
             </Link>
           ))}
         </div>
@@ -156,13 +175,11 @@ function MarketplaceHubPage() {
             <Link
               key={t.id}
               to={t.path}
-              className="rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-surface-2"
+              className="rounded-xl border border-border bg-surface p-4 shadow-soft transition-colors hover:bg-surface-2"
             >
               <p className="text-sm font-semibold tracking-tight">{t.title}</p>
               <p className="mt-1 text-xs text-muted">{t.blurb}</p>
-              <p className="mt-3 font-mono text-[11px] text-subtle">
-                {t.host}
-              </p>
+              <p className="mt-3 font-mono text-[11px] text-subtle">{t.host}</p>
             </Link>
           ))}
         </div>
@@ -175,7 +192,7 @@ function MarketplaceHubPage() {
             Domain matrix
           </h2>
         </div>
-        <Card className="border-border bg-surface">
+        <Card className="border-border bg-surface shadow-soft">
           <CardContent className="overflow-x-auto p-0">
             <table className="w-full min-w-[36rem] text-left text-xs">
               <thead className="border-b border-border text-muted">
@@ -219,8 +236,17 @@ function MarketplaceHubPage() {
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2">
-        <Card className="border-border bg-surface">
-          <CardHeader>
+        <Card className="overflow-hidden border-border bg-surface shadow-soft">
+          <div className="relative h-28">
+            <img
+              src={BRAND_ART.collectionAgent}
+              alt=""
+              className="size-full object-cover opacity-70"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
+          </div>
+          <CardHeader className="-mt-6 relative z-[1]">
             <CardTitle className="flex items-center gap-2 text-base">
               <Workflow className="size-4" />
               Seller loop
@@ -236,15 +262,24 @@ function MarketplaceHubPage() {
             </Button>
           </CardContent>
         </Card>
-        <Card className="border-border bg-surface">
-          <CardHeader>
+        <Card className="overflow-hidden border-border bg-surface shadow-soft">
+          <div className="relative h-28">
+            <img
+              src={BRAND_ART.heroFactory}
+              alt=""
+              className="size-full object-cover opacity-70"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent" />
+          </div>
+          <CardHeader className="-mt-6 relative z-[1]">
             <CardTitle className="flex items-center gap-2 text-base">
               <Package className="size-4" />
               Your orders
             </CardTitle>
             <CardDescription>
-              Checkout writes a local order ledger; Printify + pay rails deep-link
-              from each line.
+              Checkout writes a local order ledger; Printify + pay rails
+              deep-link from each line.
             </CardDescription>
           </CardHeader>
           <CardContent>

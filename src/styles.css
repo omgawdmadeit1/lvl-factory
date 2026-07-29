@@ -34,6 +34,15 @@
 
   --font-sans: "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --shadow-soft: 0 1px 0 color-mix(in oklab, var(--color-fg) 6%, transparent),
+    0 12px 40px -16px rgb(0 0 0 / 0.55);
+  --shadow-lift: 0 1px 0 color-mix(in oklab, var(--color-fg) 8%, transparent),
+    0 18px 48px -20px rgb(0 0 0 / 0.65);
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-fast: 200ms;
+  --motion-med: 320ms;
 }
 
 @layer base {
@@ -64,6 +73,11 @@
   ::selection {
     background: color-mix(in oklab, var(--color-fg) 18%, transparent);
   }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 @layer utilities {
@@ -78,5 +92,84 @@
   .focus-ring:focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-lift {
+    box-shadow: var(--shadow-lift);
+  }
+
+  /* Quiet wash for large hero fields — barely perceptible (anti-slop) */
+  .surface-wash {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--color-surface-2) 55%, transparent) 0%,
+        transparent 55%
+      ),
+      var(--color-surface);
+  }
+
+  .hero-scrim {
+    background: linear-gradient(
+      105deg,
+      color-mix(in oklab, var(--color-bg) 92%, transparent) 0%,
+      color-mix(in oklab, var(--color-bg) 72%, transparent) 42%,
+      color-mix(in oklab, var(--color-bg) 28%, transparent) 100%
+    );
+  }
+
+  .hero-scrim-bottom {
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--color-bg) 20%, transparent) 0%,
+      color-mix(in oklab, var(--color-bg) 88%, transparent) 100%
+    );
+  }
+
+  .img-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .reveal {
+    animation: reveal-up var(--motion-med) var(--ease-out-soft) both;
+  }
+
+  .reveal-delay-1 {
+    animation-delay: 60ms;
+  }
+
+  .reveal-delay-2 {
+    animation-delay: 120ms;
+  }
+
+  .reveal-delay-3 {
+    animation-delay: 180ms;
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-delay-1,
+  .reveal-delay-2,
+  .reveal-delay-3 {
+    animation: none;
   }
 }

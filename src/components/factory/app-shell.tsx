@@ -5,19 +5,26 @@ import {
   CreditCard,
   Disc3,
   FlaskConical,
+  Layers,
   LayoutDashboard,
   LayoutGrid,
   ListOrdered,
   Package,
+  Radio,
+  Radar,
   ShoppingBag,
   Sparkles,
   Store,
   Globe,
+  Timer,
+  Wand2,
   Webhook,
   Workflow,
   User,
   ShoppingCart,
+  Zap,
 } from "lucide-react";
+import { BrandMark } from "@/components/brand/visual-hero";
 import { BuyerShell } from "@/components/marketplace/buyer-shell";
 import { isBuyerPath } from "@/lib/marketplace/hosts";
 import { cn } from "@/lib/utils";
@@ -26,6 +33,12 @@ const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/marketplace", label: "Marketplace hub", icon: LayoutGrid },
   { to: "/shop", label: "LVL Store", icon: Store },
+  { to: "/drops", label: "Live drops", icon: Timer },
+  { to: "/bundles", label: "Stack packs", icon: Layers },
+  { to: "/radar", label: "Restock radar", icon: Radar },
+  { to: "/pulse", label: "Network pulse", icon: Radio },
+  { to: "/studio", label: "Design studio", icon: Wand2 },
+  { to: "/relay", label: "Agent relay", icon: Zap },
   { to: "/checkout", label: "Checkout", icon: ShoppingCart },
   { to: "/account", label: "Account", icon: User },
   { to: "/orders", label: "Orders", icon: Package },
@@ -51,10 +64,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Buyer marketplace surfaces share Market chrome
-  if (isBuyerPath(pathname) && pathname !== "/pay") {
-    // /pay has dense multi-rail UI — still use buyer chrome for consistency
-  }
   if (isBuyerPath(pathname)) {
     return <BuyerShell>{children}</BuyerShell>;
   }
@@ -64,13 +73,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="mx-auto flex min-h-dvh max-w-7xl">
         <aside className="hidden w-60 shrink-0 border-r border-border md:flex md:flex-col">
           <div className="border-b border-border px-4 py-5">
-            <p className="text-xs font-medium uppercase tracking-wider text-subtle">
-              LVL Marketplace
-            </p>
-            <p className="text-sm font-semibold tracking-tight">
-              Factory + store
-            </p>
-            <p className="mt-1 text-xs text-muted">lvlltd.com operator</p>
+            <div className="mb-3 flex items-center gap-2.5">
+              <BrandMark size="sm" />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-subtle">
+                  LVL Marketplace
+                </p>
+                <p className="text-sm font-semibold tracking-tight">
+                  Factory + store
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-muted">lvlltd.com operator</p>
           </div>
           <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
             {NAV.map((item) => {
@@ -97,24 +111,40 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
           <div className="space-y-3 border-t border-border p-3">
-            <div className="rounded-xl border border-border bg-surface p-3">
-              <div className="mb-2 flex items-center gap-2 text-xs font-medium text-muted">
-                <Package className="size-3.5" />
-                Hosts
+            <div className="relative overflow-hidden rounded-xl border border-border bg-surface p-3 shadow-soft">
+              <img
+                src="/brand/hero-factory.jpg"
+                alt=""
+                className="absolute inset-0 size-full object-cover opacity-25"
+              />
+              <div className="relative z-[1]">
+                <div className="mb-2 flex items-center gap-2 text-xs font-medium text-muted">
+                  <Package className="size-3.5" />
+                  Edge hosts
+                </div>
+                <ul className="space-y-1.5 text-xs text-subtle">
+                  <li>drops · pulse · studio</li>
+                  <li>relay · bundles · radar</li>
+                  <li>shop · pay · checkout</li>
+                  <li className="font-medium text-fg">factory.lvlltd.com</li>
+                </ul>
               </div>
-              <ul className="space-y-1.5 text-xs text-subtle">
-                <li>shop.lvlltd.com</li>
-                <li>pay · checkout · account</li>
-                <li>seller · agents · admin</li>
-                <li className="font-medium text-fg">factory.lvlltd.com</li>
-              </ul>
             </div>
           </div>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
           <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 md:px-6">
-            <div>
+            <div className="flex items-center gap-2.5 md:hidden">
+              <BrandMark size="sm" />
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-subtle">
+                  Operator console
+                </p>
+                <p className="text-sm text-muted">Marketplace · packs · rails</p>
+              </div>
+            </div>
+            <div className="hidden md:block">
               <p className="text-xs font-medium uppercase tracking-wider text-subtle">
                 Operator console
               </p>
@@ -126,6 +156,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg"
               >
                 Hub
+              </Link>
+              <Link
+                to="/drops"
+                className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg"
+              >
+                Drops
               </Link>
               <Link
                 to="/shop"
@@ -140,7 +176,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </header>
 
           <nav className="flex gap-1 overflow-x-auto border-b border-border px-2 py-2 md:hidden">
-            {NAV.slice(0, 10).map((item) => {
+            {NAV.slice(0, 12).map((item) => {
               const active =
                 item.to === "/"
                   ? pathname === "/"

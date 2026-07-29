@@ -1,25 +1,25 @@
-import { Bot, Package, Shield, Truck } from "lucide-react";
+import { Bot, Layers, Package, Timer } from "lucide-react";
 
 const ITEMS = [
   {
-    icon: Truck,
-    title: "Print-on-demand",
-    body: "Ships via Printify partners worldwide",
+    icon: Timer,
+    title: "Live drops",
+    body: "Timed flash inventory · claim → cart",
+  },
+  {
+    icon: Layers,
+    title: "Stack packs",
+    body: "Curated multi-SKU bundles with discounts",
   },
   {
     icon: Bot,
     title: "Agent shopable",
-    body: "lvl-merch-v1 catalog + multi-rail settle",
-  },
-  {
-    icon: Shield,
-    title: "Edge protected",
-    body: "Cloudflare DDoS + WAF on factory.lvlltd.com",
+    body: "lvl-merch-v1 · relay intents · multi-rail",
   },
   {
     icon: Package,
-    title: "Live drops",
-    body: "Synced from lvlxltd.printify.me inventory",
+    title: "Credits + gift",
+    body: "Loyalty ledger · gift checkout · price holds",
   },
 ] as const;
 
@@ -31,7 +31,7 @@ export function TrustStrip() {
         return (
           <div
             key={item.title}
-            className="flex gap-3 rounded-xl border border-border bg-surface p-4"
+            className="flex gap-3 rounded-xl border border-border bg-surface p-4 shadow-soft"
           >
             <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-surface-2">
               <Icon className="size-4 text-muted" />

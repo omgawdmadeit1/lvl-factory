@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  BRAND_ART,
   productImageSrc,
   proxyStoreImage,
   RESOLVED_MOCKUPS,
@@ -51,18 +52,18 @@ export function ProductImage({
           fetchPriority={priority ? "high" : "auto"}
           className="size-full object-cover"
           onError={() => {
-            // Cascade: primary → proxy redirect → stream → seed stream → fail
-            if (step === 0 && mockupUrl) {
+            // Cascade: local/primary → S3 seed → proxy stream → fail
+            const seed = RESOLVED_MOCKUPS[slug];
+            if (step === 0 && seed && src !== seed) {
               setStep(1);
-              setSrc(proxyStoreImage(mockupUrl, "redirect"));
+              setSrc(seed);
               return;
             }
-            if (step === 1 && mockupUrl) {
+            if (step <= 1 && mockupUrl) {
               setStep(2);
               setSrc(proxyStoreImage(mockupUrl, "stream"));
               return;
             }
-            const seed = RESOLVED_MOCKUPS[slug];
             if (step === 2 && seed) {
               setStep(3);
               setSrc(proxyStoreImage(seed, "stream"));
@@ -72,8 +73,14 @@ export function ProductImage({
           }}
         />
       ) : (
-        <div className="flex size-full items-center justify-center bg-surface-2 p-4 text-center">
-          <div>
+        <div className="relative flex size-full items-center justify-center overflow-hidden bg-surface-2">
+          <img
+            src={BRAND_ART.blankTeeBlack}
+            alt=""
+            className="absolute inset-0 size-full object-cover opacity-40"
+            aria-hidden
+          />
+          <div className="relative z-[1] px-4 text-center">
             <p className="text-xs font-medium uppercase tracking-wider text-subtle">
               LVL
             </p>
