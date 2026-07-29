@@ -214,6 +214,61 @@ Env (server): `PRINTIFY_*`, `DATABASE_URL` / PGLite, payment `VITE_*` for client
 
 ---
 
+## Vercel GitHub integration
+
+**Project:** `lvl-factory` · team **tesla-trek**  
+**Repo:** [omgawdmadeit1/lvl-factory](https://github.com/omgawdmadeit1/lvl-factory) (`main` → production)
+
+| ID | Value |
+|----|--------|
+| `VERCEL_ORG_ID` | `team_EbvXskCGZVZiHauixSNsUAKv` |
+| `VERCEL_PROJECT_ID` | `prj_0m75OJchmM0HOizAy7hTqdKghyPR` |
+| Origin | https://lvl-factory.vercel.app |
+| Git settings | https://vercel.com/tesla-trek/lvl-factory/settings/git |
+
+### Preferred: native Vercel-for-GitHub (auto-deploy on push)
+
+Do this once while signed into the Vercel account that owns **tesla-trek**:
+
+1. Open **[Git settings](https://vercel.com/tesla-trek/lvl-factory/settings/git)**.
+2. **Connect Git Repository** → GitHub → authorize the **Vercel** GitHub App if prompted.
+3. Select **`omgawdmadeit1/lvl-factory`**.
+4. **Production Branch** = `main`.
+5. Confirm build uses `npm run build` / `npm install` (see `vercel.json`).
+6. (Optional) Project → Settings → Environment Variables — production:
+   - `VITE_WALLETCONNECT_PROJECT_ID=7e30c6e6441bbc7523e87195868a572a`
+   - `VITE_TREASURY_SOL=8sjT1G2YWpscXbJmwv2UK1rHZmQFLaczU5KXiiS8gvDy`
+7. Push to `main` → Vercel builds production automatically.
+
+Install app (if needed): [github.com/apps/vercel](https://github.com/apps/vercel) → Install → **omgawdmadeit1** → include **lvl-factory**.
+
+### Fallback: GitHub Actions CLI deploy
+
+Workflow: `.github/workflows/deploy-vercel.yml`  
+Always typechecks + builds on `main`. Deploys when either secret is set:
+
+| Secret | Purpose |
+|--------|---------|
+| `VERCEL_TOKEN` | Token from https://vercel.com/account/tokens (team **tesla-trek**) |
+| `VERCEL_DEPLOY_HOOK_URL` | Deploy Hook (Project → Settings → Git → Deploy Hooks; needs Git linked) |
+
+```bash
+gh secret set VERCEL_TOKEN --repo omgawdmadeit1/lvl-factory
+# Optional after Git is linked:
+gh secret set VERCEL_DEPLOY_HOOK_URL --repo omgawdmadeit1/lvl-factory
+```
+
+Org/project IDs are baked into the workflow (not secrets).
+
+### Verify after linking
+
+```bash
+curl -sS -o /dev/null -w "%{http_code}\n" https://lvl-factory.vercel.app/shop
+curl -sS "https://factory.lvlltd.com/api/pay/options?amount=25.99" | head -c 200
+```
+
+---
+
 ## Quick links (production)
 
 | Surface | URL |

@@ -1,3 +1,21 @@
+# Deploy LVL Factory to Vercel production.
+#
+# Two supported paths (first match wins):
+# 1) Native Vercel Git integration (preferred)
+#    Link repo once in the Vercel dashboard — Vercel then builds on every
+#    push to main. This workflow still typechecks + builds as a gate.
+# 2) GitHub Actions → Vercel CLI (fallback)
+#    Requires repo secret: VERCEL_TOKEN
+#    Org/project IDs are public identifiers and are set below (not secrets).
+#
+# One-time Git link (dashboard):
+#   https://vercel.com/tesla-trek/lvl-factory/settings/git
+#   Connect → GitHub → omgawdmadeit1/lvl-factory → Production Branch: main
+#
+# Create token (if using Actions deploy):
+#   https://vercel.com/account/tokens → scope team "tesla-trek"
+#   gh secret set VERCEL_TOKEN --repo omgawdmadeit1/lvl-factory
+
 name: Deploy Vercel Production
 
 on:
@@ -5,8 +23,20 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: vercel-production
+  cancel-in-progress: true
+
+env:
+  # Public project identifiers (not secrets)
+  VERCEL_ORG_ID: team_EbvXskCGZVZiHauixSNsUAKv
+  VERCEL_PROJECT_ID: prj_0m75OJchmM0HOizAy7hTqdKghyPR
+  VITE_WALLETCONNECT_PROJECT_ID: 7e30c6e6441bbc7523e87195868a572a
+  VITE_TREASURY_SOL: 8sjT1G2YWpscXbJmwv2UK1rHZmQFLaczU5KXiiS8gvDy
+
 jobs:
-  deploy:
+  verify:
+    name: Typecheck + build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,19 +51,68 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_WALLETCONNECT_PROJECT_ID: 7e30c6e6441bbc7523e87195868a572a
-          VITE_TREASURY_SOL: 8sjT1G2YWpscXbJmwv2UK1rHZmQFLaczU5KXiiS8gvDy
-      - name: Deploy to Vercel
-        continue-on-error: true
-        run: |
-          if [ -z "$VERCEL_TOKEN" ]; then
-            echo "VERCEL_TOKEN not set — build OK; skip remote deploy"
-            exit 0
-          fi
-          npx vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-          npx vercel build --prod --token="$VERCEL_TOKEN"
-          npx vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+          VITE_WALLETCONNECT_PROJECT_ID: ${{ env.VITE_WALLETCONNECT_PROJECT_ID }}
+          VITE_TREASURY_SOL: ${{ env.VITE_TREASURY_SOL }}
+
+  deploy:
+    name: Deploy to Vercel
+    needs: verify
+    runs-on: ubuntu-latest
+    # Skip CLI deploy when only native Git integration is expected and no token
+    # is present — Vercel will still ship if the repo is linked in the dashboard.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check deploy credentials
+        id: creds
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            echo "mode=hook" >> "$GITHUB_OUTPUT"
+          elif [ -n "$VERCEL_TOKEN" ]; then
+            echo "mode=cli" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=skip" >> "$GITHUB_OUTPUT"
+            echo "::notice::No VERCEL_TOKEN or VERCEL_DEPLOY_HOOK_URL secret."
+            echo "If Git is linked in Vercel, production deploys automatically on push."
+            echo "Otherwise add secrets: see DOMAIN.md § Vercel GitHub integration."
+          fi
+
+      - name: Deploy via Deploy Hook
+        if: steps.creds.outputs.mode == 'hook'
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          echo "Triggering Vercel Deploy Hook (production)…"
+          curl -fsS -X POST "$VERCEL_DEPLOY_HOOK_URL"
+          echo
+          echo "Hook accepted — Vercel will rebuild from the linked Git branch."
+
+      - uses: actions/setup-node@v4
+        if: steps.creds.outputs.mode == 'cli'
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install + build (CLI path)
+        if: steps.creds.outputs.mode == 'cli'
+        run: |
+          npm ci || npm install
+          npm run build
+        env:
+          VITE_WALLETCONNECT_PROJECT_ID: ${{ env.VITE_WALLETCONNECT_PROJECT_ID }}
+          VITE_TREASURY_SOL: ${{ env.VITE_TREASURY_SOL }}
+
+      - name: Deploy via Vercel CLI
+        if: steps.creds.outputs.mode == 'cli'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ env.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ env.VERCEL_PROJECT_ID }}
+        run: |
+          npx vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
+          npx vercel@latest build --prod --token="$VERCEL_TOKEN"
+          npx vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+          echo "Production deploy complete → https://lvl-factory.vercel.app"
