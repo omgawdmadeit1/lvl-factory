@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Bot,
   Boxes,
   CreditCard,
   Disc3,
@@ -7,12 +8,17 @@ import {
   LayoutDashboard,
   ListOrdered,
   Package,
+  ShoppingBag,
   Sparkles,
+  Workflow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/merch", label: "Merch & art", icon: ShoppingBag },
+  { to: "/pipeline", label: "Merch pipeline", icon: Workflow },
+  { to: "/agent/merch", label: "Agent shop", icon: Bot },
   { to: "/pay", label: "Pay", icon: CreditCard },
   { to: "/tier1", label: "Tier 1 Plan", icon: Sparkles },
   { to: "/music", label: "Music packs", icon: Disc3 },
@@ -33,11 +39,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               LVL Factory
             </p>
             <p className="text-sm font-semibold tracking-tight">
-              Skill + Music packs
+              Packs + merch
             </p>
             <p className="mt-1 text-xs text-muted">lvlltd.com operator</p>
           </div>
-          <nav className="flex flex-1 flex-col gap-1 p-3">
+          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
             {NAV.map((item) => {
               const active =
                 item.to === "/"
@@ -65,13 +71,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="rounded-xl border border-border bg-surface p-3">
               <div className="mb-2 flex items-center gap-2 text-xs font-medium text-muted">
                 <Package className="size-3.5" />
-                Payment rails
+                Commerce rails
               </div>
               <ul className="space-y-1.5 text-xs text-subtle">
-                <li>Crypto: buyer picks mainnet</li>
-                <li>Base · ETH · ARB · OP · Polygon</li>
-                <li>USDC / USDT / native</li>
-                <li className="font-medium text-fg">Stripe card · live</li>
+                <li>Merch: Printify POD</li>
+                <li>Imagine → pipeline</li>
+                <li>Agents: multi-rail pay</li>
+                <li className="font-medium text-fg">factory.lvlltd.com</li>
               </ul>
             </div>
           </div>
@@ -84,15 +90,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 Operator console
               </p>
               <p className="text-sm text-muted">
-                Multi-rail pay · Stripe · factory
+                Merch · packs · multi-rail
               </p>
             </div>
             <div className="hidden items-center gap-2 sm:flex">
               <span className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted">
-                No phone path
+                Printify · agents
               </span>
               <span className="rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs text-success">
-                Multi-rail + Stripe
+                Live merch
               </span>
             </div>
           </header>

@@ -103,3 +103,21 @@ gh workflow run "Provision Factory DNS" -R omgawdmadeit1/lvlltd-agent-marketplac
 ```
 
 Source: `workers/lvl-factory-proxy` in `lvlltd-agent-marketplace`.
+
+## Merch + art (agent pipeline)
+
+| Item | Value |
+|------|--------|
+| Human shop | `/merch` on factory.lvlltd.com |
+| Operator pipeline | `/pipeline` — Grok Imagine brief → mockup → Printify draft → publish |
+| Agent catalog | `/agent/merch` — protocol `lvl-merch-v1` JSON |
+| Printify store | https://lvlxltd.printify.me |
+| Cloudflare | factory.lvlltd.com → Vercel; merch UI on factory |
+| Fulfillment | Printify POD (physical) |
+| Agent pay | `/pay?sku=SKU&amount=PRICE` multi-rail |
+| API token (optional) | `PRINTIFY_API_TOKEN` server-only — never `VITE_*` |
+| Shop id (optional) | `PRINTIFY_SHOP_ID` |
+
+Modules: `src/lib/merch/*` · Live products seeded from Printify storefront mockups.
+
+Pipeline stages: `brief` → `imagine` → `mockup` → `printify_draft` → `review` → `published`

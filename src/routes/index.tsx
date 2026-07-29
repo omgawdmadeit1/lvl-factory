@@ -85,6 +85,12 @@ function DashboardPage() {
             Seed Tier 1 packs
           </Button>
           <Button asChild variant="secondary">
+            <Link to="/merch" search={{}}>
+              Merch shop
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
+          <Button asChild variant="secondary">
             <Link to="/canary">
               Canary {formatUsdc(CANARY.amountUsdc)}
               <ArrowRight className="size-4" />

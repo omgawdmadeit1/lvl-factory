@@ -66,25 +66,37 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+export type PaySearch = {
+  skill: string;
+  amount: number;
+  canceled: boolean;
+  sku?: string;
+};
+
 export const Route = createFileRoute("/pay")({
   component: PayPage,
-  validateSearch: (s: Record<string, unknown>) => ({
-    skill: typeof s.skill === "string" ? s.skill : CANARY.skillId,
-    amount:
-      typeof s.amount === "string"
-        ? Number(s.amount)
-        : typeof s.amount === "number"
-          ? s.amount
-          : 0.05,
-    canceled: s.canceled === "1" || s.canceled === true ? true : false,
-  }),
+  validateSearch: (s: Record<string, unknown>): PaySearch => {
+    const out: PaySearch = {
+      skill: typeof s.skill === "string" ? s.skill : CANARY.skillId,
+      amount:
+        typeof s.amount === "string"
+          ? Number(s.amount)
+          : typeof s.amount === "number"
+            ? s.amount
+            : 0.05,
+      canceled: s.canceled === "1" || s.canceled === true ? true : false,
+    };
+    if (typeof s.sku === "string" && s.sku.trim()) out.sku = s.sku.trim();
+    return out;
+  },
 });
 
 type Method = "crypto" | "stripe";
 
 function PayPage() {
-  const { skill, amount, canceled } = Route.useSearch();
+  const { skill, amount, canceled, sku } = Route.useSearch();
   const amountUsd = Number.isFinite(amount) && amount > 0 ? amount : 0.05;
+  const merchSku = sku?.trim() || null;
 
   const [method, setMethod] = useState<Method>("crypto");
   const [networkId, setNetworkId] = useState<MainnetId>("ethereum");
@@ -276,8 +288,14 @@ function PayPage() {
         </h1>
         <p className="max-w-2xl text-sm text-muted">
           Skill{" "}
-          <span className="font-mono text-fg">{skill}</span> · face{" "}
-          <span className="text-fg">{formatFaceUsd(amountUsd)}</span>.{" "}
+          <span className="font-mono text-fg">{skill}</span>
+          {merchSku ? (
+            <>
+              {" "}
+              · merch SKU <span className="font-mono text-fg">{merchSku}</span>
+            </>
+          ) : null}{" "}
+          · face <span className="text-fg">{formatFaceUsd(amountUsd)}</span>.{" "}
           Ethereum + L2s via MetaMask / WalletConnect, or{" "}
           <strong className="text-fg">Solana mainnet</strong> via Phantom /
           Solflare / Backpack. Card via Stripe anytime.

@@ -11,11 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CanaryRouteImport } from './routes/canary'
+import { Route as MerchRouteImport } from './routes/merch'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as PayRouteImport } from './routes/pay'
+import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as QueueRouteImport } from './routes/queue'
 import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as Tier1RouteImport } from './routes/tier1'
+import { Route as AgentMerchRouteImport } from './routes/agent.merch'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -27,6 +30,11 @@ const CanaryRoute = CanaryRouteImport.update({
   path: '/canary',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MerchRoute = MerchRouteImport.update({
+  id: '/merch',
+  path: '/merch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MusicRoute = MusicRouteImport.update({
   id: '/music',
   path: '/music',
@@ -35,6 +43,11 @@ const MusicRoute = MusicRouteImport.update({
 const PayRoute = PayRouteImport.update({
   id: '/pay',
   path: '/pay',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PipelineRoute = PipelineRouteImport.update({
+  id: '/pipeline',
+  path: '/pipeline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QueueRoute = QueueRouteImport.update({
@@ -52,60 +65,99 @@ const Tier1Route = Tier1RouteImport.update({
   path: '/tier1',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgentMerchRoute = AgentMerchRouteImport.update({
+  id: '/agent/merch',
+  path: '/agent/merch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/canary': typeof CanaryRoute
+  '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/pay': typeof PayRoute
+  '/pipeline': typeof PipelineRoute
   '/queue': typeof QueueRoute
   '/skills': typeof SkillsRoute
   '/tier1': typeof Tier1Route
+  '/agent/merch': typeof AgentMerchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/canary': typeof CanaryRoute
+  '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/pay': typeof PayRoute
+  '/pipeline': typeof PipelineRoute
   '/queue': typeof QueueRoute
   '/skills': typeof SkillsRoute
   '/tier1': typeof Tier1Route
+  '/agent/merch': typeof AgentMerchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/canary': typeof CanaryRoute
+  '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/pay': typeof PayRoute
+  '/pipeline': typeof PipelineRoute
   '/queue': typeof QueueRoute
   '/skills': typeof SkillsRoute
   '/tier1': typeof Tier1Route
+  '/agent/merch': typeof AgentMerchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/canary' | '/music' | '/pay' | '/queue' | '/skills' | '/tier1'
+    | '/'
+    | '/canary'
+    | '/merch'
+    | '/music'
+    | '/pay'
+    | '/pipeline'
+    | '/queue'
+    | '/skills'
+    | '/tier1'
+    | '/agent/merch'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/canary' | '/music' | '/pay' | '/queue' | '/skills' | '/tier1'
+  to:
+    | '/'
+    | '/canary'
+    | '/merch'
+    | '/music'
+    | '/pay'
+    | '/pipeline'
+    | '/queue'
+    | '/skills'
+    | '/tier1'
+    | '/agent/merch'
   id:
     | '__root__'
     | '/'
     | '/canary'
+    | '/merch'
     | '/music'
     | '/pay'
+    | '/pipeline'
     | '/queue'
     | '/skills'
     | '/tier1'
+    | '/agent/merch'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CanaryRoute: typeof CanaryRoute
+  MerchRoute: typeof MerchRoute
   MusicRoute: typeof MusicRoute
   PayRoute: typeof PayRoute
+  PipelineRoute: typeof PipelineRoute
   QueueRoute: typeof QueueRoute
   SkillsRoute: typeof SkillsRoute
   Tier1Route: typeof Tier1Route
+  AgentMerchRoute: typeof AgentMerchRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -124,6 +176,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CanaryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/merch': {
+      id: '/merch'
+      path: '/merch'
+      fullPath: '/merch'
+      preLoaderRoute: typeof MerchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/music': {
       id: '/music'
       path: '/music'
@@ -136,6 +195,13 @@ declare module '@tanstack/react-router' {
       path: '/pay'
       fullPath: '/pay'
       preLoaderRoute: typeof PayRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pipeline': {
+      id: '/pipeline'
+      path: '/pipeline'
+      fullPath: '/pipeline'
+      preLoaderRoute: typeof PipelineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/queue': {
@@ -159,17 +225,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Tier1RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agent/merch': {
+      id: '/agent/merch'
+      path: '/agent/merch'
+      fullPath: '/agent/merch'
+      preLoaderRoute: typeof AgentMerchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CanaryRoute: CanaryRoute,
+  MerchRoute: MerchRoute,
   MusicRoute: MusicRoute,
   PayRoute: PayRoute,
+  PipelineRoute: PipelineRoute,
   QueueRoute: QueueRoute,
   SkillsRoute: SkillsRoute,
   Tier1Route: Tier1Route,
+  AgentMerchRoute: AgentMerchRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
