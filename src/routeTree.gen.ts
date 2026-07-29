@@ -25,6 +25,8 @@ import { Route as AgentMerchRouteImport } from './routes/agent.merch'
 import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as ShopSlugRouteImport } from './routes/shop/$slug'
 import { Route as ShopCartRouteImport } from './routes/shop/cart'
+import { Route as ShopSearchRouteImport } from './routes/shop/search'
+import { Route as ShopWishlistRouteImport } from './routes/shop/wishlist'
 import { Route as ApiPrintifySubscriptionsRouteImport } from './routes/api/printify/subscriptions'
 import { Route as ApiPrintifyWebhooksRouteImport } from './routes/api/printify/webhooks'
 import { Route as ApiStoreCatalogRouteImport } from './routes/api/store/catalog'
@@ -111,6 +113,16 @@ const ShopCartRoute = ShopCartRouteImport.update({
   path: '/cart',
   getParentRoute: () => ShopRouteRoute,
 } as any)
+const ShopSearchRoute = ShopSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => ShopRouteRoute,
+} as any)
+const ShopWishlistRoute = ShopWishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => ShopRouteRoute,
+} as any)
 const ApiPrintifySubscriptionsRoute =
   ApiPrintifySubscriptionsRouteImport.update({
     id: '/api/printify/subscriptions',
@@ -154,6 +166,8 @@ export interface FileRoutesByFullPath {
   '/agent/merch': typeof AgentMerchRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/cart': typeof ShopCartRoute
+  '/shop/search': typeof ShopSearchRoute
+  '/shop/wishlist': typeof ShopWishlistRoute
   '/shop/': typeof ShopIndexRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
@@ -176,6 +190,8 @@ export interface FileRoutesByTo {
   '/agent/merch': typeof AgentMerchRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/cart': typeof ShopCartRoute
+  '/shop/search': typeof ShopSearchRoute
+  '/shop/wishlist': typeof ShopWishlistRoute
   '/shop': typeof ShopIndexRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
@@ -200,6 +216,8 @@ export interface FileRoutesById {
   '/agent/merch': typeof AgentMerchRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/cart': typeof ShopCartRoute
+  '/shop/search': typeof ShopSearchRoute
+  '/shop/wishlist': typeof ShopWishlistRoute
   '/shop/': typeof ShopIndexRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
@@ -225,6 +243,8 @@ export interface FileRouteTypes {
     | '/agent/merch'
     | '/shop/$slug'
     | '/shop/cart'
+    | '/shop/search'
+    | '/shop/wishlist'
     | '/shop/'
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
@@ -247,6 +267,8 @@ export interface FileRouteTypes {
     | '/agent/merch'
     | '/shop/$slug'
     | '/shop/cart'
+    | '/shop/search'
+    | '/shop/wishlist'
     | '/shop'
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
@@ -270,6 +292,8 @@ export interface FileRouteTypes {
     | '/agent/merch'
     | '/shop/$slug'
     | '/shop/cart'
+    | '/shop/search'
+    | '/shop/wishlist'
     | '/shop/'
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
@@ -412,6 +436,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopCartRouteImport
       parentRoute: typeof ShopRouteRoute
     }
+    '/shop/search': {
+      id: '/shop/search'
+      path: '/search'
+      fullPath: '/shop/search'
+      preLoaderRoute: typeof ShopSearchRouteImport
+      parentRoute: typeof ShopRouteRoute
+    }
+    '/shop/wishlist': {
+      id: '/shop/wishlist'
+      path: '/wishlist'
+      fullPath: '/shop/wishlist'
+      preLoaderRoute: typeof ShopWishlistRouteImport
+      parentRoute: typeof ShopRouteRoute
+    }
     '/api/printify/subscriptions': {
       id: '/api/printify/subscriptions'
       path: '/api/printify/subscriptions'
@@ -453,6 +491,8 @@ declare module '@tanstack/react-router' {
 interface ShopRouteRouteChildren {
   ShopSlugRoute: typeof ShopSlugRoute
   ShopCartRoute: typeof ShopCartRoute
+  ShopSearchRoute: typeof ShopSearchRoute
+  ShopWishlistRoute: typeof ShopWishlistRoute
   ShopIndexRoute: typeof ShopIndexRoute
   ShopCollectionsHandleRoute: typeof ShopCollectionsHandleRoute
 }
@@ -460,6 +500,8 @@ interface ShopRouteRouteChildren {
 const ShopRouteRouteChildren: ShopRouteRouteChildren = {
   ShopSlugRoute: ShopSlugRoute,
   ShopCartRoute: ShopCartRoute,
+  ShopSearchRoute: ShopSearchRoute,
+  ShopWishlistRoute: ShopWishlistRoute,
   ShopIndexRoute: ShopIndexRoute,
   ShopCollectionsHandleRoute: ShopCollectionsHandleRoute,
 }
