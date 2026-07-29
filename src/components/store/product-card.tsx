@@ -18,6 +18,7 @@ export function ProductCard({
   const add = useCartStore((s) => s.add);
   const toggleWish = useWishlistStore((s) => s.toggle);
   const wished = useWishlistStore((s) => s.has(product.id));
+  const hydrated = useWishlistStore((s) => s.hydrated);
 
   return (
     <article className="group flex flex-col">
@@ -44,15 +45,15 @@ export function ProductCard({
         </Link>
         <button
           type="button"
-          onClick={() => toggleWish(product.id)}
+          onClick={() => toggleWish(product)}
           className={cn(
             "absolute right-3 top-3 flex size-10 items-center justify-center rounded-full border border-border bg-bg/90 backdrop-blur-sm transition-colors",
-            wished ? "text-fg" : "text-muted hover:text-fg",
+            hydrated && wished ? "text-fg" : "text-muted hover:text-fg",
           )}
           aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}
-          aria-pressed={wished}
+          aria-pressed={hydrated && wished}
         >
-          <Heart className={cn("size-4", wished && "fill-current")} />
+          <Heart className={cn("size-4", hydrated && wished && "fill-current")} />
         </button>
       </div>
 

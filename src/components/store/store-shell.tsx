@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { CartDrawer } from "@/components/store/cart-drawer";
+import { WishlistHydrate } from "@/components/store/wishlist-hydrate";
 import { ShopSearch } from "@/components/store/shop-search";
 import { useCartStore } from "@/lib/store/cart";
 import { STORE_COLLECTIONS } from "@/lib/store/collections";
@@ -39,6 +40,7 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
   const openDrawer = useCartStore((s) => s.openDrawer);
   const count = useCartStore((s) => s.count());
   const wishCount = useWishlistStore((s) => s.count());
+  const wishHydrated = useWishlistStore((s) => s.hydrated);
   const [showSearch, setShowSearch] = useState(false);
 
   return (
@@ -113,7 +115,7 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
               aria-label={`Wishlist, ${wishCount} items`}
             >
               <Heart className="size-4" />
-              {wishCount > 0 ? (
+              {wishHydrated && wishCount > 0 ? (
                 <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-fg text-[10px] font-medium text-bg tabular">
                   {wishCount > 9 ? "9+" : wishCount}
                 </span>
@@ -225,6 +227,7 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
 
+      <WishlistHydrate />
       <CartDrawer />
     </div>
   );

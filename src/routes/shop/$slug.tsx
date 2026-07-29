@@ -170,7 +170,7 @@ function ProductDetailPage() {
             <Button
               variant="secondary"
               className="min-h-12"
-              onClick={() => toggleWish(product.id)}
+              onClick={() => toggleWish(product)}
               aria-pressed={wished}
             >
               <Heart className={wished ? "size-4 fill-current" : "size-4"} />
