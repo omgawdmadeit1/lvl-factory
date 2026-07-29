@@ -16,12 +16,18 @@ import { Route as MusicRouteImport } from './routes/music'
 import { Route as PayRouteImport } from './routes/pay'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as QueueRouteImport } from './routes/queue'
+import { Route as ShopRouteRouteImport } from './routes/shop/route'
 import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as Tier1RouteImport } from './routes/tier1'
 import { Route as WebhooksRouteImport } from './routes/webhooks'
 import { Route as AgentMerchRouteImport } from './routes/agent.merch'
+import { Route as ShopIndexRouteImport } from './routes/shop/index'
+import { Route as ShopSlugRouteImport } from './routes/shop/$slug'
+import { Route as ShopCartRouteImport } from './routes/shop/cart'
 import { Route as ApiPrintifySubscriptionsRouteImport } from './routes/api/printify/subscriptions'
 import { Route as ApiPrintifyWebhooksRouteImport } from './routes/api/printify/webhooks'
+import { Route as ApiStoreCatalogRouteImport } from './routes/api/store/catalog'
+import { Route as ShopCollectionsHandleRouteImport } from './routes/shop/collections.$handle'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +64,11 @@ const QueueRoute = QueueRouteImport.update({
   path: '/queue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopRouteRoute = ShopRouteRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SkillsRoute = SkillsRouteImport.update({
   id: '/skills',
   path: '/skills',
@@ -78,6 +89,21 @@ const AgentMerchRoute = AgentMerchRouteImport.update({
   path: '/agent/merch',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopIndexRoute = ShopIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ShopRouteRoute,
+} as any)
+const ShopSlugRoute = ShopSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ShopRouteRoute,
+} as any)
+const ShopCartRoute = ShopCartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => ShopRouteRoute,
+} as any)
 const ApiPrintifySubscriptionsRoute =
   ApiPrintifySubscriptionsRouteImport.update({
     id: '/api/printify/subscriptions',
@@ -89,9 +115,20 @@ const ApiPrintifyWebhooksRoute = ApiPrintifyWebhooksRouteImport.update({
   path: '/api/printify/webhooks',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStoreCatalogRoute = ApiStoreCatalogRouteImport.update({
+  id: '/api/store/catalog',
+  path: '/api/store/catalog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShopCollectionsHandleRoute = ShopCollectionsHandleRouteImport.update({
+  id: '/collections/$handle',
+  path: '/collections/$handle',
+  getParentRoute: () => ShopRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/shop': typeof ShopRouteRouteWithChildren
   '/canary': typeof CanaryRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
@@ -102,8 +139,13 @@ export interface FileRoutesByFullPath {
   '/tier1': typeof Tier1Route
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/shop/$slug': typeof ShopSlugRoute
+  '/shop/cart': typeof ShopCartRoute
+  '/shop/': typeof ShopIndexRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
+  '/api/store/catalog': typeof ApiStoreCatalogRoute
+  '/shop/collections/$handle': typeof ShopCollectionsHandleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -117,12 +159,18 @@ export interface FileRoutesByTo {
   '/tier1': typeof Tier1Route
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/shop/$slug': typeof ShopSlugRoute
+  '/shop/cart': typeof ShopCartRoute
+  '/shop': typeof ShopIndexRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
+  '/api/store/catalog': typeof ApiStoreCatalogRoute
+  '/shop/collections/$handle': typeof ShopCollectionsHandleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/shop': typeof ShopRouteRouteWithChildren
   '/canary': typeof CanaryRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
@@ -133,13 +181,19 @@ export interface FileRoutesById {
   '/tier1': typeof Tier1Route
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/shop/$slug': typeof ShopSlugRoute
+  '/shop/cart': typeof ShopCartRoute
+  '/shop/': typeof ShopIndexRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
+  '/api/store/catalog': typeof ApiStoreCatalogRoute
+  '/shop/collections/$handle': typeof ShopCollectionsHandleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/shop'
     | '/canary'
     | '/merch'
     | '/music'
@@ -150,8 +204,13 @@ export interface FileRouteTypes {
     | '/tier1'
     | '/webhooks'
     | '/agent/merch'
+    | '/shop/$slug'
+    | '/shop/cart'
+    | '/shop/'
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
+    | '/api/store/catalog'
+    | '/shop/collections/$handle'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -165,11 +224,17 @@ export interface FileRouteTypes {
     | '/tier1'
     | '/webhooks'
     | '/agent/merch'
+    | '/shop/$slug'
+    | '/shop/cart'
+    | '/shop'
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
+    | '/api/store/catalog'
+    | '/shop/collections/$handle'
   id:
     | '__root__'
     | '/'
+    | '/shop'
     | '/canary'
     | '/merch'
     | '/music'
@@ -180,12 +245,18 @@ export interface FileRouteTypes {
     | '/tier1'
     | '/webhooks'
     | '/agent/merch'
+    | '/shop/$slug'
+    | '/shop/cart'
+    | '/shop/'
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
+    | '/api/store/catalog'
+    | '/shop/collections/$handle'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ShopRouteRoute: typeof ShopRouteRouteWithChildren
   CanaryRoute: typeof CanaryRoute
   MerchRoute: typeof MerchRoute
   MusicRoute: typeof MusicRoute
@@ -198,6 +269,7 @@ export interface RootRouteChildren {
   AgentMerchRoute: typeof AgentMerchRoute
   ApiPrintifySubscriptionsRoute: typeof ApiPrintifySubscriptionsRoute
   ApiPrintifyWebhooksRoute: typeof ApiPrintifyWebhooksRoute
+  ApiStoreCatalogRoute: typeof ApiStoreCatalogRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -251,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QueueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/skills': {
       id: '/skills'
       path: '/skills'
@@ -279,6 +358,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentMerchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop/': {
+      id: '/shop/'
+      path: '/'
+      fullPath: '/shop/'
+      preLoaderRoute: typeof ShopIndexRouteImport
+      parentRoute: typeof ShopRouteRoute
+    }
+    '/shop/$slug': {
+      id: '/shop/$slug'
+      path: '/$slug'
+      fullPath: '/shop/$slug'
+      preLoaderRoute: typeof ShopSlugRouteImport
+      parentRoute: typeof ShopRouteRoute
+    }
+    '/shop/cart': {
+      id: '/shop/cart'
+      path: '/cart'
+      fullPath: '/shop/cart'
+      preLoaderRoute: typeof ShopCartRouteImport
+      parentRoute: typeof ShopRouteRoute
+    }
     '/api/printify/subscriptions': {
       id: '/api/printify/subscriptions'
       path: '/api/printify/subscriptions'
@@ -293,11 +393,44 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPrintifyWebhooksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/store/catalog': {
+      id: '/api/store/catalog'
+      path: '/api/store/catalog'
+      fullPath: '/api/store/catalog'
+      preLoaderRoute: typeof ApiStoreCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shop/collections/$handle': {
+      id: '/shop/collections/$handle'
+      path: '/collections/$handle'
+      fullPath: '/shop/collections/$handle'
+      preLoaderRoute: typeof ShopCollectionsHandleRouteImport
+      parentRoute: typeof ShopRouteRoute
+    }
   }
 }
 
+interface ShopRouteRouteChildren {
+  ShopSlugRoute: typeof ShopSlugRoute
+  ShopCartRoute: typeof ShopCartRoute
+  ShopIndexRoute: typeof ShopIndexRoute
+  ShopCollectionsHandleRoute: typeof ShopCollectionsHandleRoute
+}
+
+const ShopRouteRouteChildren: ShopRouteRouteChildren = {
+  ShopSlugRoute: ShopSlugRoute,
+  ShopCartRoute: ShopCartRoute,
+  ShopIndexRoute: ShopIndexRoute,
+  ShopCollectionsHandleRoute: ShopCollectionsHandleRoute,
+}
+
+const ShopRouteRouteWithChildren = ShopRouteRoute._addFileChildren(
+  ShopRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ShopRouteRoute: ShopRouteRouteWithChildren,
   CanaryRoute: CanaryRoute,
   MerchRoute: MerchRoute,
   MusicRoute: MusicRoute,
@@ -310,6 +443,7 @@ const rootRouteChildren: RootRouteChildren = {
   AgentMerchRoute: AgentMerchRoute,
   ApiPrintifySubscriptionsRoute: ApiPrintifySubscriptionsRoute,
   ApiPrintifyWebhooksRoute: ApiPrintifyWebhooksRoute,
+  ApiStoreCatalogRoute: ApiStoreCatalogRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
