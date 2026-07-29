@@ -1,36 +1,83 @@
 #!/usr/bin/env node
 /**
- * Apply Cloudflare WAF custom rules + rate limiting for Printify webhooks.
+ * Apply Cloudflare WAF custom rules + rate limiting for LVL Factory.
+ *
+ * Packs (RULE_PACK):
+ *   printify  — Printify webhooks (default)
+ *   shop-pay  — /shop, /api/store/*, /pay, /agent/*
+ *   all       — both packs merged
  *
  * Required env:
  *   CLOUDFLARE_API_TOKEN  — Zone WAF / Account rights
- *   CLOUDFLARE_ZONE_ID    — zone id for lvlltd.com
+ *   CLOUDFLARE_ZONE_ID    — zone id for lvlltd.com (or resolve by name)
  *
  * Optional:
- *   CLOUDFLARE_ZONE_NAME  — default lvlltd.com (used if ZONE_ID missing + list zones)
- *   ENABLE_SIGNATURE_RULE=1 — enable "require X-Pfy-Signature" custom rule
+ *   CLOUDFLARE_ZONE_NAME  — default lvlltd.com
+ *   RULE_PACK=printify|shop-pay|all
+ *   ENABLE_SIGNATURE_RULE=1 — enable Printify require X-Pfy-Signature
  *   DRY_RUN=1
  *
  * Usage:
  *   node scripts/apply-cloudflare-waf.mjs
+ *   RULE_PACK=shop-pay node scripts/apply-cloudflare-waf.mjs
+ *   RULE_PACK=all DRY_RUN=1 node scripts/apply-cloudflare-waf.mjs
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const rulesPath = join(__dirname, "../cloudflare/waf/printify-webhooks-rules.json");
+const wafDir = join(__dirname, "../cloudflare/waf");
+const packName = (process.env.RULE_PACK || "printify").toLowerCase();
 const dry = process.env.DRY_RUN === "1";
 const token = process.env.CLOUDFLARE_API_TOKEN?.trim();
 let zoneId = process.env.CLOUDFLARE_ZONE_ID?.trim();
 const zoneName = process.env.CLOUDFLARE_ZONE_NAME?.trim() || "lvlltd.com";
+
+const PACK_FILES = {
+  printify: "printify-webhooks-rules.json",
+  "shop-pay": "shop-pay-rules.json",
+  shop: "shop-pay-rules.json",
+  pay: "shop-pay-rules.json",
+};
+
+/** Description prefixes owned by LVL packs — preserved across applies */
+const LVL_PREFIXES = ["[lvl-pfy-", "[lvl-shop-", "[lvl-store-", "[lvl-pay-", "[lvl-agent-"];
+
+function isLvlRule(description) {
+  const d = String(description || "");
+  return LVL_PREFIXES.some((p) => d.includes(p));
+}
+
+function loadPacks() {
+  const names =
+    packName === "all"
+      ? ["printify", "shop-pay"]
+      : PACK_FILES[packName]
+        ? [packName === "shop" || packName === "pay" ? "shop-pay" : packName]
+        : null;
+  if (!names) {
+    console.error(
+      `Unknown RULE_PACK=${packName}. Use: printify | shop-pay | all`,
+    );
+    process.exit(1);
+  }
+  const packs = [];
+  for (const n of names) {
+    const file = PACK_FILES[n];
+    const path = join(wafDir, file);
+    if (!existsSync(path)) throw new Error(`Missing pack file: ${path}`);
+    packs.push({ name: n, cfg: JSON.parse(readFileSync(path, "utf8")) });
+  }
+  return packs;
+}
 
 if (!token) {
   console.error("CLOUDFLARE_API_TOKEN is required");
   process.exit(1);
 }
 
-const cfg = JSON.parse(readFileSync(rulesPath, "utf8"));
+const packs = loadPacks();
 
 async function cf(path, init = {}) {
   const res = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
@@ -44,7 +91,9 @@ async function cf(path, init = {}) {
   const body = await res.json().catch(() => ({}));
   if (!res.ok || body.success === false) {
     const err = body.errors || body;
-    throw new Error(`${init.method || "GET"} ${path} → ${res.status}: ${JSON.stringify(err)}`);
+    throw new Error(
+      `${init.method || "GET"} ${path} → ${res.status}: ${JSON.stringify(err)}`,
+    );
   }
   return body;
 }
@@ -59,12 +108,26 @@ async function resolveZone() {
   return zoneId;
 }
 
+function mapCustomRule(r) {
+  const enabled =
+    r.id === "lvl-pfy-require-signature-header"
+      ? process.env.ENABLE_SIGNATURE_RULE === "1" || r.enabled
+      : r.enabled;
+  return {
+    action: r.action,
+    expression: r.expression,
+    description: `[${r.id}] ${r.description}`,
+    enabled: Boolean(enabled),
+    ...(r.action === "skip" && r.action_parameters
+      ? { action_parameters: r.action_parameters }
+      : {}),
+  };
+}
+
 async function applyCustomRules(zid) {
-  // Entrypoint for custom rules: http_request_firewall_custom
   const entry = await cf(
     `/zones/${zid}/rulesets/phases/http_request_firewall_custom/entrypoint`,
   ).catch(async (e) => {
-    // Create empty if missing
     if (String(e.message).includes("10003") || String(e.message).includes("404")) {
       return { result: { rules: [] } };
     }
@@ -72,26 +135,10 @@ async function applyCustomRules(zid) {
   });
 
   const existing = entry.result?.rules || [];
-  const wanted = cfg.rules.map((r) => {
-    const enabled =
-      r.id === "lvl-pfy-require-signature-header"
-        ? process.env.ENABLE_SIGNATURE_RULE === "1" || r.enabled
-        : r.enabled;
-    return {
-      action: r.action,
-      expression: r.expression,
-      description: `[${r.id}] ${r.description}`,
-      enabled: Boolean(enabled),
-      ...(r.action === "skip" && r.action_parameters
-        ? { action_parameters: r.action_parameters }
-        : {}),
-    };
-  });
+  const wanted = packs.flatMap((p) => p.cfg.rules.map(mapCustomRule));
 
-  // Merge: replace rules with our description prefix [lvl-pfy-
-  const kept = existing.filter(
-    (r) => !String(r.description || "").includes("[lvl-pfy-"),
-  );
+  // Drop previous LVL rules; keep non-LVL; append wanted
+  const kept = existing.filter((r) => !isLvlRule(r.description));
   const rules = [...kept, ...wanted];
 
   console.log(
@@ -99,7 +146,9 @@ async function applyCustomRules(zid) {
     rules.length,
     "custom rules (",
     wanted.length,
-    "LVL)",
+    "LVL from packs:",
+    packs.map((p) => p.name).join("+"),
+    ")",
   );
 
   if (dry) {
@@ -107,7 +156,6 @@ async function applyCustomRules(zid) {
     return;
   }
 
-  // Prefer ruleset id from entrypoint
   const rulesetId = entry.result?.id;
   if (rulesetId) {
     await cf(`/zones/${zid}/rulesets/${rulesetId}`, {
@@ -118,7 +166,7 @@ async function applyCustomRules(zid) {
     await cf(`/zones/${zid}/rulesets`, {
       method: "POST",
       body: JSON.stringify({
-        name: "LVL Factory Printify WAF",
+        name: "LVL Factory WAF",
         kind: "zone",
         phase: "http_request_firewall_custom",
         rules,
@@ -129,84 +177,83 @@ async function applyCustomRules(zid) {
 }
 
 async function applyRateLimits(zid) {
-  // Rate limiting rules API (v2)
-  for (const rl of cfg.rate_limiting_rules || []) {
-    const body = {
-      description: `[${rl.id}] ${rl.description}`,
-      expression: rl.expression,
+  const allRl = packs.flatMap((p) => p.cfg.rate_limiting_rules || []);
+  if (!allRl.length) return;
+
+  // Build full desired set and put once (avoids last-write-wins bugs)
+  const desired = allRl.map((rl) => ({
+    action: "block",
+    expression: rl.expression,
+    description: `[${rl.id}] ${rl.description}`,
+    enabled: rl.enabled !== false,
+    ratelimit: {
       characteristics: rl.characteristics || ["ip.src"],
       period: rl.period,
       requests_per_period: rl.requests_per_period,
       mitigation_timeout: rl.mitigation_timeout ?? 60,
-      action: { mode: rl.action || "block" },
-      enabled: rl.enabled !== false,
-      match: {
-        request: {
-          methods: undefined,
-        },
-      },
-    };
+    },
+  }));
 
-    // List existing rate limit rules (zone)
-    // Cloudflare Rate Limiting Rules (new) live under rulesets phase http_ratelimit
-    console.log(dry ? "DRY_RUN rate limit" : "Upsert rate limit", rl.id);
+  console.log(
+    dry ? "DRY_RUN rate limits" : "Upsert rate limits",
+    desired.length,
+  );
 
-    if (dry) {
-      console.log(JSON.stringify(body, null, 2));
-      continue;
+  if (dry) {
+    console.log(JSON.stringify(desired, null, 2));
+    return;
+  }
+
+  try {
+    const phase = await cf(
+      `/zones/${zid}/rulesets/phases/http_ratelimit/entrypoint`,
+    );
+    const existing = phase.result?.rules || [];
+    const kept = existing.filter((r) => !isLvlRule(r.description));
+    const rules = [...kept, ...desired];
+    if (phase.result?.id) {
+      await cf(`/zones/${zid}/rulesets/${phase.result.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ rules }),
+      });
+    } else {
+      await cf(`/zones/${zid}/rulesets`, {
+        method: "POST",
+        body: JSON.stringify({
+          name: "LVL rate limits",
+          kind: "zone",
+          phase: "http_ratelimit",
+          rules,
+        }),
+      });
     }
-
-    try {
-      const phase = await cf(
-        `/zones/${zid}/rulesets/phases/http_ratelimit/entrypoint`,
-      );
-      const existing = phase.result?.rules || [];
-      const kept = existing.filter(
-        (r) => !String(r.description || "").includes(`[${rl.id}]`),
-      );
-      const rule = {
-        action: "block",
-        expression: rl.expression,
-        description: `[${rl.id}] ${rl.description}`,
-        enabled: rl.enabled !== false,
-        ratelimit: {
-          characteristics: rl.characteristics || ["ip.src"],
-          period: rl.period,
-          requests_per_period: rl.requests_per_period,
-          mitigation_timeout: rl.mitigation_timeout ?? 60,
-        },
-      };
-      const rules = [...kept, rule];
-      if (phase.result?.id) {
-        await cf(`/zones/${zid}/rulesets/${phase.result.id}`, {
-          method: "PUT",
-          body: JSON.stringify({ rules }),
-        });
-      } else {
-        await cf(`/zones/${zid}/rulesets`, {
-          method: "POST",
-          body: JSON.stringify({
-            name: "LVL rate limits",
-            kind: "zone",
-            phase: "http_ratelimit",
-            rules,
-          }),
-        });
-      }
-      console.log("Rate limit OK", rl.id);
-    } catch (e) {
-      console.warn(
-        "Rate limit API note (plan may use classic rate limiting):",
-        e.message,
-      );
-      // Fallback: classic rate_limits endpoint
+    console.log("Rate limit ruleset OK", desired.length, "rules");
+  } catch (e) {
+    console.warn(
+      "Rate limit ruleset API note (plan may use classic rate limiting):",
+      e.message,
+    );
+    for (const rl of allRl) {
       try {
+        // Derive path pattern from expression when possible
+        let urlPattern = `*factory.lvlltd.com/*`;
+        if (rl.expression.includes("/api/printify/")) {
+          urlPattern = `*factory.lvlltd.com/api/printify/*`;
+        } else if (rl.expression.includes("/api/store/")) {
+          urlPattern = `*factory.lvlltd.com/api/store/*`;
+        } else if (rl.expression.includes("/shop")) {
+          urlPattern = `*factory.lvlltd.com/shop*`;
+        } else if (rl.expression.includes("/pay")) {
+          urlPattern = `*factory.lvlltd.com/pay*`;
+        } else if (rl.expression.includes("/agent/")) {
+          urlPattern = `*factory.lvlltd.com/agent/*`;
+        }
         await cf(`/zones/${zid}/rate_limits`, {
           method: "POST",
           body: JSON.stringify({
             match: {
               request: {
-                url_pattern: `*factory.lvlltd.com/api/printify/*`,
+                url_pattern: urlPattern,
               },
             },
             threshold: rl.requests_per_period,
@@ -216,7 +263,12 @@ async function applyRateLimits(zid) {
               timeout: rl.mitigation_timeout ?? 60,
               response: {
                 content_type: "application/json",
-                body: JSON.stringify({ ok: false, error: "rate_limited", waf: "cloudflare" }),
+                body: JSON.stringify({
+                  ok: false,
+                  error: "rate_limited",
+                  waf: "cloudflare",
+                  rule: rl.id,
+                }),
               },
             },
             disabled: rl.enabled === false,
@@ -225,7 +277,7 @@ async function applyRateLimits(zid) {
         });
         console.log("Classic rate_limit created", rl.id);
       } catch (e2) {
-        console.warn("Classic rate_limit failed:", e2.message);
+        console.warn("Classic rate_limit failed:", rl.id, e2.message);
       }
     }
   }
@@ -233,10 +285,16 @@ async function applyRateLimits(zid) {
 
 async function main() {
   const zid = await resolveZone();
-  console.log("Zone", zid);
+  console.log("Zone", zid, "pack", packName);
   await applyCustomRules(zid);
   await applyRateLimits(zid);
-  console.log("Done. Deploy worker WAF: wrangler deploy -c cloudflare/workers/lvl-factory-proxy/wrangler.toml");
+  console.log(
+    "Done. Packs:",
+    packs.map((p) => p.name).join(", "),
+  );
+  console.log(
+    "Worker WAF (Printify): wrangler deploy -c cloudflare/workers/lvl-factory-proxy/wrangler.toml",
+  );
 }
 
 main().catch((e) => {

@@ -1,0 +1,225 @@
+{
+  "$schema_note": "Cloudflare Custom Rules + Rate Limiting for LVL Store (/shop), store APIs (/api/store/*), and multi-rail pay (/pay). Apply with: RULE_PACK=shop-pay node scripts/apply-cloudflare-waf.mjs — or paste into Dashboard → Security → WAF / Rate limiting rules.",
+  "zone_name": "lvlltd.com",
+  "host": "factory.lvlltd.com",
+  "description": "LVL Store + Pay edge WAF / DDoS companion (human + agent traffic)",
+  "scope": {
+    "shop_paths": ["/shop", "/shop/*"],
+    "store_api_paths": ["/api/store/*"],
+    "pay_paths": ["/pay", "/pay/*"],
+    "agent_paths": ["/agent/merch", "/agent/*"],
+    "notes": [
+      "Do not challenge legitimate multi-rail redirects harshly on /pay POST if payment providers POST back without JS.",
+      "Prefer managed_challenge over hard block on shop browse for high threat_score.",
+      "Agent catalog JSON should stay GET-friendly; rate-limit, don't bot-block aggressively.",
+      "Static mockups resolved to S3: L7 rules here do not apply to pfy-prod-automaton-cache.s3 — only factory host."
+    ]
+  },
+  "rules": [
+    {
+      "id": "lvl-shop-block-bad-methods",
+      "description": "Shop: allow only safe HTTP methods on /shop",
+      "enabled": true,
+      "action": "block",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/shop\") and not http.request.method in {\"GET\" \"HEAD\" \"OPTIONS\"})",
+      "action_parameters": {},
+      "note": "Storefront is read-only at the edge; cart is client-side. Blocks odd verbs used in scanners."
+    },
+    {
+      "id": "lvl-shop-challenge-high-threat",
+      "description": "Shop: managed challenge high threat scores on /shop",
+      "enabled": true,
+      "action": "managed_challenge",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/shop\") and cf.threat_score gt 25)",
+      "action_parameters": {},
+      "note": "Browsers can solve challenges. Raise threshold to 40 if false positives."
+    },
+    {
+      "id": "lvl-shop-challenge-suspicious-ua",
+      "description": "Shop: challenge empty or scripted User-Agents on product paths",
+      "enabled": true,
+      "action": "managed_challenge",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/shop\") and http.request.method eq \"GET\" and (not len(http.user_agent) gt 0 or http.user_agent contains \"sqlmap\" or http.user_agent contains \"nikto\" or http.user_agent contains \"masscan\"))",
+      "action_parameters": {},
+      "note": "Light UA filter; real bots for SEO may need allowlist later."
+    },
+    {
+      "id": "lvl-store-api-block-bad-methods",
+      "description": "Store API: only GET/HEAD/OPTIONS/POST on /api/store/*",
+      "enabled": true,
+      "action": "block",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/api/store/\") and not http.request.method in {\"GET\" \"HEAD\" \"OPTIONS\" \"POST\"})",
+      "action_parameters": {}
+    },
+    {
+      "id": "lvl-store-api-block-oversized-post",
+      "description": "Store API: block POST bodies > 64KB on /api/store/*",
+      "enabled": true,
+      "action": "block",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/api/store/\") and http.request.method eq \"POST\" and http.request.body.size gt 65536)",
+      "action_parameters": {},
+      "note": "Warm/image admin POSTs stay small; raise if you add bulk warm endpoints."
+    },
+    {
+      "id": "lvl-store-api-challenge-scanners",
+      "description": "Store API: challenge high threat on non-essential store paths",
+      "enabled": true,
+      "action": "managed_challenge",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/api/store/\") and cf.threat_score gt 40 and not http.request.uri.path eq \"/api/store/catalog\")",
+      "action_parameters": {},
+      "note": "Leaves /api/store/catalog easier for agents (still rate-limited)."
+    },
+    {
+      "id": "lvl-store-image-block-non-get",
+      "description": "Image proxy: only GET/HEAD on /api/store/image",
+      "enabled": true,
+      "action": "block",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and http.request.uri.path eq \"/api/store/image\" and not http.request.method in {\"GET\" \"HEAD\" \"OPTIONS\"})",
+      "action_parameters": {}
+    },
+    {
+      "id": "lvl-pay-block-bad-methods",
+      "description": "Pay: allow GET/HEAD/POST/OPTIONS only on /pay",
+      "enabled": true,
+      "action": "block",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/pay\") and not http.request.method in {\"GET\" \"HEAD\" \"POST\" \"OPTIONS\"})",
+      "action_parameters": {}
+    },
+    {
+      "id": "lvl-pay-block-oversized-post",
+      "description": "Pay: block POST bodies > 256KB",
+      "enabled": true,
+      "action": "block",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/pay\") and http.request.method eq \"POST\" and http.request.body.size gt 262144)",
+      "action_parameters": {}
+    },
+    {
+      "id": "lvl-pay-challenge-high-threat-get",
+      "description": "Pay: managed challenge high threat on GET /pay (not POST callbacks)",
+      "enabled": true,
+      "action": "managed_challenge",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/pay\") and http.request.method eq \"GET\" and cf.threat_score gt 30)",
+      "action_parameters": {},
+      "note": "POST left unchallenged for payment provider / wallet return paths."
+    },
+    {
+      "id": "lvl-pay-skip-bot-fight-post",
+      "description": "Pay: skip Bot Fight products on POST /pay (provider callbacks)",
+      "enabled": true,
+      "action": "skip",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/pay\") and http.request.method eq \"POST\")",
+      "action_parameters": {
+        "products": ["bic", "hot", "securityLevel", "uaBlock", "zoneLockdown"]
+      },
+      "note": "Does NOT skip rateLimit — payment POST still rate-limited below."
+    },
+    {
+      "id": "lvl-agent-challenge-high-threat",
+      "description": "Agent UI: challenge high threat on /agent/* browse",
+      "enabled": true,
+      "action": "managed_challenge",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/agent/\") and cf.threat_score gt 50 and http.request.method eq \"GET\")",
+      "action_parameters": {},
+      "note": "Higher threshold so headless agents with normal scores still pass."
+    }
+  ],
+  "rate_limiting_rules": [
+    {
+      "id": "lvl-shop-rl-browse",
+      "description": "Shop: 300 GET/min per IP on /shop",
+      "enabled": true,
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/shop\") and http.request.method in {\"GET\" \"HEAD\"})",
+      "characteristics": ["ip.src"],
+      "period": 60,
+      "requests_per_period": 300,
+      "mitigation_timeout": 60,
+      "action": "block",
+      "note": "Generous for humans; stops crude scrapers. Use managed_challenge action if plan supports."
+    },
+    {
+      "id": "lvl-store-rl-catalog",
+      "description": "Store API: 120 GET/min per IP on /api/store/catalog",
+      "enabled": true,
+      "expression": "(http.host eq \"factory.lvlltd.com\" and http.request.uri.path eq \"/api/store/catalog\" and http.request.method eq \"GET\")",
+      "characteristics": ["ip.src"],
+      "period": 60,
+      "requests_per_period": 120,
+      "mitigation_timeout": 120,
+      "action": "block",
+      "note": "Agent-friendly catalog poll budget."
+    },
+    {
+      "id": "lvl-store-rl-image",
+      "description": "Image proxy: 240 GET/min per IP on /api/store/image",
+      "enabled": true,
+      "expression": "(http.host eq \"factory.lvlltd.com\" and http.request.uri.path eq \"/api/store/image\" and http.request.method eq \"GET\")",
+      "characteristics": ["ip.src"],
+      "period": 60,
+      "requests_per_period": 240,
+      "mitigation_timeout": 60,
+      "action": "block",
+      "note": "Product grids ~6–12 images; 240/min leaves headroom. Prefer CDN cache so this rarely fires."
+    },
+    {
+      "id": "lvl-store-rl-api-other",
+      "description": "Store API: 60 req/min per IP on other /api/store/*",
+      "enabled": true,
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/api/store/\") and not http.request.uri.path eq \"/api/store/catalog\" and not http.request.uri.path eq \"/api/store/image\")",
+      "characteristics": ["ip.src"],
+      "period": 60,
+      "requests_per_period": 60,
+      "mitigation_timeout": 120,
+      "action": "block"
+    },
+    {
+      "id": "lvl-pay-rl-get",
+      "description": "Pay: 60 GET/min per IP on /pay",
+      "enabled": true,
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/pay\") and http.request.method eq \"GET\")",
+      "characteristics": ["ip.src"],
+      "period": 60,
+      "requests_per_period": 60,
+      "mitigation_timeout": 120,
+      "action": "block"
+    },
+    {
+      "id": "lvl-pay-rl-post",
+      "description": "Pay: 30 POST/min per IP on /pay",
+      "enabled": true,
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/pay\") and http.request.method eq \"POST\")",
+      "characteristics": ["ip.src"],
+      "period": 60,
+      "requests_per_period": 30,
+      "mitigation_timeout": 300,
+      "action": "block",
+      "note": "Tight against carding / settle spam; raise if legitimate multi-rail retries need more."
+    },
+    {
+      "id": "lvl-agent-rl-get",
+      "description": "Agent: 90 GET/min per IP on /agent/*",
+      "enabled": true,
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/agent/\") and http.request.method eq \"GET\")",
+      "characteristics": ["ip.src"],
+      "period": 60,
+      "requests_per_period": 90,
+      "mitigation_timeout": 60,
+      "action": "block"
+    }
+  ],
+  "under_attack_mode": {
+    "recommendation": "If Under Attack Mode is enabled zone-wide, add skips or path exceptions for /api/printify/webhooks POST and carefully test /pay POST callbacks.",
+    "exclude_paths_from_challenge": [
+      "/api/printify/webhooks",
+      "/pay (POST only — prefer custom rule skip over global UAM)"
+    ]
+  },
+  "dashboard_checklist": [
+    "DNS: factory.lvlltd.com orange-cloud (proxied)",
+    "Security → Settings: Bot Fight Mode on; ensure webhook/pay POST skips remain",
+    "Security → WAF → Custom rules: import rules with [lvl-shop-|lvl-store-|lvl-pay-|lvl-agent-] ids",
+    "Security → WAF → Rate limiting rules: import rate_limiting_rules",
+    "Caching: Cache Rules for /shop static assets if not already; API paths bypass cache",
+    "Notifications: enable DDoS / WAF alerts to ops email",
+    "Do not grey-cloud origin; do not publish *.vercel.app in public docs"
+  ]
+}

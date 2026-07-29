@@ -152,6 +152,23 @@ Pipeline stages: `brief` → `imagine` → `mockup` → `printify_draft` → `re
 Install all topics from `/webhooks` → **Install all topics** (requires token + shop id).
 Local QA without Printify: **Local simulate** on the same page.
 
+## Cloudflare WAF (shop + pay)
+
+Pack: [`cloudflare/waf/shop-pay-rules.json`](cloudflare/waf/shop-pay-rules.json)
+
+| Path | Protection |
+|------|------------|
+| `/shop` | Method allowlist, threat challenge, 300 GET/min/IP |
+| `/api/store/catalog` | Agent-friendly, 120 GET/min/IP |
+| `/api/store/image` | GET only, 240/min/IP |
+| `/pay` | GET challenge; POST skip bot-fight; 30 POST/min/IP |
+| `/agent/*` | Soft challenge, 90 GET/min/IP |
+
+```bash
+RULE_PACK=shop-pay node scripts/apply-cloudflare-waf.mjs
+RULE_PACK=all node scripts/apply-cloudflare-waf.mjs
+```
+
 ## Cloudflare WAF (Printify webhooks)
 
 | Layer | Location |
