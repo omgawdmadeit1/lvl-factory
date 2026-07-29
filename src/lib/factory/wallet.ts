@@ -498,9 +498,10 @@ export function checkoutPageUrl(): string {
 export const ETHEREUM_MAINNET: MainnetId = "ethereum";
 
 export function networksForUi(): NetworkRail[] {
+  // Base first — default LVL / x402 rail for lvlltd.com
   const order: MainnetId[] = [
-    "ethereum",
     "base",
+    "ethereum",
     "solana",
     "arbitrum",
     "optimism",

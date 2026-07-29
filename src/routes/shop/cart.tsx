@@ -160,6 +160,7 @@ function CartPage() {
                     skill: lines[0]?.sku ?? "merch",
                     amount: agentTotal || subtotal,
                     canceled: false,
+                    sku: lines[0]?.sku,
                   }}
                 >
                   <Wallet className="size-4" />

@@ -27,6 +27,7 @@ import { Route as ShopSlugRouteImport } from './routes/shop/$slug'
 import { Route as ShopCartRouteImport } from './routes/shop/cart'
 import { Route as ShopSearchRouteImport } from './routes/shop/search'
 import { Route as ShopWishlistRouteImport } from './routes/shop/wishlist'
+import { Route as ApiPayOptionsRouteImport } from './routes/api/pay/options'
 import { Route as ApiPrintifySubscriptionsRouteImport } from './routes/api/printify/subscriptions'
 import { Route as ApiPrintifyWebhooksRouteImport } from './routes/api/printify/webhooks'
 import { Route as ApiStoreCatalogRouteImport } from './routes/api/store/catalog'
@@ -123,6 +124,11 @@ const ShopWishlistRoute = ShopWishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => ShopRouteRoute,
 } as any)
+const ApiPayOptionsRoute = ApiPayOptionsRouteImport.update({
+  id: '/api/pay/options',
+  path: '/api/pay/options',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPrintifySubscriptionsRoute =
   ApiPrintifySubscriptionsRouteImport.update({
     id: '/api/printify/subscriptions',
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/shop/search': typeof ShopSearchRoute
   '/shop/wishlist': typeof ShopWishlistRoute
   '/shop/': typeof ShopIndexRoute
+  '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
   '/api/store/catalog': typeof ApiStoreCatalogRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/shop/search': typeof ShopSearchRoute
   '/shop/wishlist': typeof ShopWishlistRoute
   '/shop': typeof ShopIndexRoute
+  '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
   '/api/store/catalog': typeof ApiStoreCatalogRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/shop/search': typeof ShopSearchRoute
   '/shop/wishlist': typeof ShopWishlistRoute
   '/shop/': typeof ShopIndexRoute
+  '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
   '/api/store/catalog': typeof ApiStoreCatalogRoute
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/shop/search'
     | '/shop/wishlist'
     | '/shop/'
+    | '/api/pay/options'
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
     | '/api/store/catalog'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/shop/search'
     | '/shop/wishlist'
     | '/shop'
+    | '/api/pay/options'
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
     | '/api/store/catalog'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/shop/search'
     | '/shop/wishlist'
     | '/shop/'
+    | '/api/pay/options'
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
     | '/api/store/catalog'
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   Tier1Route: typeof Tier1Route
   WebhooksRoute: typeof WebhooksRoute
   AgentMerchRoute: typeof AgentMerchRoute
+  ApiPayOptionsRoute: typeof ApiPayOptionsRoute
   ApiPrintifySubscriptionsRoute: typeof ApiPrintifySubscriptionsRoute
   ApiPrintifyWebhooksRoute: typeof ApiPrintifyWebhooksRoute
   ApiStoreCatalogRoute: typeof ApiStoreCatalogRoute
@@ -450,6 +463,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopWishlistRouteImport
       parentRoute: typeof ShopRouteRoute
     }
+    '/api/pay/options': {
+      id: '/api/pay/options'
+      path: '/api/pay/options'
+      fullPath: '/api/pay/options'
+      preLoaderRoute: typeof ApiPayOptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/printify/subscriptions': {
       id: '/api/printify/subscriptions'
       path: '/api/printify/subscriptions'
@@ -524,6 +544,7 @@ const rootRouteChildren: RootRouteChildren = {
   Tier1Route: Tier1Route,
   WebhooksRoute: WebhooksRoute,
   AgentMerchRoute: AgentMerchRoute,
+  ApiPayOptionsRoute: ApiPayOptionsRoute,
   ApiPrintifySubscriptionsRoute: ApiPrintifySubscriptionsRoute,
   ApiPrintifyWebhooksRoute: ApiPrintifyWebhooksRoute,
   ApiStoreCatalogRoute: ApiStoreCatalogRoute,

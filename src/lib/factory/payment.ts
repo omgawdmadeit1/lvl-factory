@@ -1,10 +1,10 @@
 /**
- * Multi-rail payments for lvlltd.com
+ * Multi-rail payments for lvlltd.com / factory.lvlltd.com
  * - Crypto: buyer picks any supported MAINNET + asset (no testnets)
- *   EVM: Ethereum, Base, Arbitrum, Optimism, Polygon
+ *   EVM: Base (default), Ethereum, Arbitrum, Optimism, Polygon
  *   Solana mainnet: USDC / USDT / SOL
- * - Card: Stripe Payment Links (live)
- * - Default recommended rail remains Base USDC for agents / x402
+ * - Card: Stripe Payment Links (live fixed tiers + crypto for exact face)
+ * - Default recommended rail: Base USDC for agents / x402
  */
 
 export const TREASURY_EVM = "0xa00876513bAA433ce2B58A5341Fd06d2b6f9A6ED" as const;
@@ -29,7 +29,6 @@ function readTreasurySol(): string {
 export const TREASURY_SOL = readTreasurySol();
 
 export function isValidSolanaAddress(addr: string): boolean {
-  // base58, 32–44 chars typical
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr);
 }
 
@@ -144,8 +143,8 @@ export const NETWORKS: NetworkRail[] = [
     chainId: 42161,
     networkCaip2: "eip155:42161",
     nativeSymbol: "ETH",
-    explorerTx: "https://arbiscan.io/tx/",
-    explorerAddress: "https://arbiscan.io/address/",
+    explorerTx: "https://arbiscan.org/tx/",
+    explorerAddress: "https://arbiscan.org/address/",
     rpcHint: "https://arb1.arbitrum.io/rpc",
     isTestnet: false,
     family: "evm",
@@ -243,7 +242,6 @@ export const NETWORKS: NetworkRail[] = [
   {
     id: "solana",
     name: "Solana",
-    /** 101 = mainnet-beta cluster id (non-EVM) */
     chainId: 101,
     networkCaip2: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
     nativeSymbol: "SOL",
@@ -293,7 +291,7 @@ export function getSolanaAsset(symbol: SolanaAssetSymbol): {
   };
 }
 
-/** Live Stripe Payment Links (lvl X, Inc. — created 2026-07-29) */
+/** Live Stripe Payment Links (lvl X, Inc.) */
 export const STRIPE_LINKS = {
   canary50c: {
     url: "https://buy.stripe.com/4gM28r6Ap4QSb1126dgUM00",
@@ -301,12 +299,14 @@ export const STRIPE_LINKS = {
     priceId: "price_1TyaNTE6xjYB5uvsQ14RMx4y",
     productId: "prod_UyXSBjqYuZiLLh",
     skillId: "agent-x402-first-buy",
+    label: "Card canary",
   },
   unlock99c: {
     url: "https://buy.stripe.com/3cI5kDf6Vbfg2uv4elgUM01",
     priceUsd: 0.99,
     priceId: "price_1TyaNUE6xjYB5uvsfyqWJvSX",
     productId: "prod_UyXSuY7SG6bD5j",
+    label: "Starter unlock",
   },
   account: "acct_1TVJoWE6xjYB5uvs",
   minUsd: 0.5,
@@ -328,10 +328,12 @@ export const LVL_PAYMENT = {
   decimals: 6 as const,
   protocol: "x402" as const,
   explorerTx: "https://basescan.org/tx/" as const,
-  label: "Multi-rail · EVM + Solana · Stripe" as const,
+  label: "Multi-rail · Base USDC default · EVM + Solana · Stripe" as const,
   multiRail: true as const,
   stripeEnabled: true as const,
   solanaEnabled: true as const,
+  factoryPay: "https://factory.lvlltd.com/pay" as const,
+  apexPay: "https://lvlltd.com/pay" as const,
 } as const;
 
 export function getNetwork(id: MainnetId): NetworkRail {
@@ -397,6 +399,43 @@ export interface ChosenRail {
   stripeUrl?: string;
   family?: "evm" | "solana";
   note: string;
+  exactFace?: boolean;
+}
+
+/** Append Stripe Payment Link metadata for reconciliation */
+export function stripeUrlWithMeta(
+  baseUrl: string,
+  opts?: { skill?: string; sku?: string; amountUsd?: number; origin?: string },
+): string {
+  try {
+    const u = new URL(baseUrl);
+    const ref = [opts?.sku, opts?.skill, opts?.amountUsd?.toFixed(2)]
+      .filter(Boolean)
+      .join("|")
+      .slice(0, 200);
+    if (ref) u.searchParams.set("client_reference_id", ref);
+    const origin =
+      opts?.origin ??
+      (typeof window !== "undefined"
+        ? window.location.origin
+        : "https://factory.lvlltd.com");
+    const success = new URL("/pay", origin);
+    success.searchParams.set("skill", opts?.skill ?? "paid");
+    if (opts?.sku) success.searchParams.set("sku", opts.sku);
+    if (opts?.amountUsd != null) {
+      success.searchParams.set("amount", String(opts.amountUsd));
+    }
+    success.searchParams.set("canceled", "false");
+    success.searchParams.set("paid", "stripe");
+    u.searchParams.set("success_url", success.toString());
+    const cancel = new URL(success.toString());
+    cancel.searchParams.set("canceled", "true");
+    cancel.searchParams.delete("paid");
+    u.searchParams.set("cancel_url", cancel.toString());
+    return u.toString();
+  } catch {
+    return baseUrl;
+  }
 }
 
 export function buildCryptoChoice(
@@ -406,7 +445,9 @@ export function buildCryptoChoice(
 ): ChosenRail {
   const n = getNetwork(networkId);
   const a = getAsset(networkId, asset);
-  const payTo = n.family === "solana" ? TREASURY_SOL || "(set VITE_TREASURY_SOL)" : TREASURY_EVM;
+  const payTo =
+    n.family === "solana" ? TREASURY_SOL || "(set VITE_TREASURY_SOL)" : TREASURY_EVM;
+  const exact = asset === "USDC" || asset === "USDT";
   return {
     method: "crypto",
     networkId,
@@ -420,27 +461,134 @@ export function buildCryptoChoice(
     amountLabel: formatAssetAmount(amountUsd, asset),
     explorerTx: n.explorerTx,
     family: n.family,
+    exactFace: exact,
     note:
       n.family === "solana"
-        ? asset === "USDC" || asset === "USDT"
+        ? exact
           ? `Send exactly ${amountUsd.toFixed(2)} ${asset} (SPL) on Solana mainnet to payTo. Keep a little SOL for fees.`
           : `Send SOL worth ~$${amountUsd.toFixed(2)} on Solana mainnet. Prefer USDC for exact face.`
-        : asset === "USDC" || asset === "USDT"
+        : exact
           ? `Send exactly ${amountUsd.toFixed(2)} ${asset} on ${n.name} (mainnet) to payTo. Gas is paid in ${n.nativeSymbol}.`
           : `Send ${n.nativeSymbol} worth ~$${amountUsd.toFixed(2)} on ${n.name} mainnet to payTo. Prefer USDC for exact face amount.`,
   };
 }
 
-export function buildStripeChoice(amountUsd: number, skillId?: string): ChosenRail {
+export function buildStripeChoice(
+  amountUsd: number,
+  skillId?: string,
+  opts?: { sku?: string; origin?: string },
+): ChosenRail {
   const useCanary =
     skillId === "agent-x402-first-buy" || amountUsd <= 0.5;
   const link = useCanary ? STRIPE_LINKS.canary50c : STRIPE_LINKS.unlock99c;
+  const exact = Math.abs(amountUsd - link.priceUsd) < 0.001;
+  const url = stripeUrlWithMeta(link.url, {
+    skill: skillId,
+    sku: opts?.sku,
+    amountUsd,
+    origin: opts?.origin,
+  });
   return {
     method: "stripe",
     amountUsd: link.priceUsd,
     amountLabel: formatFaceUsd(link.priceUsd),
-    stripeUrl: link.url,
-    note: `Card / Apple Pay / Google Pay via Stripe (min $${STRIPE_LINKS.minUsd.toFixed(2)}). Crypto canary stays $0.05 if you prefer wallet.`,
+    stripeUrl: url,
+    exactFace: exact,
+    note: exact
+      ? `Card checkout ${formatFaceUsd(link.priceUsd)} via Stripe (Apple Pay / Google Pay supported).`
+      : `Card links are fixed tiers (${formatFaceUsd(STRIPE_LINKS.canary50c.priceUsd)} / ${formatFaceUsd(STRIPE_LINKS.unlock99c.priceUsd)}). Face ${formatFaceUsd(amountUsd)} is exact on crypto (Base USDC recommended).`,
+  };
+}
+
+/** Public catalog of payment options for agents / store UI */
+export function listPaymentOptions(opts?: {
+  amountUsd?: number;
+  skill?: string;
+  sku?: string;
+  origin?: string;
+}) {
+  const amountUsd =
+    opts?.amountUsd != null && opts.amountUsd > 0 ? opts.amountUsd : 0.05;
+  const origin = opts?.origin ?? "https://factory.lvlltd.com";
+  const defaultCrypto = buildCryptoChoice(
+    DEFAULT_RAIL.networkId,
+    DEFAULT_RAIL.asset,
+    amountUsd,
+  );
+  return {
+    ok: true as const,
+    domain: "lvlltd.com",
+    factory: "https://factory.lvlltd.com",
+    pay_url: `${origin}/pay`,
+    face_usd: amountUsd,
+    skill: opts?.skill ?? null,
+    sku: opts?.sku ?? null,
+    default_rail: {
+      method: "crypto" as const,
+      network: DEFAULT_RAIL.networkId,
+      asset: DEFAULT_RAIL.asset,
+      payTo: TREASURY_EVM,
+      chainId: 8453,
+      amount_label: defaultCrypto.amountLabel,
+      note: "Preferred for agents and merch exact face",
+    },
+    crypto_networks: NETWORKS.map((n) => ({
+      id: n.id,
+      name: n.name,
+      chainId: n.chainId,
+      family: n.family,
+      caip2: n.networkCaip2,
+      assets: n.assets.map((a) => ({
+        symbol: a.symbol,
+        contract: a.contract,
+        decimals: a.decimals,
+        preferred: Boolean(a.preferred),
+        exact_face: a.symbol === "USDC" || a.symbol === "USDT",
+      })),
+      treasury: n.family === "solana" ? TREASURY_SOL : TREASURY_EVM,
+    })),
+    stripe: {
+      enabled: true,
+      account: STRIPE_LINKS.account,
+      min_usd: STRIPE_LINKS.minUsd,
+      note: "Fixed Payment Links — use crypto for arbitrary merch face amounts",
+      options: [
+        {
+          id: "canary50c",
+          label: STRIPE_LINKS.canary50c.label,
+          price_usd: STRIPE_LINKS.canary50c.priceUsd,
+          url: stripeUrlWithMeta(STRIPE_LINKS.canary50c.url, {
+            skill: opts?.skill,
+            sku: opts?.sku,
+            amountUsd,
+            origin,
+          }),
+        },
+        {
+          id: "unlock99c",
+          label: STRIPE_LINKS.unlock99c.label,
+          price_usd: STRIPE_LINKS.unlock99c.priceUsd,
+          url: stripeUrlWithMeta(STRIPE_LINKS.unlock99c.url, {
+            skill: opts?.skill,
+            sku: opts?.sku,
+            amountUsd,
+            origin,
+          }),
+        },
+      ],
+    },
+    quick_rails: [
+      { id: "base-usdc", label: "Base USDC", networkId: "base" as MainnetId, asset: "USDC" as AssetSymbol },
+      { id: "eth-usdc", label: "Ethereum USDC", networkId: "ethereum" as MainnetId, asset: "USDC" as AssetSymbol },
+      { id: "sol-usdc", label: "Solana USDC", networkId: "solana" as MainnetId, asset: "USDC" as AssetSymbol },
+      { id: "arb-usdc", label: "Arbitrum USDC", networkId: "arbitrum" as MainnetId, asset: "USDC" as AssetSymbol },
+    ],
+    forbidden: { testnets: true },
+    checkout: {
+      human: `${origin}/pay?skill=${encodeURIComponent(opts?.skill ?? "merch")}&amount=${amountUsd}&canceled=false${opts?.sku ? `&sku=${encodeURIComponent(opts.sku)}` : ""}`,
+      agent_catalog: `${origin}/api/store/catalog`,
+      options_api: `${origin}/api/pay/options?amount=${amountUsd}`,
+    },
   };
 }
 
@@ -481,7 +629,7 @@ export function settlementBlock(amountUsdc: number) {
     },
     forbidden: {
       testnets: true,
-      note: "Mainnets only: EVM chains + Solana. Buyer chooses network + asset, or pays by card via Stripe.",
+      note: "Mainnets only: EVM chains + Solana. Buyer chooses network + asset, or pays by card via Stripe fixed links.",
     },
   };
 }
@@ -501,10 +649,11 @@ export function canarySettlement(amountUsdc = 0.05) {
     amountUsdc,
     ...settlementBlock(amountUsdc),
     usdcContract: LVL_PAYMENT.assetContract,
-    payUrl: "https://lvlltd.com/api/pay?skill=agent-x402-first-buy",
+    payUrl: "https://factory.lvlltd.com/pay?skill=agent-x402-first-buy&amount=0.05",
+    apexPayUrl: "https://lvlltd.com/pay",
     outlineUrl: "https://lvlltd.com/skills/agent-x402-first-buy/outline.json",
     proofUrl: "https://lvlltd.com/api/proof",
-    shopUrl: "https://lvlltd.com/api/shop",
+    shopUrl: "https://factory.lvlltd.com/shop",
     musicUrl: "https://music.lvlltd.com",
     marketUrl: "https://lvlltd.com",
     stripeUrl: STRIPE_LINKS.canary50c.url,

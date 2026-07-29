@@ -29,9 +29,11 @@ import {
   type SolanaAssetSymbol,
   buildCryptoChoice,
   buildStripeChoice,
+  DEFAULT_RAIL,
   formatFaceUsd,
   getAsset,
   getNetwork,
+  listPaymentOptions,
 } from "@/lib/factory/payment";
 import { CANARY } from "@/lib/factory/catalog";
 import {
@@ -71,6 +73,7 @@ export type PaySearch = {
   amount: number;
   canceled: boolean;
   sku?: string;
+  paid?: string;
 };
 
 export const Route = createFileRoute("/pay")({
@@ -87,6 +90,7 @@ export const Route = createFileRoute("/pay")({
       canceled: s.canceled === "1" || s.canceled === true ? true : false,
     };
     if (typeof s.sku === "string" && s.sku.trim()) out.sku = s.sku.trim();
+    if (typeof s.paid === "string" && s.paid.trim()) out.paid = s.paid.trim();
     return out;
   },
 });
@@ -94,13 +98,13 @@ export const Route = createFileRoute("/pay")({
 type Method = "crypto" | "stripe";
 
 function PayPage() {
-  const { skill, amount, canceled, sku } = Route.useSearch();
+  const { skill, amount, canceled, sku, paid: paidParam } = Route.useSearch();
   const amountUsd = Number.isFinite(amount) && amount > 0 ? amount : 0.05;
   const merchSku = sku?.trim() || null;
 
-  const [method, setMethod] = useState<Method>("crypto");
-  const [networkId, setNetworkId] = useState<MainnetId>("ethereum");
-  const [asset, setAsset] = useState<AssetSymbol>("USDC");
+  const [method, setMethod] = useState<Method>("crypto"); // exact face always crypto-first
+  const [networkId, setNetworkId] = useState<MainnetId>(DEFAULT_RAIL.networkId);
+  const [asset, setAsset] = useState<AssetSymbol>(DEFAULT_RAIL.asset);
   const [copied, setCopied] = useState<string | null>(null);
   const [wallets, setWallets] = useState<DiscoveredWallet[]>([]);
   const [solWallets, setSolWallets] = useState<DiscoveredSolanaWallet[]>([]);
@@ -124,9 +128,25 @@ function PayPage() {
     [networkId, safeAsset, amountUsd],
   );
   const stripe = useMemo(
-    () => buildStripeChoice(amountUsd, skill),
-    [amountUsd, skill],
+    () =>
+      buildStripeChoice(amountUsd, skill, {
+        sku: merchSku ?? undefined,
+      }),
+    [amountUsd, skill, merchSku],
   );
+
+  const paymentOptions = useMemo(
+    () =>
+      listPaymentOptions({
+        amountUsd,
+        skill,
+        sku: merchSku ?? undefined,
+      }),
+    [amountUsd, skill, merchSku],
+  );
+
+  const paid = paidParam === "stripe";
+
 
   useEffect(() => {
     setMobile(isMobileUa());
@@ -305,7 +325,61 @@ function PayPage() {
             Stripe checkout canceled — pick another rail or try card again.
           </p>
         ) : null}
+        {paid ? (
+          <p className="rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-sm text-success">
+            Stripe payment returned successfully. Keep this page for your records.
+          </p>
+        ) : null}
       </header>
+
+      {/* Quick rails — lvlltd.com multi-rail */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium uppercase tracking-wider text-subtle">
+          Quick rails · face {formatFaceUsd(amountUsd)}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {paymentOptions.quick_rails.map((r) => {
+            const active =
+              method === "crypto" &&
+              networkId === r.networkId &&
+              asset === r.asset;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  setMethod("crypto");
+                  setNetworkId(r.networkId);
+                  setAsset(r.asset);
+                }}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  active
+                    ? "border-fg bg-fg text-bg"
+                    : "border-border bg-surface text-muted hover:border-border-strong hover:text-fg",
+                )}
+              >
+                {r.label}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setMethod("stripe")}
+            className={cn(
+              "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+              method === "stripe"
+                ? "border-fg bg-fg text-bg"
+                : "border-border bg-surface text-muted hover:border-border-strong hover:text-fg",
+            )}
+          >
+            Card · Stripe
+          </button>
+        </div>
+        <p className="text-xs text-subtle">
+          Default for agents: <span className="text-fg">Base USDC</span> · Exact merch face uses crypto · Card is fixed $0.50 / $0.99 links
+        </p>
+      </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <button
@@ -699,44 +773,56 @@ function PayPage() {
               Pay with card
             </CardTitle>
             <CardDescription>
-              Stripe Checkout · lvl X, Inc. · works on mobile browsers
+              Stripe Checkout · lvl X, Inc. · fixed live Payment Links
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="rounded-xl border border-border bg-surface-2/40 p-4 text-sm">
+              <p className="text-xs text-subtle">Order face</p>
+              <p className="text-2xl font-semibold tabular">{formatFaceUsd(amountUsd)}</p>
+              <p className="mt-1 text-xs text-muted">
+                {amountUsd > STRIPE_LINKS.unlock99c.priceUsd + 0.001
+                  ? "Card links are fixed tiers. Use Base USDC (or another crypto rail) for this exact face amount."
+                  : "Card can match a fixed tier below, or pay exact face with crypto."}
+              </p>
+              {amountUsd > STRIPE_LINKS.unlock99c.priceUsd + 0.001 ? (
+                <Button
+                  className="mt-3 w-full"
+                  variant="secondary"
+                  onClick={() => {
+                    setMethod("crypto");
+                    setNetworkId(DEFAULT_RAIL.networkId);
+                    setAsset(DEFAULT_RAIL.asset);
+                  }}
+                >
+                  <Wallet className="size-4" />
+                  Pay {formatFaceUsd(amountUsd)} on Base USDC
+                </Button>
+              ) : null}
+            </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-border bg-surface-2/40 p-4">
-                <p className="text-xs text-subtle">Card canary</p>
-                <p className="text-2xl font-semibold">$0.50</p>
-                <Button asChild className="mt-3 w-full">
-                  <a
-                    href={STRIPE_LINKS.canary50c.url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Pay $0.50 with card
-                    <ExternalLink className="size-4" />
-                  </a>
-                </Button>
-              </div>
-              <div className="rounded-xl border border-border bg-surface-2/40 p-4">
-                <p className="text-xs text-subtle">Starter unlock</p>
-                <p className="text-2xl font-semibold">$0.99</p>
-                <Button asChild variant="secondary" className="mt-3 w-full">
-                  <a
-                    href={STRIPE_LINKS.unlock99c.url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Pay $0.99 with card
-                    <ExternalLink className="size-4" />
-                  </a>
-                </Button>
-              </div>
+              {paymentOptions.stripe.options.map((opt) => (
+                <div
+                  key={opt.id}
+                  className="rounded-xl border border-border bg-surface-2/40 p-4"
+                >
+                  <p className="text-xs text-subtle">{opt.label}</p>
+                  <p className="text-2xl font-semibold tabular">
+                    {formatFaceUsd(opt.price_usd)}
+                  </p>
+                  <Button asChild className="mt-3 w-full" variant={opt.id === "canary50c" ? "default" : "secondary"}>
+                    <a href={opt.url} target="_blank" rel="noreferrer">
+                      Pay {formatFaceUsd(opt.price_usd)} with card
+                      <ExternalLink className="size-4" />
+                    </a>
+                  </Button>
+                </div>
+              ))}
             </div>
             <p className="text-xs text-muted">{stripe.note}</p>
             <div className="flex items-start gap-2 rounded-lg border border-border bg-surface p-3 text-xs text-muted">
               <Shield className="mt-0.5 size-4 shrink-0 text-success" />
-              Card path works without crypto wallets on any device.
+              Card path works without crypto wallets. Returns to factory.lvlltd.com/pay when complete.
             </div>
           </CardContent>
         </Card>
