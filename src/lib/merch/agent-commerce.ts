@@ -3,7 +3,7 @@ import type { AgentMerchListing, MerchProduct } from "./types";
 
 /**
  * Machine-readable catalog for shopping agents.
- * Humans use /merch; agents fetch this document (or /agent/merch UI).
+ * Humans use /shop; agents fetch this document (or /agent/merch UI).
  */
 export function buildAgentCatalog(
   products: MerchProduct[],
@@ -20,7 +20,7 @@ export function buildAgentCatalog(
     protocol: "lvl-merch-v1",
     domain: "lvlltd.com",
     shop: {
-      human: `${origin}/merch`,
+      human: `${origin}/shop`,
       printify: PRINTIFY_STORE.storefrontUrl,
       agentCatalog: `${origin}/agent/merch`,
       pay: `${origin}/pay`,
@@ -55,7 +55,7 @@ export function agentBuyInstructions(product: MerchProduct): string[] {
   return [
     `SKU ${product.sku} — ${product.title}`,
     `Face price: ${product.priceUsd.toFixed(2)} USD (multi-rail crypto or Stripe)`,
-    `Human checkout: /merch or Printify ${product.printifyUrl ?? PRINTIFY_STORE.storefrontUrl}`,
+    `Human checkout: /shop or Printify ${product.printifyUrl ?? PRINTIFY_STORE.storefrontUrl}`,
     `Agent crypto: open /pay?sku=${product.sku}&amount=${product.priceUsd} and settle mainnet rails (Base USDC default)`,
     `Default payTo EVM: ${product.settlement.payTo}`,
     `Protocol: x402 multi-rail — no testnets`,
@@ -70,7 +70,7 @@ export const AGENT_PROTOCOL_README = `# LVL Merch Agent Protocol (lvl-merch-v1)
 Domain family: lvlltd.com (Cloudflare) · factory.lvlltd.com · Printify: lvlxltd.printify.me
 
 ## Discover
-GET /agent/merch  → human-readable + JSON export of shopable SKUs
+GET /shop · GET /agent/merch  → human-readable + JSON export of shopable SKUs
 
 ## Buy (crypto / multi-rail)
 1. Pick SKU from catalog

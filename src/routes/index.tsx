@@ -7,6 +7,7 @@ import {
   Wallet,
   ArrowRight,
   FlaskConical,
+  Store,
 } from "lucide-react";
 import {
   Area,
@@ -64,6 +65,26 @@ function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <Link
+        to="/shop"
+        className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-surface-2 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-surface-2">
+            <Store className="size-5" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold tracking-tight">LVL Store</p>
+            <p className="text-xs text-muted">
+              Shopify-style merch & art · /shop · Printify + multi-rail
+            </p>
+          </div>
+        </div>
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-fg">
+          Open storefront <ArrowRight className="size-3.5" />
+        </span>
+      </Link>
+
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">

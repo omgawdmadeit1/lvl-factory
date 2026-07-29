@@ -108,7 +108,11 @@ Source: `workers/lvl-factory-proxy` in `lvlltd-agent-marketplace`.
 
 | Item | Value |
 |------|--------|
-| Human shop | `/merch` on factory.lvlltd.com |
+| Human shop | **`/shop`** (Shopify-style LVL Store) on factory.lvlltd.com |
+| Collections | `/shop/collections/:handle` (tees, art, agent, …) |
+| Product PDP | `/shop/:slug` |
+| Cart | `/shop/cart` · multi-rail + Printify checkout |
+| Legacy | `/merch` redirects to `/shop` |
 | Operator pipeline | `/pipeline` — Grok Imagine brief → mockup → Printify draft → publish |
 | Agent catalog | `/agent/merch` — protocol `lvl-merch-v1` JSON |
 | Printify store | https://lvlxltd.printify.me |

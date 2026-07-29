@@ -10,6 +10,7 @@ import {
   Package,
   ShoppingBag,
   Sparkles,
+  Store,
   Webhook,
   Workflow,
 } from "lucide-react";
@@ -17,7 +18,8 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/merch", label: "Merch & art", icon: ShoppingBag },
+  { to: "/shop", label: "LVL Store", icon: Store },
+  { to: "/merch", label: "Merch (legacy)", icon: ShoppingBag },
   { to: "/pipeline", label: "Merch pipeline", icon: Workflow },
   { to: "/webhooks", label: "Printify hooks", icon: Webhook },
   { to: "/agent/merch", label: "Agent shop", icon: Bot },
@@ -31,6 +33,11 @@ const NAV = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Storefront uses its own shell (Shopify-style) — no operator chrome
+  if (pathname === "/shop" || pathname.startsWith("/shop/")) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
@@ -76,8 +83,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 Commerce rails
               </div>
               <ul className="space-y-1.5 text-xs text-subtle">
+                <li>Store: /shop</li>
                 <li>Merch: Printify POD</li>
-                <li>Imagine → pipeline</li>
                 <li>Agents: multi-rail pay</li>
                 <li className="font-medium text-fg">factory.lvlltd.com</li>
               </ul>
@@ -91,14 +98,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <p className="text-xs font-medium uppercase tracking-wider text-subtle">
                 Operator console
               </p>
-              <p className="text-sm text-muted">
-                Merch · packs · multi-rail
-              </p>
+              <p className="text-sm text-muted">Merch · packs · multi-rail</p>
             </div>
             <div className="hidden items-center gap-2 sm:flex">
-              <span className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted">
-                Printify · agents
-              </span>
+              <Link
+                to="/shop"
+                className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg"
+              >
+                Open store
+              </Link>
               <span className="rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs text-success">
                 Live merch
               </span>
@@ -128,7 +136,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <main className="flex-1 px-4 py-5 md:px-6 md:py-6">{children}</main>
+          <main className="flex-1 overflow-x-hidden p-4 md:p-6">{children}</main>
         </div>
       </div>
     </div>
