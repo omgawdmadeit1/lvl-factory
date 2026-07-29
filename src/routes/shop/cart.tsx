@@ -1,3 +1,4 @@
+import { ProductImage } from "@/components/store/product-image";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ExternalLink, Minus, Plus, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,11 +47,10 @@ function CartPage() {
                   params={{ slug: line.slug }}
                   className="size-24 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-2"
                 >
-                  <img
-                    src={line.mockupUrl}
+                  <ProductImage
+                    slug={line.slug}
+                    mockupUrl={line.mockupUrl}
                     alt=""
-                    className="size-full object-cover"
-                    crossOrigin="anonymous"
                   />
                 </Link>
                 <div className="min-w-0 flex-1">

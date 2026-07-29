@@ -2,7 +2,10 @@
 
 | Host | Role |
 |------|------|
-| **https://factory.lvlltd.com** | Production custom domain (Cloudflare Worker proxy) |
+| **https://lvlltd.com** | Brand apex |
+| **https://factory.lvlltd.com** | Production commerce + factory (Cloudflare Worker proxy) |
+| **https://factory.lvlltd.com/shop** | LVL Store (Shopify-style) |
+| **/network** | Domain & rails map (in-app) |
 | https://lvl-factory.vercel.app | Vercel origin |
 | https://lvl-factory-proxy.josephlamartaylor.workers.dev | Worker direct |
 

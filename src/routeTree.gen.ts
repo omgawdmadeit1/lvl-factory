@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CanaryRouteImport } from './routes/canary'
 import { Route as MerchRouteImport } from './routes/merch'
 import { Route as MusicRouteImport } from './routes/music'
+import { Route as NetworkRouteImport } from './routes/network'
 import { Route as PayRouteImport } from './routes/pay'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as QueueRouteImport } from './routes/queue'
@@ -27,6 +28,7 @@ import { Route as ShopCartRouteImport } from './routes/shop/cart'
 import { Route as ApiPrintifySubscriptionsRouteImport } from './routes/api/printify/subscriptions'
 import { Route as ApiPrintifyWebhooksRouteImport } from './routes/api/printify/webhooks'
 import { Route as ApiStoreCatalogRouteImport } from './routes/api/store/catalog'
+import { Route as ApiStoreImageRouteImport } from './routes/api/store/image'
 import { Route as ShopCollectionsHandleRouteImport } from './routes/shop/collections.$handle'
 
 const IndexRoute = IndexRouteImport.update({
@@ -47,6 +49,11 @@ const MerchRoute = MerchRouteImport.update({
 const MusicRoute = MusicRouteImport.update({
   id: '/music',
   path: '/music',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NetworkRoute = NetworkRouteImport.update({
+  id: '/network',
+  path: '/network',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PayRoute = PayRouteImport.update({
@@ -120,6 +127,11 @@ const ApiStoreCatalogRoute = ApiStoreCatalogRouteImport.update({
   path: '/api/store/catalog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStoreImageRoute = ApiStoreImageRouteImport.update({
+  id: '/api/store/image',
+  path: '/api/store/image',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopCollectionsHandleRoute = ShopCollectionsHandleRouteImport.update({
   id: '/collections/$handle',
   path: '/collections/$handle',
@@ -132,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/canary': typeof CanaryRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
+  '/network': typeof NetworkRoute
   '/pay': typeof PayRoute
   '/pipeline': typeof PipelineRoute
   '/queue': typeof QueueRoute
@@ -145,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
   '/api/store/catalog': typeof ApiStoreCatalogRoute
+  '/api/store/image': typeof ApiStoreImageRoute
   '/shop/collections/$handle': typeof ShopCollectionsHandleRoute
 }
 export interface FileRoutesByTo {
@@ -152,6 +166,7 @@ export interface FileRoutesByTo {
   '/canary': typeof CanaryRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
+  '/network': typeof NetworkRoute
   '/pay': typeof PayRoute
   '/pipeline': typeof PipelineRoute
   '/queue': typeof QueueRoute
@@ -165,6 +180,7 @@ export interface FileRoutesByTo {
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
   '/api/store/catalog': typeof ApiStoreCatalogRoute
+  '/api/store/image': typeof ApiStoreImageRoute
   '/shop/collections/$handle': typeof ShopCollectionsHandleRoute
 }
 export interface FileRoutesById {
@@ -174,6 +190,7 @@ export interface FileRoutesById {
   '/canary': typeof CanaryRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
+  '/network': typeof NetworkRoute
   '/pay': typeof PayRoute
   '/pipeline': typeof PipelineRoute
   '/queue': typeof QueueRoute
@@ -187,6 +204,7 @@ export interface FileRoutesById {
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
   '/api/store/catalog': typeof ApiStoreCatalogRoute
+  '/api/store/image': typeof ApiStoreImageRoute
   '/shop/collections/$handle': typeof ShopCollectionsHandleRoute
 }
 export interface FileRouteTypes {
@@ -197,6 +215,7 @@ export interface FileRouteTypes {
     | '/canary'
     | '/merch'
     | '/music'
+    | '/network'
     | '/pay'
     | '/pipeline'
     | '/queue'
@@ -210,6 +229,7 @@ export interface FileRouteTypes {
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
     | '/api/store/catalog'
+    | '/api/store/image'
     | '/shop/collections/$handle'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -217,6 +237,7 @@ export interface FileRouteTypes {
     | '/canary'
     | '/merch'
     | '/music'
+    | '/network'
     | '/pay'
     | '/pipeline'
     | '/queue'
@@ -230,6 +251,7 @@ export interface FileRouteTypes {
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
     | '/api/store/catalog'
+    | '/api/store/image'
     | '/shop/collections/$handle'
   id:
     | '__root__'
@@ -238,6 +260,7 @@ export interface FileRouteTypes {
     | '/canary'
     | '/merch'
     | '/music'
+    | '/network'
     | '/pay'
     | '/pipeline'
     | '/queue'
@@ -251,6 +274,7 @@ export interface FileRouteTypes {
     | '/api/printify/subscriptions'
     | '/api/printify/webhooks'
     | '/api/store/catalog'
+    | '/api/store/image'
     | '/shop/collections/$handle'
   fileRoutesById: FileRoutesById
 }
@@ -260,6 +284,7 @@ export interface RootRouteChildren {
   CanaryRoute: typeof CanaryRoute
   MerchRoute: typeof MerchRoute
   MusicRoute: typeof MusicRoute
+  NetworkRoute: typeof NetworkRoute
   PayRoute: typeof PayRoute
   PipelineRoute: typeof PipelineRoute
   QueueRoute: typeof QueueRoute
@@ -270,6 +295,7 @@ export interface RootRouteChildren {
   ApiPrintifySubscriptionsRoute: typeof ApiPrintifySubscriptionsRoute
   ApiPrintifyWebhooksRoute: typeof ApiPrintifyWebhooksRoute
   ApiStoreCatalogRoute: typeof ApiStoreCatalogRoute
+  ApiStoreImageRoute: typeof ApiStoreImageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -300,6 +326,13 @@ declare module '@tanstack/react-router' {
       path: '/music'
       fullPath: '/music'
       preLoaderRoute: typeof MusicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/network': {
+      id: '/network'
+      path: '/network'
+      fullPath: '/network'
+      preLoaderRoute: typeof NetworkRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pay': {
@@ -400,6 +433,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStoreCatalogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/store/image': {
+      id: '/api/store/image'
+      path: '/api/store/image'
+      fullPath: '/api/store/image'
+      preLoaderRoute: typeof ApiStoreImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop/collections/$handle': {
       id: '/shop/collections/$handle'
       path: '/collections/$handle'
@@ -434,6 +474,7 @@ const rootRouteChildren: RootRouteChildren = {
   CanaryRoute: CanaryRoute,
   MerchRoute: MerchRoute,
   MusicRoute: MusicRoute,
+  NetworkRoute: NetworkRoute,
   PayRoute: PayRoute,
   PipelineRoute: PipelineRoute,
   QueueRoute: QueueRoute,
@@ -444,6 +485,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPrintifySubscriptionsRoute: ApiPrintifySubscriptionsRoute,
   ApiPrintifyWebhooksRoute: ApiPrintifyWebhooksRoute,
   ApiStoreCatalogRoute: ApiStoreCatalogRoute,
+  ApiStoreImageRoute: ApiStoreImageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

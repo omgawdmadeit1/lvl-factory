@@ -1,3 +1,4 @@
+import { ProductImage } from "@/components/store/product-image";
 import { Link } from "@tanstack/react-router";
 import { Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -64,11 +65,10 @@ export function CartDrawer() {
                     onClick={close}
                     className="size-20 shrink-0 overflow-hidden rounded-lg border border-border bg-surface-2"
                   >
-                    <img
-                      src={line.mockupUrl}
+                    <ProductImage
+                      slug={line.slug}
+                      mockupUrl={line.mockupUrl}
                       alt=""
-                      className="size-full object-cover"
-                      crossOrigin="anonymous"
                     />
                   </Link>
                   <div className="min-w-0 flex-1">

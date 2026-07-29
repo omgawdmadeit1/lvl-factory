@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Bot, ExternalLink, ShoppingBag, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ProductGrid } from "@/components/store/product-card";
+import { ProductImage } from "@/components/store/product-image";
 import { Button } from "@/components/ui/button";
 import { useMerchStore } from "@/lib/merch/store";
 import { useCartStore, type CartSize } from "@/lib/store/cart";
@@ -57,11 +58,11 @@ function ProductDetailPage() {
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
         <div className="overflow-hidden rounded-xl border border-border bg-surface-2">
           <div className="aspect-[4/5]">
-            <img
-              src={product.mockupUrl}
+            <ProductImage
+              slug={product.slug}
+              mockupUrl={product.mockupUrl}
               alt={product.title}
-              className="size-full object-cover"
-              crossOrigin="anonymous"
+              priority
             />
           </div>
         </div>

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Bot, Sparkles, Truck } from "lucide-react";
 import { useMemo } from "react";
 import { ProductGrid } from "@/components/store/product-card";
+import { ProductImage } from "@/components/store/product-image";
 import { Button } from "@/components/ui/button";
 import { useMerchStore } from "@/lib/merch/store";
 import { STORE_COLLECTIONS } from "@/lib/store/collections";
@@ -69,11 +70,12 @@ function ShopHomePage() {
               className="group overflow-hidden rounded-xl border border-border bg-surface"
             >
               <div className="aspect-square overflow-hidden bg-surface-2">
-                <img
-                  src={p.mockupUrl}
+                <ProductImage
+                  slug={p.slug}
+                  mockupUrl={p.mockupUrl}
                   alt={p.title}
-                  className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  crossOrigin="anonymous"
+                  priority
+                  className="transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
             </Link>

@@ -83,6 +83,12 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
               Agent JSON
             </Link>
             <Link
+              to="/network"
+              className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-muted hover:bg-surface hover:text-fg lg:flex"
+            >
+              Network
+            </Link>
+            <Link
               to="/"
               className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-muted hover:bg-surface hover:text-fg sm:flex"
               title="Operator factory"

@@ -18,14 +18,53 @@ export const PRINTIFY_STORE = {
 
 export const CLOUDFLARE_MAP = {
   apex: "https://lvlltd.com",
+  www: "https://www.lvlltd.com",
   factory: "https://factory.lvlltd.com",
-  merch: "https://factory.lvlltd.com/merch",
-  art: "https://factory.lvlltd.com/merch?channel=art",
+  /** Shopify-style storefront */
+  shop: "https://factory.lvlltd.com/shop",
+  merch: "https://factory.lvlltd.com/shop",
+  art: "https://factory.lvlltd.com/shop/collections/art",
+  tees: "https://factory.lvlltd.com/shop/collections/tees",
   pipeline: "https://factory.lvlltd.com/pipeline",
   agentCatalog: "https://factory.lvlltd.com/agent/merch",
+  agentApi: "https://factory.lvlltd.com/api/store/catalog",
+  pay: "https://factory.lvlltd.com/pay",
+  webhooks: "https://factory.lvlltd.com/webhooks",
   printify: PRINTIFY_STORE.storefrontUrl,
   note:
-    "Cloudflare proxies factory.lvlltd.com → Vercel origin. Merch UI lives on factory; POD fulfillment is Printify.",
+    "Cloudflare: apex lvlltd.com brand · factory.lvlltd.com → Vercel (store, factory, multi-rail pay, webhooks). POD fulfillment = Printify.",
+} as const;
+
+/** Subdomain / path roles for docs and agent discovery */
+export const LVL_NETWORK = {
+  brand: "LVL Ltd",
+  legal: "LVL X, Inc.",
+  domains: [
+    {
+      host: "lvlltd.com",
+      role: "apex_brand",
+      description: "Primary brand domain (Cloudflare)",
+    },
+    {
+      host: "factory.lvlltd.com",
+      role: "commerce_factory",
+      description: "Store + operator factory + multi-rail pay + agents",
+      paths: {
+        shop: "/shop",
+        cart: "/shop/cart",
+        agent: "/agent/merch",
+        pay: "/pay",
+        pipeline: "/pipeline",
+        webhooks: "/api/printify/webhooks",
+        catalog_api: "/api/store/catalog",
+      },
+    },
+    {
+      host: "lvlxltd.printify.me",
+      role: "printify_pop_up",
+      description: "Printify Pop-Up storefront (physical checkout)",
+    },
+  ],
 } as const;
 
 export function getPrintifyConfig(): PrintifyConfig {
@@ -43,7 +82,7 @@ export function getPrintifyConfig(): PrintifyConfig {
     apiBase: "https://api.printify.com/v1",
     hasToken,
     domainTargets: {
-      merch: CLOUDFLARE_MAP.merch,
+      merch: CLOUDFLARE_MAP.shop,
       art: CLOUDFLARE_MAP.art,
       factory: CLOUDFLARE_MAP.factory,
       apex: CLOUDFLARE_MAP.apex,

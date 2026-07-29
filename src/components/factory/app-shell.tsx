@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   Sparkles,
   Store,
+  Globe,
   Webhook,
   Workflow,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/shop", label: "LVL Store", icon: Store },
+  { to: "/network", label: "Network map", icon: Globe },
   { to: "/merch", label: "Merch (legacy)", icon: ShoppingBag },
   { to: "/pipeline", label: "Merch pipeline", icon: Workflow },
   { to: "/webhooks", label: "Printify hooks", icon: Webhook },

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ShoppingBag } from "lucide-react";
+import { ProductImage } from "@/components/store/product-image";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/lib/store/cart";
 import { kindLabel, storeMoney } from "@/lib/store/collections";
@@ -22,16 +23,13 @@ export function ProductCard({
         params={{ slug: product.slug }}
         className="relative block overflow-hidden rounded-xl border border-border bg-surface focus-ring"
       >
-        <div className="aspect-[4/5] overflow-hidden bg-surface-2">
-          <img
-            src={product.mockupUrl}
+        <div className="aspect-[4/5] overflow-hidden">
+          <ProductImage
+            slug={product.slug}
+            mockupUrl={product.mockupUrl}
             alt={product.title}
-            width={600}
-            height={750}
-            loading={priority ? "eager" : "lazy"}
-            decoding="async"
-            className="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
-            crossOrigin="anonymous"
+            priority={priority}
+            className="transition-transform duration-300 ease-out group-hover:scale-[1.03]"
           />
         </div>
         {product.agentShopable ? (
@@ -62,12 +60,7 @@ export function ProductCard({
             <ShoppingBag className="size-3.5" />
             Add
           </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="min-h-11"
-            asChild
-          >
+          <Button size="sm" variant="secondary" className="min-h-11" asChild>
             <Link to="/shop/$slug" params={{ slug: product.slug }}>
               View
             </Link>

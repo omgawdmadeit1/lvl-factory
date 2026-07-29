@@ -3,6 +3,8 @@ import { LIVE_PRINTIFY_PRODUCTS } from "@/lib/merch/catalog";
 import { buildAgentCatalog } from "@/lib/merch/agent-commerce";
 import { STORE_COLLECTIONS } from "@/lib/store/collections";
 import { CLOUDFLARE_MAP } from "@/lib/merch/printify";
+import { productImageSrc } from "@/lib/store/images";
+import { LVL_NETWORK } from "@/lib/merch/printify";
 
 export const Route = createFileRoute("/api/store/catalog")({
   server: {
@@ -39,12 +41,14 @@ export const Route = createFileRoute("/api/store/catalog")({
             kind: p.kind,
             price_usd: p.priceUsd,
             url: `${origin}/shop/${p.slug}`,
-            mockup_url: p.mockupUrl,
+            mockup_url: productImageSrc({ slug: p.slug, mockupUrl: p.mockupUrl }),
+            mockup_source: p.mockupUrl,
             printify_url: p.printifyUrl,
             agent_shopable: p.agentShopable,
             tags: p.tags,
           })),
           agent_catalog: buildAgentCatalog(published, { origin }),
+          network: LVL_NETWORK,
         });
       },
     },
