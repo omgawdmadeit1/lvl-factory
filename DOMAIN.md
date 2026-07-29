@@ -214,6 +214,46 @@ Env (server): `PRINTIFY_*`, `DATABASE_URL` / PGLite, payment `VITE_*` for client
 
 ---
 
+## Vercel environment variables
+
+Dashboard: [Project env settings](https://vercel.com/tesla-trek/lvl-factory/settings/environment-variables)  
+Project `prj_0m75OJchmM0HOizAy7hTqdKghyPR` · team `team_EbvXskCGZVZiHauixSNsUAKv`
+
+### Client (plain — also in `.env.production`)
+
+| Key | Value / notes | Targets |
+|-----|---------------|---------|
+| `VITE_WALLETCONNECT_PROJECT_ID` | `7e30c6e6441bbc7523e87195868a572a` | production, preview, development |
+| `VITE_TREASURY_SOL` | `8sjT1G2YWpscXbJmwv2UK1rHZmQFLaczU5KXiiS8gvDy` | production, preview, development |
+
+### Server (sensitive — set in dashboard or `.env.vercel` + sync)
+
+| Key | Purpose |
+|-----|---------|
+| `PRINTIFY_API_TOKEN` | Printify API |
+| `PRINTIFY_SHOP_ID` | Shop id |
+| `PRINTIFY_WEBHOOK_SECRET` | HMAC primary |
+| `PRINTIFY_WEBHOOK_SECRET_PREVIOUS` | HMAC rotation |
+| `WEBHOOK_GATE_TOKEN` | Edge / ops gate |
+| `WEBHOOK_ADMIN_TOKEN` | Admin webhook ops |
+| `DATABASE_URL` | Optional Postgres (else PGLite) |
+
+### Sync from CLI
+
+```bash
+# Create token: https://vercel.com/account/tokens (team tesla-trek)
+export VERCEL_TOKEN=…
+npm run vercel:env:dry   # preview
+npm run vercel:env:sync  # upsert
+
+# Optional secrets file (gitignored):
+# cp .env.example .env.vercel  # then fill PRINTIFY_* etc.
+```
+
+After changing env, **redeploy** so builds pick up `VITE_*` and runtime picks up server secrets.
+
+---
+
 ## Vercel GitHub integration
 
 **Project:** `lvl-factory` · team **tesla-trek**  

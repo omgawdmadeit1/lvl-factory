@@ -20,7 +20,9 @@
     "test:hmac": "node scripts/test-printify-hmac.mjs",
     "waf:shop": "RULE_PACK=shop-pay node scripts/apply-cloudflare-waf.mjs",
     "waf:all": "RULE_PACK=all node scripts/apply-cloudflare-waf.mjs",
-    "waf:all:dry": "RULE_PACK=all DRY_RUN=1 node scripts/apply-cloudflare-waf.mjs"
+    "waf:all:dry": "RULE_PACK=all DRY_RUN=1 node scripts/apply-cloudflare-waf.mjs",
+    "vercel:env:sync": "node scripts/sync-vercel-env.mjs",
+    "vercel:env:dry": "DRY_RUN=1 node scripts/sync-vercel-env.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.3",
