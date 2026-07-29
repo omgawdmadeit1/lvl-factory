@@ -133,6 +133,10 @@ Pipeline stages: `brief` → `imagine` → `mockup` → `printify_draft` → `re
 | Topics | shop:disconnected, product:*, order:*, order:shipment:* |
 | Signature | **HMAC-SHA256** raw body · header `X-Pfy-Signature: sha256=<hex>` |
 | HMAC module | `src/lib/merch/printify-hmac.server.ts` |
+| Secret rotation | `PRINTIFY_WEBHOOK_SECRET` + `PRINTIFY_WEBHOOK_SECRET_PREVIOUS` |
+| Compare | timingSafeEqual on 32-byte digests + full `sha256=` header (Printify Python parity) |
+| Max age | `PRINTIFY_WEBHOOK_MAX_AGE_SEC` (optional replay guard) |
+| Reject audit | `printify_webhook_rejects` table |
 | Self-test | `GET /api/printify/webhooks?hmac_self_test=1` · UI **HMAC self-test** · `npm run test:hmac` |
 | Secret env | `PRINTIFY_WEBHOOK_SECRET` |
 | Token / shop | `PRINTIFY_API_TOKEN`, `PRINTIFY_SHOP_ID` |

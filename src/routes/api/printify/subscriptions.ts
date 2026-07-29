@@ -6,6 +6,7 @@ import {
   getPrintifyToken,
   getWebhookPublicUrl,
   getWebhookSecret,
+  getWebhookSecrets,
   installAllTopicWebhooks,
   listRemoteWebhooks,
   printifyCredentialsStatus,
@@ -20,6 +21,7 @@ import {
   processWebhookEvent,
   signPrintifyBody,
   verifyPrintifySignature,
+  publicHmacView,
 } from "@/lib/merch/webhooks.server";
 import { enforceWebhookWaf } from "@/lib/merch/webhook-waf.server";
 
@@ -116,9 +118,15 @@ export const Route = createFileRoute("/api/printify/subscriptions")({
           // When secret is set, sign like Printify would (HMAC-SHA256)
           let signatureHeader: string | null = null;
           let signatureValid = false;
-          if (secret) {
-            signatureHeader = signPrintifyBody(raw, secret);
-            const check = verifyPrintifySignature(raw, signatureHeader, secret);
+          const secrets = getWebhookSecrets();
+          if (secrets.primary || secrets.previous) {
+            const signWith = secrets.primary || secrets.previous!;
+            signatureHeader = signPrintifyBody(raw, signWith);
+            const check = verifyPrintifySignature(
+              raw,
+              signatureHeader,
+              secrets,
+            );
             signatureValid = check.valid;
           }
           const result = await processWebhookEvent(payload, {
@@ -157,11 +165,36 @@ export const Route = createFileRoute("/api/printify/subscriptions")({
             },
           };
           const raw = JSON.stringify(sample);
-          const testSecret = secret || "dev-hmac-roundtrip-secret";
+          const secrets = getWebhookSecrets();
+          const testSecret = secrets.primary || "dev-hmac-roundtrip-secret";
           const header = signPrintifyBody(raw, testSecret);
-          const good = verifyPrintifySignature(raw, header, testSecret);
+          const good = verifyPrintifySignature(raw, header, secrets.primary ? secrets : testSecret);
           const bad = verifyPrintifySignature(raw + "x", header, testSecret);
           const missing = verifyPrintifySignature(raw, null, testSecret);
+          // Printify Python parity: full-header compare
+          const fullHeaderOk = verifyPrintifySignature(
+            raw,
+            header,
+            testSecret,
+          );
+          // Rotation: previous secret still accepted
+          let rotation: unknown = null;
+          if (secrets.previous) {
+            const prevHeader = signPrintifyBody(raw, secrets.previous);
+            const prevCheck = verifyPrintifySignature(raw, prevHeader, secrets);
+            rotation = publicHmacView(prevCheck);
+          } else {
+            const fakePrev = "previous-rotation-test-secret";
+            const prevHeader = signPrintifyBody(raw, fakePrev);
+            const prevCheck = verifyPrintifySignature(raw, prevHeader, {
+              primary: testSecret,
+              previous: fakePrev,
+            });
+            rotation = {
+              simulated: true,
+              ...publicHmacView(prevCheck),
+            };
+          }
           if (good.valid) {
             await processWebhookEvent(sample, {
               signatureValid: true,
@@ -169,14 +202,17 @@ export const Route = createFileRoute("/api/printify/subscriptions")({
             });
           }
           return json({
-            ok: good.valid && !bad.valid && !missing.valid,
+            ok: good.valid && !bad.valid && !missing.valid && fullHeaderOk.valid,
             action,
             tests: {
-              valid_signature: good,
-              tampered_body: bad,
-              missing_header: missing,
+              valid_signature: publicHmacView(good),
+              tampered_body: publicHmacView(bad),
+              missing_header: publicHmacView(missing),
+              full_header_parity: publicHmacView(fullHeaderOk),
+              rotation,
             },
-            used_configured_secret: Boolean(secret),
+            used_configured_secret: Boolean(secrets.primary),
+            previous_configured: Boolean(secrets.previous),
           });
         }
 

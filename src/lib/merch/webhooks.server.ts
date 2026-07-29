@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { getSql } from "@/lib/db";
 import {
   getWebhookSecret,
+  getWebhookSecrets,
   getPrintifyShopId,
 } from "./printify-api.server";
 import type {
@@ -17,6 +18,10 @@ import {
   signPrintifyBody,
   verifyPrintifyRequest,
   getPrintifySignatureFromRequest,
+  publicHmacView,
+  checkEventFreshness,
+  readRawWebhookBody,
+  generateWebhookSecret,
   type HmacVerifyResult,
 } from "./printify-hmac.server";
 
@@ -26,6 +31,11 @@ export {
   signPrintifyBody,
   verifyPrintifyRequest,
   getPrintifySignatureFromRequest,
+  publicHmacView,
+  checkEventFreshness,
+  readRawWebhookBody,
+  generateWebhookSecret,
+  getWebhookSecrets,
 };
 export type { HmacVerifyResult };
 
@@ -65,8 +75,68 @@ async function ensureWebhookSchema(): Promise<void> {
       payload jsonb not null,
       updated_at timestamptz not null default now()
     )`);
+  await sql.query(`
+    create table if not exists printify_webhook_rejects (
+      id text primary key,
+      code text not null,
+      reason text,
+      ip text,
+      ray text,
+      body_sha256 text,
+      body_bytes int,
+      topic text,
+      received_at timestamptz not null default now()
+    )`);
 }
 
+
+/** Persist failed HMAC / WAF rejects for operator audit (no secrets, truncated). */
+export async function recordRejectedWebhook(opts: {
+  code: string;
+  reason: string;
+  ip?: string | null;
+  ray?: string | null;
+  rawBody?: string;
+  topic?: string | null;
+}): Promise<void> {
+  try {
+    await ensureWebhookSchema();
+    const sql = await getSql();
+    const { createHash } = await import("node:crypto");
+    const bodySha = opts.rawBody
+      ? createHash("sha256").update(opts.rawBody, "utf8").digest("hex")
+      : null;
+    await sql.query(
+      `insert into printify_webhook_rejects
+        (id, code, reason, ip, ray, body_sha256, body_bytes, topic, received_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,now())`,
+      [
+        `rej_${randomUUID()}`,
+        opts.code,
+        opts.reason.slice(0, 400),
+        opts.ip ?? null,
+        opts.ray ?? null,
+        bodySha,
+        opts.rawBody ? Buffer.byteLength(opts.rawBody, "utf8") : null,
+        opts.topic ?? null,
+      ],
+    );
+  } catch (e) {
+    console.warn("[webhook reject audit]", e);
+  }
+}
+
+export async function listRejectedWebhooks(limit = 30) {
+  await ensureWebhookSchema();
+  const sql = await getSql();
+  return sql.query(
+    `select id, code, reason, ip, ray, body_sha256, body_bytes, topic, received_at
+     from printify_webhook_rejects
+     order by received_at desc
+     limit $1`,
+    [limit],
+  );
+}
 
 /** @deprecated use shouldAcceptSignedWebhook from printify-hmac.server */
 export function requireSignatureInProduction(

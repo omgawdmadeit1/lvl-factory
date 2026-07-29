@@ -2,14 +2,23 @@
  * Server-only Printify REST helpers (token never exposed to browser).
  */
 import { PRINTIFY_WEBHOOK_TOPICS, type PrintifyWebhookTopic } from "./webhook-topics";
+import type { WebhookSecrets } from "./printify-hmac.server";
 
 const API = "https://api.printify.com/v1";
-const UA = "LVL-Factory-Merch-Agent/1.1";
+const UA = "LVL-Factory-Merch-Agent/1.2";
 
 function env(key: string): string | undefined {
   if (typeof process === "undefined") return undefined;
   const v = process.env[key]?.trim();
   return v || undefined;
+}
+
+/** Env without trim — webhook secrets must match Printify exactly */
+function envRaw(key: string): string | undefined {
+  if (typeof process === "undefined") return undefined;
+  const v = process.env[key];
+  if (v == null || v === "") return undefined;
+  return v;
 }
 
 export function getPrintifyToken(): string | undefined {
@@ -21,7 +30,22 @@ export function getPrintifyShopId(): string | undefined {
 }
 
 export function getWebhookSecret(): string | undefined {
-  return env("PRINTIFY_WEBHOOK_SECRET");
+  return envRaw("PRINTIFY_WEBHOOK_SECRET") ?? env("PRINTIFY_WEBHOOK_SECRET");
+}
+
+export function getWebhookSecretPrevious(): string | undefined {
+  return (
+    envRaw("PRINTIFY_WEBHOOK_SECRET_PREVIOUS") ??
+    env("PRINTIFY_WEBHOOK_SECRET_PREVIOUS")
+  );
+}
+
+/** Primary + previous for rotation-safe verification */
+export function getWebhookSecrets(): WebhookSecrets {
+  return {
+    primary: getWebhookSecret(),
+    previous: getWebhookSecretPrevious(),
+  };
 }
 
 /** Public URL Printify should POST to */
@@ -73,10 +97,9 @@ export async function listRemoteWebhooks(
   shopId: string,
   token: string,
 ): Promise<PrintifyWebhookRemote[]> {
-  const data = await pfy<PrintifyWebhookRemote[] | { data?: PrintifyWebhookRemote[] }>(
-    `/shops/${shopId}/webhooks.json`,
-    { method: "GET", token },
-  );
+  const data = await pfy<
+    PrintifyWebhookRemote[] | { data?: PrintifyWebhookRemote[] }
+  >(`/shops/${shopId}/webhooks.json`, { method: "GET", token });
   if (Array.isArray(data)) return data;
   if (data && Array.isArray(data.data)) return data.data;
   return [];
@@ -137,7 +160,11 @@ export async function installAllTopicWebhooks(opts: {
   token: string;
   url: string;
   secret?: string;
-}): Promise<{ created: PrintifyWebhookRemote[]; skipped: string[]; errors: string[] }> {
+}): Promise<{
+  created: PrintifyWebhookRemote[];
+  skipped: string[];
+  errors: string[];
+}> {
   const existing = await listRemoteWebhooks(opts.shopId, opts.token);
   const created: PrintifyWebhookRemote[] = [];
   const skipped: string[] = [];
@@ -166,11 +193,21 @@ export async function installAllTopicWebhooks(opts: {
 }
 
 export function printifyCredentialsStatus() {
+  const secrets = getWebhookSecrets();
   return {
     hasToken: Boolean(getPrintifyToken()),
     hasShopId: Boolean(getPrintifyShopId()),
-    hasWebhookSecret: Boolean(getWebhookSecret()),
+    hasWebhookSecret: Boolean(secrets.primary),
+    hasPreviousSecret: Boolean(secrets.previous),
+    shopId: getPrintifyShopId() ?? null,
     webhookUrl: getWebhookPublicUrl(),
     topics: [...PRINTIFY_WEBHOOK_TOPICS],
+    hmac: {
+      algorithm: "HMAC-SHA256",
+      header: "X-Pfy-Signature",
+      format: "sha256=<hex>",
+      rotation: Boolean(secrets.previous),
+      max_age_sec: Number(process.env.PRINTIFY_WEBHOOK_MAX_AGE_SEC) || 0,
+    },
   };
 }

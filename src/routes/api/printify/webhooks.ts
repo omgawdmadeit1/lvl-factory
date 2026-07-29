@@ -1,15 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import {
   getWebhookPublicUrl,
-  getWebhookSecret,
+  getWebhookSecrets,
   printifyCredentialsStatus,
 } from "@/lib/merch/printify-api.server";
 import {
   listMirroredOrders,
   listWebhookEvents,
+  listRejectedWebhooks,
   processWebhookEvent,
+  recordRejectedWebhook,
   signPrintifyBody,
   verifyPrintifyRequest,
+  publicHmacView,
+  checkEventFreshness,
+  readRawWebhookBody,
 } from "@/lib/merch/webhooks.server";
 import {
   enforceWebhookWaf,
@@ -31,12 +36,13 @@ export const Route = createFileRoute("/api/printify/webhooks")({
           Math.max(1, Number(url.searchParams.get("limit") || 40) || 40),
         );
 
-        // Optional self-check: GET ?hmac_self_test=1 signs & verifies a sample body
         if (url.searchParams.get("hmac_self_test") === "1") {
-          const secret = getWebhookSecret() || "local-self-test-secret";
+          const secrets = getWebhookSecrets();
+          const secret = secrets.primary || "local-self-test-secret";
           const sample = JSON.stringify({
             id: "self_test",
             type: "order:created",
+            created_at: new Date().toISOString(),
             resource: { id: "0", type: "order", data: {} },
           });
           const header = signPrintifyBody(sample, secret);
@@ -47,29 +53,51 @@ export const Route = createFileRoute("/api/printify/webhooks")({
               headers: { "x-pfy-signature": header },
               body: sample,
             }),
-            secret,
+            secrets.primary ? secrets : secret,
             "strict",
           );
+
+          let rotation: unknown = null;
+          if (secrets.previous) {
+            const prevHeader = signPrintifyBody(sample, secrets.previous);
+            const prev = verifyPrintifyRequest(
+              sample,
+              new Request("http://local/test", {
+                method: "POST",
+                headers: { "x-pfy-signature": prevHeader },
+              }),
+              secrets,
+              "strict",
+            );
+            rotation = {
+              previous_accepted: prev.decision.accept,
+              matched_slot: prev.check.matchedSlot,
+            };
+          }
+
           return Response.json({
             ok: check.valid && decision.accept,
             hmac_self_test: {
               algorithm: "sha256",
               header_format: "sha256=<hex>",
               signed: true,
-              check,
+              check: publicHmacView(check),
               decision,
-              using_configured_secret: Boolean(getWebhookSecret()),
+              rotation,
+              using_configured_secret: Boolean(secrets.primary),
+              previous_configured: Boolean(secrets.previous),
             },
           });
         }
 
         try {
-          const [events, orders, status] = await Promise.all([
+          const [events, orders, rejects, status] = await Promise.all([
             listWebhookEvents(limit),
             listMirroredOrders(20),
+            listRejectedWebhooks(15),
             Promise.resolve(printifyCredentialsStatus()),
           ]);
-          const secret = getWebhookSecret();
+          const secrets = getWebhookSecrets();
           return Response.json({
             ok: true,
             endpoint: getWebhookPublicUrl(),
@@ -78,13 +106,17 @@ export const Route = createFileRoute("/api/printify/webhooks")({
             hmac: {
               algorithm: "HMAC-SHA256",
               header: "X-Pfy-Signature: sha256=<hex>",
-              secret_configured: Boolean(secret),
+              secret_configured: Boolean(secrets.primary),
+              previous_configured: Boolean(secrets.previous),
               policy:
                 process.env.PRINTIFY_WEBHOOK_LOOSE === "1"
                   ? "loose"
-                  : secret
+                  : secrets.primary || secrets.previous
                     ? "strict"
                     : "loose (no secret)",
+              compare: "timingSafeEqual(digest bytes) + full header parity",
+              max_age_sec:
+                Number(process.env.PRINTIFY_WEBHOOK_MAX_AGE_SEC) || 0,
               self_test: "GET ?hmac_self_test=1",
             },
             waf: wafStatusPublic(),
@@ -96,6 +128,7 @@ export const Route = createFileRoute("/api/printify/webhooks")({
             },
             events,
             orders,
+            rejects,
           });
         } catch (err) {
           return Response.json(
@@ -111,37 +144,50 @@ export const Route = createFileRoute("/api/printify/webhooks")({
 
       /**
        * Inbound Printify webhook delivery.
-       * Verifies HMAC-SHA256 over raw body using PRINTIFY_WEBHOOK_SECRET.
+       * Verifies HMAC-SHA256 over raw body (UTF-8) with primary/previous secrets.
        * Header: X-Pfy-Signature: sha256=<hex>
        */
       POST: async ({ request }) => {
         const waf = await enforceWebhookWaf(request, { path: "webhooks" });
         if (!waf.ok) return waf.response;
 
-        // Raw body must be used for HMAC — never re-JSON.stringify
-        const rawBody = await request.text();
-        if (rawBody.length > 512 * 1024) {
+        const bodyRead = await readRawWebhookBody(request, 512 * 1024);
+        if (!bodyRead.ok) {
+          await recordRejectedWebhook({
+            code: bodyRead.code,
+            reason: bodyRead.reason,
+            ip: waf.ip,
+            ray: waf.ray,
+          });
           return Response.json(
-            { ok: false, error: "payload_too_large", waf: "lvl-origin" },
+            { ok: false, error: bodyRead.reason, code: bodyRead.code },
             { status: 413 },
           );
         }
+        const { raw: rawBody, bytes } = bodyRead;
 
-        const secret = getWebhookSecret();
+        const secrets = getWebhookSecrets();
         const { check, decision } = verifyPrintifyRequest(
-          rawBody,
+          bytes,
           request,
-          secret,
+          secrets,
         );
 
         if (!decision.accept) {
+          await recordRejectedWebhook({
+            code: check.code,
+            reason: decision.reason,
+            ip: waf.ip,
+            ray: waf.ray,
+            rawBody,
+          });
           return Response.json(
             {
               ok: false,
               error: decision.reason,
               code: check.code,
               hmac: {
-                valid: check.valid,
+                ...publicHmacView(check),
                 policy: decision.policy,
               },
             },
@@ -155,9 +201,37 @@ export const Route = createFileRoute("/api/printify/webhooks")({
             ? (JSON.parse(rawBody) as PrintifyWebhookPayload)
             : {};
         } catch {
+          await recordRejectedWebhook({
+            code: "invalid_json",
+            reason: "Invalid JSON body",
+            ip: waf.ip,
+            ray: waf.ray,
+            rawBody,
+          });
           return Response.json(
             { ok: false, error: "Invalid JSON body" },
             { status: 400 },
+          );
+        }
+
+        const fresh = checkEventFreshness(payload);
+        if (!fresh.ok) {
+          await recordRejectedWebhook({
+            code: fresh.code,
+            reason: fresh.reason,
+            ip: waf.ip,
+            ray: waf.ray,
+            rawBody,
+            topic: typeof payload.type === "string" ? payload.type : null,
+          });
+          return Response.json(
+            {
+              ok: false,
+              error: fresh.reason,
+              code: fresh.code,
+              age_sec: fresh.ageSec,
+            },
+            { status: 403 },
           );
         }
 
@@ -172,10 +246,9 @@ export const Route = createFileRoute("/api/printify/webhooks")({
             id: result.eventId,
             notes: result.notes,
             hmac: {
-              valid: check.valid,
-              code: check.code,
+              ...publicHmacView(check),
               policy: decision.policy,
-              reason: decision.reason,
+              accept_reason: decision.reason,
             },
             edge: { ip: waf.ip, ray: waf.ray, country: waf.country },
           });
