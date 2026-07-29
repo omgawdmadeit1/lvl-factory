@@ -1,7 +1,7 @@
 /**
  * Printify webhook verification + persistence + side effects (server-only).
  */
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { getSql } from "@/lib/db";
 import {
   getWebhookSecret,
@@ -11,6 +11,23 @@ import type {
   PrintifyWebhookPayload,
   StoredWebhookEvent,
 } from "./webhook-topics";
+import {
+  verifyPrintifySignature,
+  shouldAcceptSignedWebhook,
+  signPrintifyBody,
+  verifyPrintifyRequest,
+  getPrintifySignatureFromRequest,
+  type HmacVerifyResult,
+} from "./printify-hmac.server";
+
+export {
+  verifyPrintifySignature,
+  shouldAcceptSignedWebhook,
+  signPrintifyBody,
+  verifyPrintifyRequest,
+  getPrintifySignatureFromRequest,
+};
+export type { HmacVerifyResult };
 
 async function ensureWebhookSchema(): Promise<void> {
   const sql = await getSql();
@@ -51,59 +68,22 @@ async function ensureWebhookSchema(): Promise<void> {
 }
 
 
-function safeEqualHex(a: string, b: string): boolean {
-  try {
-    const ba = Buffer.from(a);
-    const bb = Buffer.from(b);
-    if (ba.length !== bb.length) return false;
-    return timingSafeEqual(ba, bb);
-  } catch {
-    return false;
-  }
-}
-
-/** Validate X-Pfy-Signature: sha256=<hex> against raw body + secret */
-export function verifyPrintifySignature(
-  rawBody: string,
-  signatureHeader: string | null,
-  secret: string | undefined,
-): { valid: boolean; reason: string } {
-  if (!secret) {
-    // Dev / demo: accept but mark invalid when secret not configured
-    return {
-      valid: false,
-      reason: "PRINTIFY_WEBHOOK_SECRET not set — accepted in loose mode",
-    };
-  }
-  if (!signatureHeader) {
-    return { valid: false, reason: "Missing X-Pfy-Signature header" };
-  }
-  const expected =
-    "sha256=" +
-    createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
-  const provided = signatureHeader.trim();
-  if (!safeEqualHex(expected, provided) && expected !== provided) {
-    // also try hex-only compare if Printify omits prefix in some versions
-    const expHex = expected.replace(/^sha256=/, "");
-    const gotHex = provided.replace(/^sha256=/, "");
-    if (!safeEqualHex(expHex, gotHex)) {
-      return { valid: false, reason: "Signature mismatch" };
-    }
-  }
-  return { valid: true, reason: "ok" };
-}
-
+/** @deprecated use shouldAcceptSignedWebhook from printify-hmac.server */
 export function requireSignatureInProduction(
   signatureValid: boolean,
   hasSecret: boolean,
 ): boolean {
-  const strict =
-    process.env.PRINTIFY_WEBHOOK_STRICT === "1" ||
-    process.env.NODE_ENV === "production";
-  if (!strict) return true;
-  if (!hasSecret) return true; // can't enforce without secret configured
-  return signatureValid;
+  const check: HmacVerifyResult = signatureValid
+    ? { valid: true, code: "ok", reason: "ok", algorithm: "sha256" }
+    : {
+        valid: false,
+        code: hasSecret ? "mismatch" : "no_secret",
+        reason: hasSecret ? "invalid" : "no secret",
+        algorithm: "sha256",
+      };
+  return shouldAcceptSignedWebhook(check).accept;
 }
+
 
 function extractShopId(payload: PrintifyWebhookPayload): string | null {
   const data = payload.resource?.data;

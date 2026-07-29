@@ -16,7 +16,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "waf:apply": "node scripts/apply-cloudflare-waf.mjs",
-    "waf:dry": "DRY_RUN=1 node scripts/apply-cloudflare-waf.mjs"
+    "waf:dry": "DRY_RUN=1 node scripts/apply-cloudflare-waf.mjs",
+    "test:hmac": "node scripts/test-printify-hmac.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.3",

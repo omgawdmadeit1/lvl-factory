@@ -131,7 +131,9 @@ Pipeline stages: `brief` → `imagine` → `mockup` → `printify_draft` → `re
 | Manage subscriptions | `GET/POST /api/printify/subscriptions` |
 | Operator UI | `/webhooks` |
 | Topics | shop:disconnected, product:*, order:*, order:shipment:* |
-| Signature header | `X-Pfy-Signature: sha256=<hmac>` |
+| Signature | **HMAC-SHA256** raw body · header `X-Pfy-Signature: sha256=<hex>` |
+| HMAC module | `src/lib/merch/printify-hmac.server.ts` |
+| Self-test | `GET /api/printify/webhooks?hmac_self_test=1` · UI **HMAC self-test** · `npm run test:hmac` |
 | Secret env | `PRINTIFY_WEBHOOK_SECRET` |
 | Token / shop | `PRINTIFY_API_TOKEN`, `PRINTIFY_SHOP_ID` |
 | Storage | `printify_webhook_events`, `printify_orders_mirror` (PGLite/Neon) |

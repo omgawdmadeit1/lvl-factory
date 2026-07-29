@@ -16,7 +16,11 @@ import {
   PRINTIFY_WEBHOOK_TOPICS,
   isPrintifyTopic,
 } from "@/lib/merch/webhook-topics";
-import { processWebhookEvent } from "@/lib/merch/webhooks.server";
+import {
+  processWebhookEvent,
+  signPrintifyBody,
+  verifyPrintifySignature,
+} from "@/lib/merch/webhooks.server";
 import { enforceWebhookWaf } from "@/lib/merch/webhook-waf.server";
 
 function json(data: unknown, status = 200) {
@@ -108,8 +112,17 @@ export const Route = createFileRoute("/api/printify/subscriptions")({
               },
             },
           };
+          const raw = JSON.stringify(payload);
+          // When secret is set, sign like Printify would (HMAC-SHA256)
+          let signatureHeader: string | null = null;
+          let signatureValid = false;
+          if (secret) {
+            signatureHeader = signPrintifyBody(raw, secret);
+            const check = verifyPrintifySignature(raw, signatureHeader, secret);
+            signatureValid = check.valid;
+          }
           const result = await processWebhookEvent(payload, {
-            signatureValid: false,
+            signatureValid,
             rawTopic: topic,
           });
           return json({
@@ -117,7 +130,53 @@ export const Route = createFileRoute("/api/printify/subscriptions")({
             action,
             result,
             payload,
+            hmac: {
+              signed: Boolean(signatureHeader),
+              signature_valid: signatureValid,
+              header_preview: signatureHeader
+                ? `${signatureHeader.slice(0, 18)}…`
+                : null,
+              note: secret
+                ? "Signed with PRINTIFY_WEBHOOK_SECRET (parity with Printify)"
+                : "No secret — event stored with signature_valid=false",
+            },
             note: "Local inject only — did not call Printify",
+          });
+        }
+
+        /** Full path test: sign body and POST to local webhook handler logic */
+        if (action === "hmac_roundtrip") {
+          const sample = {
+            id: `hmac_${Date.now()}`,
+            type: "product:updated",
+            created_at: new Date().toISOString(),
+            resource: {
+              id: "hmac-test",
+              type: "product",
+              data: { shop_id: shopId || 0, source: "hmac_roundtrip" },
+            },
+          };
+          const raw = JSON.stringify(sample);
+          const testSecret = secret || "dev-hmac-roundtrip-secret";
+          const header = signPrintifyBody(raw, testSecret);
+          const good = verifyPrintifySignature(raw, header, testSecret);
+          const bad = verifyPrintifySignature(raw + "x", header, testSecret);
+          const missing = verifyPrintifySignature(raw, null, testSecret);
+          if (good.valid) {
+            await processWebhookEvent(sample, {
+              signatureValid: true,
+              rawTopic: "product:updated",
+            });
+          }
+          return json({
+            ok: good.valid && !bad.valid && !missing.valid,
+            action,
+            tests: {
+              valid_signature: good,
+              tampered_body: bad,
+              missing_header: missing,
+            },
+            used_configured_secret: Boolean(secret),
           });
         }
 

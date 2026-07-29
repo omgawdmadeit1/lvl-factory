@@ -246,6 +246,20 @@ function WebhooksPage() {
               )}
               Local simulate
             </Button>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                void postAction({ action: "hmac_roundtrip" }, "hmac_roundtrip")
+              }
+              disabled={busy !== null}
+            >
+              {busy === "hmac_roundtrip" ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <CheckCircle2 className="size-4" />
+              )}
+              HMAC self-test
+            </Button>
             <div className="w-full max-w-xs sm:w-48">
               <Select value={simTopic} onValueChange={setSimTopic}>
                 <SelectTrigger>
