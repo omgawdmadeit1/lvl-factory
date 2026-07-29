@@ -21,11 +21,15 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_WALLETCONNECT_PROJECT_ID: ${{ secrets.VITE_WALLETCONNECT_PROJECT_ID || '7e30c6e6441bbc7523e87195868a572a' }}
-          VITE_TREASURY_SOL: ${{ secrets.VITE_TREASURY_SOL || '8sjT1G2YWpscXbJmwv2UK1rHZmQFLaczU5KXiiS8gvDy' }}
+          VITE_WALLETCONNECT_PROJECT_ID: 7e30c6e6441bbc7523e87195868a572a
+          VITE_TREASURY_SOL: 8sjT1G2YWpscXbJmwv2UK1rHZmQFLaczU5KXiiS8gvDy
       - name: Deploy to Vercel
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
+        continue-on-error: true
         run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "VERCEL_TOKEN not set — build OK; skip remote deploy"
+            exit 0
+          fi
           npx vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
           npx vercel build --prod --token="$VERCEL_TOKEN"
           npx vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
