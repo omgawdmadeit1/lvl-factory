@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/lib/store/cart";
 import { storeMoney } from "@/lib/store/collections";
 
+const FREE_SHIP_AT = 75;
+
 export const Route = createFileRoute("/shop/cart")({
   component: CartPage,
 });
@@ -113,6 +115,25 @@ function CartPage() {
                 {storeMoney(subtotal)}
               </span>
             </div>
+            {(() => {
+              const left = Math.max(0, FREE_SHIP_AT - subtotal);
+              const pct = Math.min(100, (subtotal / FREE_SHIP_AT) * 100);
+              return (
+                <div className="space-y-2">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
+                    <div
+                      className="h-full rounded-full bg-fg transition-[width] duration-300"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-subtle">
+                    {left > 0
+                      ? `${storeMoney(left)} away from free shipping threshold (demo · Printify rates final)`
+                      : "You hit the free shipping threshold (demo · Printify rates final)"}
+                  </p>
+                </div>
+              );
+            })()}
             <p className="text-xs text-subtle">
               Taxes and shipping are calculated on the fulfillment channel.
               Agents settle face amount multi-rail; physical goods ship via

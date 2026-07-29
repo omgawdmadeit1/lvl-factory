@@ -1,41 +1,55 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Bot,
+  Heart,
   LayoutDashboard,
+  Search,
   ShoppingBag,
   Store,
 } from "lucide-react";
+import { useState } from "react";
 import { CartDrawer } from "@/components/store/cart-drawer";
+import { ShopSearch } from "@/components/store/shop-search";
 import { useCartStore } from "@/lib/store/cart";
 import { STORE_COLLECTIONS } from "@/lib/store/collections";
+import { useWishlistStore } from "@/lib/store/wishlist";
 import { cn } from "@/lib/utils";
 
 const TOP_NAV = [
-  { to: "/shop", label: "Shop", end: true },
-  { to: "/shop/collections/$handle", params: { handle: "tees" }, label: "Tees" },
-  { to: "/shop/collections/$handle", params: { handle: "art" }, label: "Art" },
+  { to: "/shop" as const, label: "Shop", end: true },
   {
-    to: "/shop/collections/$handle",
+    to: "/shop/collections/$handle" as const,
+    params: { handle: "tees" },
+    label: "Tees",
+  },
+  {
+    to: "/shop/collections/$handle" as const,
+    params: { handle: "art" },
+    label: "Art",
+  },
+  {
+    to: "/shop/collections/$handle" as const,
     params: { handle: "agent" },
     label: "Agents",
   },
-] as const;
+];
 
 export function StoreShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const openDrawer = useCartStore((s) => s.openDrawer);
   const count = useCartStore((s) => s.count());
+  const wishCount = useWishlistStore((s) => s.count());
+  const [showSearch, setShowSearch] = useState(false);
 
   return (
     <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
-      {/* Announcement */}
       <div className="border-b border-border bg-surface-2 px-4 py-2 text-center text-xs text-muted">
-        LVL Ltd · Printify POD · Multi-rail agent checkout on{" "}
+        Free multi-rail agent checkout · Printify POD ships worldwide ·{" "}
         <span className="text-fg">factory.lvlltd.com</span>
       </div>
 
       <header className="sticky top-0 z-30 border-b border-border bg-bg/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link to="/shop" className="flex min-w-0 items-center gap-2">
             <Store className="size-5 shrink-0 text-fg" />
             <div className="min-w-0">
@@ -54,7 +68,7 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
                   : item.to;
               const active =
                 item.to === "/shop"
-                  ? pathname === "/shop"
+                  ? pathname === "/shop" || pathname === "/shop/"
                   : pathname.startsWith(href);
               return (
                 <Link
@@ -74,23 +88,40 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <button
+              type="button"
+              className="flex size-11 items-center justify-center rounded-lg text-muted hover:bg-surface hover:text-fg md:hidden"
+              onClick={() => setShowSearch((v) => !v)}
+              aria-label="Search"
+            >
+              <Search className="size-4" />
+            </button>
+            <div className="hidden w-44 lg:block xl:w-56">
+              <ShopSearch compact />
+            </div>
             <Link
               to="/agent/merch"
               className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-muted hover:bg-surface hover:text-fg sm:flex"
             >
               <Bot className="size-3.5" />
-              Agent JSON
+              Agents
             </Link>
             <Link
-              to="/network"
-              className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-muted hover:bg-surface hover:text-fg lg:flex"
+              to="/shop/wishlist"
+              className="relative flex size-11 items-center justify-center rounded-lg text-muted hover:bg-surface hover:text-fg"
+              aria-label={`Wishlist, ${wishCount} items`}
             >
-              Network
+              <Heart className="size-4" />
+              {wishCount > 0 ? (
+                <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-fg text-[10px] font-medium text-bg tabular">
+                  {wishCount > 9 ? "9+" : wishCount}
+                </span>
+              ) : null}
             </Link>
             <Link
               to="/"
-              className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-muted hover:bg-surface hover:text-fg sm:flex"
+              className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-muted hover:bg-surface hover:text-fg lg:flex"
               title="Operator factory"
             >
               <LayoutDashboard className="size-3.5" />
@@ -108,7 +139,12 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Mobile collections strip */}
+        {showSearch ? (
+          <div className="border-t border-border px-4 py-2 md:hidden">
+            <ShopSearch />
+          </div>
+        ) : null}
+
         <div className="flex gap-1 overflow-x-auto border-t border-border px-2 py-2 md:hidden">
           {STORE_COLLECTIONS.filter((c) => c.handle !== "all").map((c) => {
             const href = `/shop/collections/${c.handle}`;
@@ -156,21 +192,13 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/shop/collections/$handle"
-                  params={{ handle: "tees" }}
-                  className="hover:text-fg"
-                >
-                  Tees
+                <Link to="/shop/search" className="hover:text-fg">
+                  Search
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/shop/collections/$handle"
-                  params={{ handle: "art" }}
-                  className="hover:text-fg"
-                >
-                  Art
+                <Link to="/shop/wishlist" className="hover:text-fg">
+                  Wishlist
                 </Link>
               </li>
               <li>

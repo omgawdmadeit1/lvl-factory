@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bot, ExternalLink, ShoppingBag, Wallet } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Bot, ExternalLink, Heart, Link2, ShoppingBag, Wallet } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { ProductGrid } from "@/components/store/product-card";
 import { ProductImage } from "@/components/store/product-image";
 import { Button } from "@/components/ui/button";
 import { useMerchStore } from "@/lib/merch/store";
 import { useCartStore, type CartSize } from "@/lib/store/cart";
+import { useRecentStore } from "@/lib/store/recent";
+import { useWishlistStore } from "@/lib/store/wishlist";
 import { kindLabel, storeMoney } from "@/lib/store/collections";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +25,15 @@ function ProductDetailPage() {
     (p) => p.slug === slug && p.status === "published",
   );
   const add = useCartStore((s) => s.add);
+  const pushRecent = useRecentStore((s) => s.push);
+  const toggleWish = useWishlistStore((s) => s.toggle);
+  const wished = useWishlistStore((s) =>
+    product ? s.has(product.id) : false,
+  );
+
+  useEffect(() => {
+    if (product) pushRecent(product.slug);
+  }, [product, pushRecent]);
 
   const isApparel = product
     ? product.kind === "tee" || product.kind === "hoodie"
@@ -155,6 +167,34 @@ function ProductDetailPage() {
               <ShoppingBag className="size-4" />
               Add to cart
             </Button>
+            <Button
+              variant="secondary"
+              className="min-h-12"
+              onClick={() => toggleWish(product.id)}
+              aria-pressed={wished}
+            >
+              <Heart className={wished ? "size-4 fill-current" : "size-4"} />
+              {wished ? "Saved" : "Save"}
+            </Button>
+            <Button
+              variant="secondary"
+              className="min-h-12"
+              onClick={async () => {
+                const url =
+                  typeof window !== "undefined"
+                    ? window.location.href
+                    : `https://factory.lvlltd.com/shop/${product.slug}`;
+                try {
+                  await navigator.clipboard.writeText(url);
+                  toast.success("Link copied");
+                } catch {
+                  toast.message(url);
+                }
+              }}
+            >
+              <Link2 className="size-4" />
+              Share
+            </Button>
             {product.printifyUrl ? (
               <Button variant="secondary" className="min-h-12 flex-1" asChild>
                 <a
@@ -163,11 +203,46 @@ function ProductDetailPage() {
                   rel="noreferrer"
                 >
                   <ExternalLink className="size-4" />
-                  Buy on Printify
+                  Printify
                 </a>
               </Button>
             ) : null}
           </div>
+
+          {isApparel ? (
+            <details className="mt-6 rounded-xl border border-border bg-surface p-4 text-sm">
+              <summary className="cursor-pointer font-medium">Size guide</summary>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-left text-xs text-muted">
+                  <thead>
+                    <tr className="border-b border-border text-subtle">
+                      <th className="py-2 pr-3 font-medium">Size</th>
+                      <th className="py-2 pr-3 font-medium">Chest</th>
+                      <th className="py-2 font-medium">Length</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["S", "34–37\"", "27\""],
+                      ["M", "38–41\"", "28\""],
+                      ["L", "42–45\"", "29\""],
+                      ["XL", "46–49\"", "30\""],
+                      ["XXL", "50–53\"", "31\""],
+                    ].map((row) => (
+                      <tr key={row[0]} className="border-b border-border/60">
+                        <td className="py-2 pr-3 font-medium text-fg">{row[0]}</td>
+                        <td className="py-2 pr-3">{row[1]}</td>
+                        <td className="py-2">{row[2]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className="mt-2 text-xs text-subtle">
+                  Unisex fit · inches · measure garment flat. Printify blanks vary slightly by provider.
+                </p>
+              </div>
+            </details>
+          ) : null}
 
           {product.agentShopable ? (
             <div className="mt-6 rounded-xl border border-border bg-surface p-4">

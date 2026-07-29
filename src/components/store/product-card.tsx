@@ -1,9 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import { ProductImage } from "@/components/store/product-image";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/lib/store/cart";
 import { kindLabel, storeMoney } from "@/lib/store/collections";
+import { useWishlistStore } from "@/lib/store/wishlist";
 import type { MerchProduct } from "@/lib/merch/types";
 import { cn } from "@/lib/utils";
 
@@ -15,29 +16,45 @@ export function ProductCard({
   priority?: boolean;
 }) {
   const add = useCartStore((s) => s.add);
+  const toggleWish = useWishlistStore((s) => s.toggle);
+  const wished = useWishlistStore((s) => s.has(product.id));
 
   return (
     <article className="group flex flex-col">
-      <Link
-        to="/shop/$slug"
-        params={{ slug: product.slug }}
-        className="relative block overflow-hidden rounded-xl border border-border bg-surface focus-ring"
-      >
-        <div className="aspect-[4/5] overflow-hidden">
-          <ProductImage
-            slug={product.slug}
-            mockupUrl={product.mockupUrl}
-            alt={product.title}
-            priority={priority}
-            className="transition-transform duration-300 ease-out group-hover:scale-[1.03]"
-          />
-        </div>
-        {product.agentShopable ? (
-          <span className="absolute left-3 top-3 rounded-full border border-border bg-bg/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-muted backdrop-blur-sm">
-            Agent
-          </span>
-        ) : null}
-      </Link>
+      <div className="relative">
+        <Link
+          to="/shop/$slug"
+          params={{ slug: product.slug }}
+          className="relative block overflow-hidden rounded-xl border border-border bg-surface focus-ring"
+        >
+          <div className="aspect-[4/5] overflow-hidden">
+            <ProductImage
+              slug={product.slug}
+              mockupUrl={product.mockupUrl}
+              alt={product.title}
+              priority={priority}
+              className="transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+            />
+          </div>
+          {product.agentShopable ? (
+            <span className="absolute left-3 top-3 rounded-full border border-border bg-bg/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-muted backdrop-blur-sm">
+              Agent
+            </span>
+          ) : null}
+        </Link>
+        <button
+          type="button"
+          onClick={() => toggleWish(product.id)}
+          className={cn(
+            "absolute right-3 top-3 flex size-10 items-center justify-center rounded-full border border-border bg-bg/90 backdrop-blur-sm transition-colors",
+            wished ? "text-fg" : "text-muted hover:text-fg",
+          )}
+          aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}
+          aria-pressed={wished}
+        >
+          <Heart className={cn("size-4", wished && "fill-current")} />
+        </button>
+      </div>
 
       <div className="mt-3 flex flex-1 flex-col gap-1 px-0.5">
         <p className="text-[11px] font-medium uppercase tracking-wider text-subtle">
