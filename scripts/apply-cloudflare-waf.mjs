@@ -25,12 +25,16 @@
 import { readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  requireTokenValue,
+  handleAuthHttpError,
+} from "./lib/token-errors.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const wafDir = join(__dirname, "../cloudflare/waf");
 const packName = (process.env.RULE_PACK || "printify").toLowerCase();
 const dry = process.env.DRY_RUN === "1";
-const token = process.env.CLOUDFLARE_API_TOKEN?.trim();
+let token = process.env.CLOUDFLARE_API_TOKEN?.trim();
 let zoneId = process.env.CLOUDFLARE_ZONE_ID?.trim();
 const zoneName = process.env.CLOUDFLARE_ZONE_NAME?.trim() || "lvlltd.com";
 
@@ -72,10 +76,9 @@ function loadPacks() {
   return packs;
 }
 
-if (!token) {
-  console.error("CLOUDFLARE_API_TOKEN is required");
-  process.exit(1);
-}
+token = requireTokenValue("CLOUDFLARE_API_TOKEN", token, {
+  command: "waf:apply",
+});
 
 const packs = loadPacks();
 
@@ -91,6 +94,14 @@ async function cf(path, init = {}) {
   const body = await res.json().catch(() => ({}));
   if (!res.ok || body.success === false) {
     const err = body.errors || body;
+    if (res.status === 401 || res.status === 403) {
+      handleAuthHttpError(
+        "CLOUDFLARE_API_TOKEN",
+        res.status,
+        JSON.stringify(err),
+        "waf:apply",
+      );
+    }
     throw new Error(
       `${init.method || "GET"} ${path} → ${res.status}: ${JSON.stringify(err)}`,
     );

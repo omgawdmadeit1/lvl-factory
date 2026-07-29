@@ -21,6 +21,10 @@ import {
   wafStatusPublic,
 } from "@/lib/merch/webhook-waf.server";
 import type { PrintifyWebhookPayload } from "@/lib/merch/webhook-topics";
+import {
+  getSyncDashboard,
+  listMirroredProducts,
+} from "@/lib/merch/printify-sync.server";
 
 export const Route = createFileRoute("/api/printify/webhooks")({
   server: {
@@ -91,12 +95,15 @@ export const Route = createFileRoute("/api/printify/webhooks")({
         }
 
         try {
-          const [events, orders, rejects, status] = await Promise.all([
-            listWebhookEvents(limit),
-            listMirroredOrders(20),
-            listRejectedWebhooks(15),
-            Promise.resolve(printifyCredentialsStatus()),
-          ]);
+          const [events, orders, rejects, status, products, sync] =
+            await Promise.all([
+              listWebhookEvents(limit),
+              listMirroredOrders(20),
+              listRejectedWebhooks(15),
+              Promise.resolve(printifyCredentialsStatus()),
+              listMirroredProducts(30),
+              getSyncDashboard(),
+            ]);
           const secrets = getWebhookSecrets();
           return Response.json({
             ok: true,
@@ -129,6 +136,8 @@ export const Route = createFileRoute("/api/printify/webhooks")({
             events,
             orders,
             rejects,
+            products,
+            sync,
           });
         } catch (err) {
           return Response.json(

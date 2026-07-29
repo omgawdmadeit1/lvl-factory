@@ -8,6 +8,7 @@ import {
   ArrowRight,
   FlaskConical,
   Store,
+  LayoutGrid,
 } from "lucide-react";
 import {
   Area,
@@ -66,6 +67,29 @@ function DashboardPage() {
   return (
     <div className="space-y-6">
       <Link
+        to="/marketplace"
+        className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-surface-2 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-surface-2">
+            <LayoutGrid className="size-5" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold tracking-tight">
+              LVL Marketplace hub
+            </p>
+            <p className="text-xs text-muted">
+              Shop · checkout · pay · account · seller · agents — lvlltd.com
+              subdomains
+            </p>
+          </div>
+        </div>
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-fg">
+          Open hub <ArrowRight className="size-3.5" />
+        </span>
+      </Link>
+
+      <Link
         to="/shop"
         className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-surface-2 sm:flex-row sm:items-center sm:justify-between"
       >
@@ -76,7 +100,7 @@ function DashboardPage() {
           <div>
             <p className="text-sm font-semibold tracking-tight">LVL Store</p>
             <p className="text-xs text-muted">
-              Shopify-style merch & art · /shop · Printify + multi-rail
+              Merch & art · shop.lvlltd.com · Printify + multi-rail
             </p>
           </div>
         </div>
@@ -88,7 +112,7 @@ function DashboardPage() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="info">lvlltd.com factory</Badge>
+            <Badge variant="info">lvlltd.com marketplace</Badge>
             <Badge variant="default">{LVL_PAYMENT.label}</Badge>
             <Badge variant="warning">chain {LVL_PAYMENT.chainId}</Badge>
           </div>
@@ -97,13 +121,16 @@ function DashboardPage() {
           </h1>
           <p className="max-w-2xl text-sm text-muted">
             Compose flagship skills and music release kits, approve, export
-            listings that always settle in {LVL_PAYMENT.label}. Ethereum
-            mainnet is forbidden on every export.
+            listings that always settle in {LVL_PAYMENT.label}. Wired into the
+            same marketplace hosts as merch and agent commerce.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => seedTier1()} disabled={processingId !== null}>
             Seed Tier 1 packs
+          </Button>
+          <Button asChild variant="secondary">
+            <Link to="/marketplace">Marketplace</Link>
           </Button>
           <Button asChild variant="secondary">
             <Link to="/shop">Open store</Link>
@@ -118,73 +145,65 @@ function DashboardPage() {
               }}
             >
               <Wallet className="size-4" />
-              Pay canary
+              Canary pay
             </Link>
           </Button>
         </div>
       </header>
 
       {lastMessage ? (
-        <p className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-muted">
+        <p className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-xs text-muted">
           {lastMessage}
         </p>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Music blueprints</CardDescription>
-            <CardTitle className="text-2xl tabular">
-              {MUSIC_CATALOG.length}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs text-subtle">
-            Release kits ready to compose
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Skill templates</CardDescription>
-            <CardTitle className="text-2xl tabular">
-              {SKILL_TEMPLATES.length}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs text-subtle">
-            Flagship operator packs
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Ready / approved</CardDescription>
-            <CardTitle className="text-2xl tabular">{packsReady}</CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs text-subtle">In queue</CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Published face</CardDescription>
-            <CardTitle className="text-2xl tabular">
-              {formatUsdc(estimatedUsdc)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs text-subtle">
-            {packsPublished} live · {formatUsdcOnBase(estimatedUsdc)}
-          </CardContent>
-        </Card>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          {
+            label: "Ready packs",
+            value: packsReady,
+            icon: PackageCheck,
+          },
+          {
+            label: "Published",
+            value: packsPublished,
+            icon: Sparkles,
+          },
+          {
+            label: "Music templates",
+            value: MUSIC_CATALOG.length,
+            icon: Disc3,
+          },
+          {
+            label: "Skill templates",
+            value: SKILL_TEMPLATES.length,
+            icon: Boxes,
+          },
+        ].map((s) => (
+          <Card key={s.label} className="border-border bg-surface">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardDescription>{s.label}</CardDescription>
+              <s.icon className="size-4 text-muted" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-semibold tabular">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="border-border bg-surface">
           <CardHeader>
-            <CardTitle className="text-base">Weekly pack activity</CardTitle>
-            <CardDescription>Compose throughput (demo series)</CardDescription>
+            <CardTitle className="text-base">Publish activity</CardTitle>
+            <CardDescription>Local demo series</CardDescription>
           </CardHeader>
-          <CardContent className="h-56">
+          <CardContent className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={activity}>
                 <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" />
-                <XAxis dataKey="day" stroke="var(--color-subtle)" fontSize={12} />
-                <YAxis stroke="var(--color-subtle)" fontSize={12} allowDecimals={false} />
+                <XAxis dataKey="day" stroke="var(--color-subtle)" fontSize={11} />
+                <YAxis stroke="var(--color-subtle)" fontSize={11} />
                 <Tooltip
                   contentStyle={{
                     background: "var(--color-surface)",
@@ -195,47 +214,30 @@ function DashboardPage() {
                 <Area
                   type="monotone"
                   dataKey="packs"
-                  stroke="var(--color-fg)"
-                  fill="var(--color-surface-3)"
+                  stroke="var(--color-chart-4)"
+                  fill="var(--color-chart-4)"
+                  fillOpacity={0.15}
                 />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-border bg-surface">
           <CardHeader>
-            <CardTitle className="text-base">Quick ops</CardTitle>
-            <CardDescription>Factory surfaces</CardDescription>
+            <CardTitle className="text-base">Published estimate</CardTitle>
+            <CardDescription>
+              {formatUsdc(estimatedUsdc)} · {formatUsdcOnBase(estimatedUsdc)}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-2">
-            <Button asChild variant="secondary" className="justify-start">
-              <Link to="/shop">
-                <Store className="size-4" /> LVL Store
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" className="justify-start">
-              <Link to="/music">
-                <Disc3 className="size-4" /> Music packs
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" className="justify-start">
-              <Link to="/skills">
-                <Boxes className="size-4" /> Skill packs
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" className="justify-start">
-              <Link to="/queue">
-                <PackageCheck className="size-4" /> Queue
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" className="justify-start">
-              <Link to="/tier1">
-                <Sparkles className="size-4" /> Tier 1 Plan
-              </Link>
-            </Button>
-            <Button asChild variant="secondary" className="justify-start">
+          <CardContent className="space-y-3 text-sm text-muted">
+            <p>
+              Canary skill <span className="font-mono text-fg">{CANARY.skillId}</span>{" "}
+              · {CANARY.priceUsdc} USDC
+            </p>
+            <Button asChild size="sm" variant="secondary">
               <Link to="/canary">
-                <FlaskConical className="size-4" /> Canary
+                <FlaskConical className="size-4" />
+                Open canary
               </Link>
             </Button>
           </CardContent>

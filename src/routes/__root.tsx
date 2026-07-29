@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { AppShell } from "@/components/factory/app-shell";
+import { HostRewrite } from "@/components/marketplace/host-rewrite";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -17,12 +18,12 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
       {
-        title: "LVL Factory — Skill + Music Pack Factory | lvlltd.com",
+        title: "LVL Marketplace — shop · pay · agents | lvlltd.com",
       },
       {
         name: "description",
         content:
-          "Local operator factory for music release kits and x402 sealed skill packs under the lvlltd.com domain family.",
+          "LVL marketplace on lvlltd.com: merch store, multi-rail pay, agent catalog, seller tools, and Printify POD across factory and subdomains.",
       },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
@@ -37,6 +38,7 @@ function RootComponent() {
         <HeadContent />
       </head>
       <body>
+        <HostRewrite />
         <AppShell>
           <Outlet />
         </AppShell>

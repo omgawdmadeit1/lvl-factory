@@ -47,6 +47,13 @@ interface EventsResponse {
   status?: CredStatus;
   events?: StoredWebhookEvent[];
   orders?: Array<Record<string, unknown>>;
+  products?: Array<Record<string, unknown>>;
+  sync?: {
+    products?: number;
+    orders?: number;
+    subscriptions?: number;
+    recent_runs?: Array<Record<string, unknown>>;
+  };
   error?: string;
 }
 
@@ -64,6 +71,8 @@ interface SubResponse {
 function WebhooksPage() {
   const [events, setEvents] = useState<StoredWebhookEvent[]>([]);
   const [orders, setOrders] = useState<Array<Record<string, unknown>>>([]);
+  const [products, setProducts] = useState<Array<Record<string, unknown>>>([]);
+  const [syncInfo, setSyncInfo] = useState<EventsResponse["sync"] | null>(null);
   const [remote, setRemote] = useState<
     Array<{ id: string; topic: string; url: string }>
   >([]);
@@ -86,6 +95,8 @@ function WebhooksPage() {
       ]);
       if (evRes.events) setEvents(evRes.events);
       if (evRes.orders) setOrders(evRes.orders);
+      if (evRes.products) setProducts(evRes.products);
+      if (evRes.sync) setSyncInfo(evRes.sync);
       if (evRes.endpoint) setEndpoint(evRes.endpoint);
       if (evRes.status) setStatus(evRes.status);
       if ((evRes as { waf?: Record<string, unknown> }).waf) setWafInfo((evRes as { waf?: Record<string, unknown> }).waf ?? null);
@@ -118,11 +129,14 @@ function WebhooksPage() {
       if (!res.ok || !data.ok) {
         toast.error(data.error || `Failed: ${label}`);
       } else {
+        const combo = (data as { combined?: { notes?: string[]; productsUpserted?: number; subscriptionsSynced?: number } }).combined;
         toast.success(
           data.result?.notes ||
-            (Array.isArray(data.created)
-              ? `Created ${data.created.length} webhook(s)`
-              : `${label} ok`),
+            (combo
+              ? `Sync: ${combo.productsUpserted ?? 0} products · ${combo.subscriptionsSynced ?? 0} hooks`
+              : Array.isArray(data.created)
+                ? `Created ${data.created.length} webhook(s)`
+                : `${label} ok`),
         );
       }
       await refresh();
@@ -196,6 +210,16 @@ function WebhooksPage() {
           ok={remote.length > 0}
           detail={`${remote.length} subscribed`}
         />
+        <Stat
+          label="Synced products"
+          ok={(syncInfo?.products ?? products.length) > 0}
+          detail={`${syncInfo?.products ?? products.length} mirrored`}
+        />
+        <Stat
+          label="Synced orders"
+          ok={(syncInfo?.orders ?? orders.length) > 0}
+          detail={`${syncInfo?.orders ?? orders.length} mirrored`}
+        />
       </div>
 
       <Card className="border-border bg-surface">
@@ -228,6 +252,18 @@ function WebhooksPage() {
                 <Radio className="size-4" />
               )}
               Install all topics
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => void postAction({ action: "sync" }, "sync")}
+              disabled={busy !== null || !status?.hasToken}
+            >
+              {busy === "sync" ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <RefreshCw className="size-4" />
+              )}
+              Sync Printify
             </Button>
             <Button
               variant="secondary"
@@ -304,6 +340,36 @@ function WebhooksPage() {
         </CardContent>
       </Card>
 
+
+      <Card className="border-border bg-surface">
+        <CardHeader>
+          <CardTitle className="text-base">Webhook sync</CardTitle>
+          <CardDescription>
+            Inbound Printify events mirror orders + products. Pull button uses the API when credentials are set.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 text-xs text-muted">
+          <ul className="list-inside list-disc space-y-1">
+            <li>order:* → printify_orders_mirror (status, lines, totals)</li>
+            <li>product:* → printify_products_mirror (enrich from API when thin)</li>
+            <li>product:deleted → soft-delete in mirror</li>
+            <li>Sync Printify → remote webhooks + full product pull</li>
+            <li>API: GET/POST /api/printify/sync</li>
+          </ul>
+          {products.length > 0 ? (
+            <ul className="max-h-40 space-y-1 overflow-y-auto border-t border-border pt-2">
+              {products.slice(0, 12).map((pr) => (
+                <li key={String(pr.id)} className="flex justify-between gap-2 font-mono text-[10px]">
+                  <span className="truncate text-fg">{String(pr.title || pr.id)}</span>
+                  <span className="shrink-0 text-subtle">{String(pr.status || "")}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No products mirrored yet — run Sync Printify or wait for product webhooks.</p>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="border-border bg-surface">

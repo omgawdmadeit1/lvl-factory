@@ -93,7 +93,7 @@ function deny(
  */
 export async function enforceWebhookWaf(
   request: Request,
-  opts: { path: "webhooks" | "subscriptions"; maxBody?: number } = {
+  opts: { path: "webhooks" | "subscriptions" | "sync"; maxBody?: number } = {
     path: "webhooks",
   },
 ): Promise<WafResult | WafDeny> {
@@ -157,7 +157,7 @@ export async function enforceWebhookWaf(
     }
   }
 
-  if (opts.path === "subscriptions" && method === "POST") {
+  if ((opts.path === "subscriptions" || opts.path === "sync") && method === "POST") {
     const admin = process.env.WEBHOOK_ADMIN_TOKEN?.trim();
     if (admin) {
       const auth =

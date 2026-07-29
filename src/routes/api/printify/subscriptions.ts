@@ -24,6 +24,11 @@ import {
   publicHmacView,
 } from "@/lib/merch/webhooks.server";
 import { enforceWebhookWaf } from "@/lib/merch/webhook-waf.server";
+import {
+  runFullPrintifySync,
+  syncProductsFromApi,
+  syncRemoteSubscriptions,
+} from "@/lib/merch/printify-sync.server";
 
 function json(data: unknown, status = 200) {
   return Response.json(data, { status });
@@ -69,6 +74,9 @@ export const Route = createFileRoute("/api/printify/subscriptions")({
        * { action: "delete", webhookId }
        * { action: "simulate", webhookId }
        * { action: "local_simulate", topic, resource? } — inject event without Printify
+       * { action: "sync" | "sync_full" } — pull remote hooks + products
+       * { action: "sync_subscriptions" }
+       * { action: "sync_products" }
        */
       POST: async ({ request }) => {
         const waf = await enforceWebhookWaf(request, { path: "subscriptions" });
@@ -311,11 +319,24 @@ export const Route = createFileRoute("/api/printify/subscriptions")({
             return json({ ok: true, action, webhookId, sim });
           }
 
+          if (action === "sync" || action === "sync_full") {
+            const out = await runFullPrintifySync();
+            return json({ ok: out.combined.ok, action: "sync_full", ...out });
+          }
+          if (action === "sync_subscriptions") {
+            const summary = await syncRemoteSubscriptions();
+            return json({ ok: summary.ok, action, summary });
+          }
+          if (action === "sync_products") {
+            const summary = await syncProductsFromApi();
+            return json({ ok: summary.ok, action, summary });
+          }
+
           return json(
             {
               ok: false,
               error:
-                "Unknown action. Use install_all | create | delete | simulate | local_simulate",
+                "Unknown action. Use install_all | create | delete | simulate | local_simulate | sync | sync_products | sync_subscriptions",
             },
             400,
           );

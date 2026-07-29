@@ -24,6 +24,7 @@ import {
   generateWebhookSecret,
   type HmacVerifyResult,
 } from "./printify-hmac.server";
+import { applyWebhookSync } from "./printify-sync.server";
 
 export {
   verifyPrintifySignature,
@@ -41,7 +42,6 @@ export type { HmacVerifyResult };
 
 async function ensureWebhookSchema(): Promise<void> {
   const sql = await getSql();
-  // Defensive: apply tables even if migration glob missed a cold start
   await sql.query(`
     create table if not exists printify_webhook_events (
       id text primary key,
@@ -73,6 +73,9 @@ async function ensureWebhookSchema(): Promise<void> {
       status text,
       last_topic text,
       payload jsonb not null,
+      total_cents int,
+      line_count int,
+      external_id text,
       updated_at timestamptz not null default now()
     )`);
   await sql.query(`
@@ -88,7 +91,6 @@ async function ensureWebhookSchema(): Promise<void> {
       received_at timestamptz not null default now()
     )`);
 }
-
 
 /** Persist failed HMAC / WAF rejects for operator audit (no secrets, truncated). */
 export async function recordRejectedWebhook(opts: {
@@ -154,7 +156,6 @@ export function requireSignatureInProduction(
   return shouldAcceptSignedWebhook(check).accept;
 }
 
-
 function extractShopId(payload: PrintifyWebhookPayload): string | null {
   const data = payload.resource?.data;
   if (data && typeof data.shop_id !== "undefined") {
@@ -166,7 +167,7 @@ function extractShopId(payload: PrintifyWebhookPayload): string | null {
 export async function processWebhookEvent(
   payload: PrintifyWebhookPayload,
   opts: { signatureValid: boolean; rawTopic?: string },
-): Promise<{ eventId: string; notes: string }> {
+): Promise<{ eventId: string; notes: string; synced?: boolean }> {
   await ensureWebhookSchema();
   const sql = await getSql();
   const topic =
@@ -181,36 +182,13 @@ export async function processWebhookEvent(
     payload.resource?.id != null ? String(payload.resource.id) : null;
   const shopId = extractShopId(payload);
 
-  let notes = `Received ${topic}`;
-
-  // Side effects by topic family
-  if (topic.startsWith("order:")) {
-    if (resourceId) {
-      await sql.query(
-        `insert into printify_orders_mirror (id, shop_id, status, last_topic, payload, updated_at)
-         values ($1, $2, $3, $4, $5::jsonb, now())
-         on conflict (id) do update set
-           shop_id = excluded.shop_id,
-           status = excluded.status,
-           last_topic = excluded.last_topic,
-           payload = excluded.payload,
-           updated_at = now()`,
-        [
-          resourceId,
-          shopId,
-          topic.replace("order:", ""),
-          topic,
-          JSON.stringify(payload),
-        ],
-      );
-      notes = `Order ${resourceId} mirrored (${topic})`;
-    }
-  } else if (topic.startsWith("product:")) {
-    notes = resourceId
-      ? `Product ${resourceId} event ${topic} — refresh merch catalog`
-      : `Product event ${topic}`;
-  } else if (topic === "shop:disconnected") {
-    notes = "ALERT: Printify shop disconnected";
+  // Full mirror sync (orders, products, shop alerts)
+  let notes: string;
+  try {
+    notes = await applyWebhookSync(payload, topic, shopId);
+  } catch (e) {
+    notes = `Sync error: ${e instanceof Error ? e.message : String(e)}`;
+    console.error("[printify sync]", e);
   }
 
   await sql.query(
@@ -233,7 +211,7 @@ export async function processWebhookEvent(
     ],
   );
 
-  return { eventId, notes };
+  return { eventId, notes, synced: true };
 }
 
 export async function listWebhookEvents(limit = 50): Promise<StoredWebhookEvent[]> {
@@ -283,7 +261,8 @@ export async function listMirroredOrders(limit = 30) {
   await ensureWebhookSchema();
   const sql = await getSql();
   return sql.query(
-    `select id, shop_id, status, last_topic, payload, updated_at
+    `select id, shop_id, status, last_topic, payload, total_cents, line_count,
+            external_id, updated_at
      from printify_orders_mirror
      order by updated_at desc
      limit $1`,

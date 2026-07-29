@@ -1,0 +1,62 @@
+# EXAMPLE ONLY — not used by the Vercel production OIDC path.
+# Create a Roles Anywhere trust anchor for on-prem / factory edge hosts.
+#
+#   aws cloudformation deploy \
+#     --stack-name lvl-factory-roles-anywhere-anchor \
+#     --template-file infra/aws/roles-anywhere-trust-anchor.example.yaml \
+#     --parameter-overrides CaPemFile=./issuing-ca.pem \
+#     --region us-east-1
+#
+# For AWS Private CA, switch SourceType to AWS_ACM_PCA and set AcmPcaArn.
+# Requires a PEM string parameter (pass via file or Secrets Manager in real use).
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Example IAM Roles Anywhere trust anchor (external CA PEM).
+  Pair with a Profile + role trusting rolesanywhere.amazonaws.com.
+  Not required for lvl-factory Vercel OIDC → S3.
+
+Parameters:
+  TrustAnchorName:
+    Type: String
+    Default: lvl-factory-edge-ca
+
+  # Paste full PEM including -----BEGIN CERTIFICATE----- lines
+  X509CertificateData:
+    Type: String
+    NoEcho: true
+    Description: Issuing or root CA certificate PEM body
+
+  Enabled:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+
+Conditions:
+  IsEnabled: !Equals [!Ref Enabled, "true"]
+
+Resources:
+  EdgeTrustAnchor:
+    Type: AWS::RolesAnywhere::TrustAnchor
+    Properties:
+      Name: !Ref TrustAnchorName
+      Enabled: !If [IsEnabled, true, false]
+      Source:
+        SourceType: CERTIFICATE_BUNDLE
+        SourceData:
+          X509CertificateData: !Ref X509CertificateData
+      Tags:
+        - Key: Project
+          Value: lvl-factory
+        - Key: Purpose
+          Value: edge-roles-anywhere
+        - Key: ManagedBy
+          Value: example-only
+
+Outputs:
+  TrustAnchorArn:
+    Description: Pass to aws_signing_helper --trust-anchor-arn
+    Value: !GetAtt EdgeTrustAnchor.TrustAnchorArn
+
+  TrustAnchorId:
+    Value: !GetAtt EdgeTrustAnchor.TrustAnchorId

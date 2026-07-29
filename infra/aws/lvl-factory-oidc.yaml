@@ -1,0 +1,136 @@
+# CloudFormation: Vercel OIDC IdP + least-privilege S3 role for lvl-factory production.
+#
+#   aws cloudformation deploy \
+#     --stack-name lvl-factory-oidc \
+#     --template-file infra/aws/lvl-factory-oidc.yaml \
+#     --parameter-overrides S3BucketName=YOUR_BUCKET BucketPrefix=factory/ \
+#     --capabilities CAPABILITY_NAMED_IAM \
+#     --region us-east-1
+#
+# Trust locked to production:
+#   owner:tesla-trek:project:lvl-factory:environment:production
+#   aud: https://vercel.com/tesla-trek
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  LVL Factory — IAM OIDC provider for oidc.vercel.com/tesla-trek and a
+  least-privilege role for S3 object R/W under a single bucket prefix.
+  Production environment only.
+
+Parameters:
+  S3BucketName:
+    Type: String
+    Description: Existing S3 bucket for factory assets.
+    MinLength: 3
+    MaxLength: 63
+    AllowedPattern: "^[a-z0-9][a-z0-9.-]*[a-z0-9]$"
+
+  BucketPrefix:
+    Type: String
+    Default: "factory/"
+    Description: Key prefix the role may read/write (include trailing slash).
+
+  RoleName:
+    Type: String
+    Default: lvl-factory-runtime-prod
+
+  # Intermediate CA thumbprint (Let's Encrypt YR2, 2026-07). IAM may refresh later.
+  OidcThumbprint:
+    Type: String
+    Default: "2d74d6dfd96eea55ad7baafa0d3c6552b2dadc37"
+
+Conditions:
+  HasPrefix: !Not [!Equals [!Ref BucketPrefix, ""]]
+
+Resources:
+  VercelOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://oidc.vercel.com/tesla-trek
+      ClientIdList:
+        - https://vercel.com/tesla-trek
+      ThumbprintList:
+        - !Ref OidcThumbprint
+      Tags:
+        - Key: Project
+          Value: lvl-factory
+        - Key: ManagedBy
+          Value: lvl-factory-oidc
+
+  FactoryRuntimeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleName
+      Description: Vercel OIDC runtime role for tesla-trek/lvl-factory production
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: VercelOidcProductionOnly
+            Effect: Allow
+            Principal:
+              Federated: !GetAtt VercelOidcProvider.Arn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                oidc.vercel.com/tesla-trek:aud: https://vercel.com/tesla-trek
+                oidc.vercel.com/tesla-trek:sub: owner:tesla-trek:project:lvl-factory:environment:production
+      Policies:
+        - PolicyName: FactoryS3LeastPrivilege
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: ListBucketUnderPrefix
+                Effect: Allow
+                Action:
+                  - s3:ListBucket
+                  - s3:GetBucketLocation
+                Resource: !Sub "arn:aws:s3:::${S3BucketName}"
+                Condition:
+                  StringLike:
+                    s3:prefix:
+                      - !If [HasPrefix, !Sub "${BucketPrefix}*", "*"]
+                      - !If [HasPrefix, !Ref BucketPrefix, ""]
+              - Sid: ObjectReadWrite
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:AbortMultipartUpload
+                Resource: !If
+                  - HasPrefix
+                  - !Sub "arn:aws:s3:::${S3BucketName}/${BucketPrefix}*"
+                  - !Sub "arn:aws:s3:::${S3BucketName}/*"
+      Tags:
+        - Key: Project
+          Value: lvl-factory
+        - Key: Environment
+          Value: production
+        - Key: ManagedBy
+          Value: lvl-factory-oidc
+
+Outputs:
+  OidcProviderArn:
+    Description: IAM OIDC provider ARN
+    Value: !GetAtt VercelOidcProvider.Arn
+
+  RoleArn:
+    Description: Set this as AWS_ROLE_ARN on Vercel (production)
+    Value: !GetAtt FactoryRuntimeRole.Arn
+
+  RoleNameOut:
+    Description: IAM role name
+    Value: !Ref FactoryRuntimeRole
+
+  RecommendedEnv:
+    Description: Lines for .env.vercel
+    Value: !Sub |
+      AWS_ROLE_ARN=${FactoryRuntimeRole.Arn}
+      AWS_REGION=${AWS::Region}
+      AWS_S3_BUCKET=${S3BucketName}
+      AWS_S3_PREFIX=${BucketPrefix}
+
+  TrustSubject:
+    Description: OIDC sub claim required by the trust policy
+    Value: owner:tesla-trek:project:lvl-factory:environment:production

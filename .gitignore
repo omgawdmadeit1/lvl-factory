@@ -10,3 +10,11 @@ dist/
 .env.local
 .env.*.local
 .env.vercel
+
+# AWS local apply config (has account id)
+infra/aws/config.env
+
+# Local agent artifacts (not for deploy)
+artifacts/
+attachments/
+screenshots/

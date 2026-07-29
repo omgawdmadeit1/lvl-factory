@@ -15,6 +15,10 @@
 # Create token (if using Actions deploy):
 #   https://vercel.com/account/tokens → scope team "tesla-trek"
 #   gh secret set VERCEL_TOKEN --repo omgawdmadeit1/lvl-factory
+#
+# Note: GitHub Actions OIDC does NOT replace VERCEL_TOKEN for deploys.
+# OIDC is for accessing protected *.vercel.app URLs (Trusted Sources).
+# See DOMAIN.md § GitHub Actions OIDC and e2e-oidc-smoke.yml
 
 name: Deploy Vercel Production
 
@@ -75,9 +79,13 @@ jobs:
             echo "mode=cli" >> "$GITHUB_OUTPUT"
           else
             echo "mode=skip" >> "$GITHUB_OUTPUT"
-            echo "::notice::No VERCEL_TOKEN or VERCEL_DEPLOY_HOOK_URL secret."
-            echo "If Git is linked in Vercel, production deploys automatically on push."
-            echo "Otherwise add secrets: see DOMAIN.md § Vercel GitHub integration."
+            echo "::warning::Missing deploy credentials (exit would be 2 in CLI tools)."
+            echo "No VERCEL_TOKEN or VERCEL_DEPLOY_HOOK_URL repository secret is set."
+            echo "If Git is linked in Vercel, production still deploys automatically on push."
+            echo "Otherwise:"
+            echo "  gh secret set VERCEL_TOKEN --repo omgawdmadeit1/lvl-factory"
+            echo "  # or Deploy Hook URL — see DOMAIN.md § Vercel GitHub integration"
+            echo "Token create: https://vercel.com/account/tokens (team tesla-trek)"
           fi
 
       - name: Deploy via Deploy Hook

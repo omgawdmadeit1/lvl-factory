@@ -10,25 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as CanaryRouteImport } from './routes/canary'
+import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MerchRouteImport } from './routes/merch'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as NetworkRouteImport } from './routes/network'
+import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as PayRouteImport } from './routes/pay'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as QueueRouteImport } from './routes/queue'
+import { Route as SellerRouteImport } from './routes/seller'
 import { Route as ShopRouteRouteImport } from './routes/shop/route'
 import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as Tier1RouteImport } from './routes/tier1'
 import { Route as WebhooksRouteImport } from './routes/webhooks'
 import { Route as AgentMerchRouteImport } from './routes/agent.merch'
+import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as ShopSlugRouteImport } from './routes/shop/$slug'
 import { Route as ShopCartRouteImport } from './routes/shop/cart'
 import { Route as ShopSearchRouteImport } from './routes/shop/search'
 import { Route as ShopWishlistRouteImport } from './routes/shop/wishlist'
+import { Route as ApiAwsStatusRouteImport } from './routes/api/aws/status'
 import { Route as ApiPayOptionsRouteImport } from './routes/api/pay/options'
 import { Route as ApiPrintifySubscriptionsRouteImport } from './routes/api/printify/subscriptions'
+import { Route as ApiPrintifySyncRouteImport } from './routes/api/printify/sync'
 import { Route as ApiPrintifyWebhooksRouteImport } from './routes/api/printify/webhooks'
 import { Route as ApiStoreCatalogRouteImport } from './routes/api/store/catalog'
 import { Route as ApiStoreImageRouteImport } from './routes/api/store/image'
@@ -39,9 +47,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CanaryRoute = CanaryRouteImport.update({
   id: '/canary',
   path: '/canary',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketplaceRoute = MarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MerchRoute = MerchRouteImport.update({
@@ -59,6 +82,11 @@ const NetworkRoute = NetworkRouteImport.update({
   path: '/network',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrdersRoute = OrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PayRoute = PayRouteImport.update({
   id: '/pay',
   path: '/pay',
@@ -72,6 +100,11 @@ const PipelineRoute = PipelineRouteImport.update({
 const QueueRoute = QueueRouteImport.update({
   id: '/queue',
   path: '/queue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SellerRoute = SellerRouteImport.update({
+  id: '/seller',
+  path: '/seller',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopRouteRoute = ShopRouteRouteImport.update({
@@ -99,6 +132,11 @@ const AgentMerchRoute = AgentMerchRouteImport.update({
   path: '/agent/merch',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OrdersIdRoute = OrdersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => OrdersRoute,
+} as any)
 const ShopIndexRoute = ShopIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -124,6 +162,11 @@ const ShopWishlistRoute = ShopWishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => ShopRouteRoute,
 } as any)
+const ApiAwsStatusRoute = ApiAwsStatusRouteImport.update({
+  id: '/api/aws/status',
+  path: '/api/aws/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPayOptionsRoute = ApiPayOptionsRouteImport.update({
   id: '/api/pay/options',
   path: '/api/pay/options',
@@ -135,6 +178,11 @@ const ApiPrintifySubscriptionsRoute =
     path: '/api/printify/subscriptions',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPrintifySyncRoute = ApiPrintifySyncRouteImport.update({
+  id: '/api/printify/sync',
+  path: '/api/printify/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPrintifyWebhooksRoute = ApiPrintifyWebhooksRouteImport.update({
   id: '/api/printify/webhooks',
   path: '/api/printify/webhooks',
@@ -159,24 +207,32 @@ const ShopCollectionsHandleRoute = ShopCollectionsHandleRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/shop': typeof ShopRouteRouteWithChildren
+  '/account': typeof AccountRoute
   '/canary': typeof CanaryRoute
+  '/checkout': typeof CheckoutRoute
+  '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
+  '/orders': typeof OrdersRouteWithChildren
   '/pay': typeof PayRoute
   '/pipeline': typeof PipelineRoute
   '/queue': typeof QueueRoute
+  '/seller': typeof SellerRoute
   '/skills': typeof SkillsRoute
   '/tier1': typeof Tier1Route
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/orders/$id': typeof OrdersIdRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/cart': typeof ShopCartRoute
   '/shop/search': typeof ShopSearchRoute
   '/shop/wishlist': typeof ShopWishlistRoute
   '/shop/': typeof ShopIndexRoute
+  '/api/aws/status': typeof ApiAwsStatusRoute
   '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
+  '/api/printify/sync': typeof ApiPrintifySyncRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
   '/api/store/catalog': typeof ApiStoreCatalogRoute
   '/api/store/image': typeof ApiStoreImageRoute
@@ -184,24 +240,32 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/canary': typeof CanaryRoute
+  '/checkout': typeof CheckoutRoute
+  '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
+  '/orders': typeof OrdersRouteWithChildren
   '/pay': typeof PayRoute
   '/pipeline': typeof PipelineRoute
   '/queue': typeof QueueRoute
+  '/seller': typeof SellerRoute
   '/skills': typeof SkillsRoute
   '/tier1': typeof Tier1Route
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/orders/$id': typeof OrdersIdRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/cart': typeof ShopCartRoute
   '/shop/search': typeof ShopSearchRoute
   '/shop/wishlist': typeof ShopWishlistRoute
   '/shop': typeof ShopIndexRoute
+  '/api/aws/status': typeof ApiAwsStatusRoute
   '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
+  '/api/printify/sync': typeof ApiPrintifySyncRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
   '/api/store/catalog': typeof ApiStoreCatalogRoute
   '/api/store/image': typeof ApiStoreImageRoute
@@ -211,24 +275,32 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/shop': typeof ShopRouteRouteWithChildren
+  '/account': typeof AccountRoute
   '/canary': typeof CanaryRoute
+  '/checkout': typeof CheckoutRoute
+  '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
+  '/orders': typeof OrdersRouteWithChildren
   '/pay': typeof PayRoute
   '/pipeline': typeof PipelineRoute
   '/queue': typeof QueueRoute
+  '/seller': typeof SellerRoute
   '/skills': typeof SkillsRoute
   '/tier1': typeof Tier1Route
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/orders/$id': typeof OrdersIdRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/cart': typeof ShopCartRoute
   '/shop/search': typeof ShopSearchRoute
   '/shop/wishlist': typeof ShopWishlistRoute
   '/shop/': typeof ShopIndexRoute
+  '/api/aws/status': typeof ApiAwsStatusRoute
   '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
+  '/api/printify/sync': typeof ApiPrintifySyncRoute
   '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
   '/api/store/catalog': typeof ApiStoreCatalogRoute
   '/api/store/image': typeof ApiStoreImageRoute
@@ -239,24 +311,32 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/shop'
+    | '/account'
     | '/canary'
+    | '/checkout'
+    | '/marketplace'
     | '/merch'
     | '/music'
     | '/network'
+    | '/orders'
     | '/pay'
     | '/pipeline'
     | '/queue'
+    | '/seller'
     | '/skills'
     | '/tier1'
     | '/webhooks'
     | '/agent/merch'
+    | '/orders/$id'
     | '/shop/$slug'
     | '/shop/cart'
     | '/shop/search'
     | '/shop/wishlist'
     | '/shop/'
+    | '/api/aws/status'
     | '/api/pay/options'
     | '/api/printify/subscriptions'
+    | '/api/printify/sync'
     | '/api/printify/webhooks'
     | '/api/store/catalog'
     | '/api/store/image'
@@ -264,24 +344,32 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/canary'
+    | '/checkout'
+    | '/marketplace'
     | '/merch'
     | '/music'
     | '/network'
+    | '/orders'
     | '/pay'
     | '/pipeline'
     | '/queue'
+    | '/seller'
     | '/skills'
     | '/tier1'
     | '/webhooks'
     | '/agent/merch'
+    | '/orders/$id'
     | '/shop/$slug'
     | '/shop/cart'
     | '/shop/search'
     | '/shop/wishlist'
     | '/shop'
+    | '/api/aws/status'
     | '/api/pay/options'
     | '/api/printify/subscriptions'
+    | '/api/printify/sync'
     | '/api/printify/webhooks'
     | '/api/store/catalog'
     | '/api/store/image'
@@ -290,24 +378,32 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/shop'
+    | '/account'
     | '/canary'
+    | '/checkout'
+    | '/marketplace'
     | '/merch'
     | '/music'
     | '/network'
+    | '/orders'
     | '/pay'
     | '/pipeline'
     | '/queue'
+    | '/seller'
     | '/skills'
     | '/tier1'
     | '/webhooks'
     | '/agent/merch'
+    | '/orders/$id'
     | '/shop/$slug'
     | '/shop/cart'
     | '/shop/search'
     | '/shop/wishlist'
     | '/shop/'
+    | '/api/aws/status'
     | '/api/pay/options'
     | '/api/printify/subscriptions'
+    | '/api/printify/sync'
     | '/api/printify/webhooks'
     | '/api/store/catalog'
     | '/api/store/image'
@@ -317,19 +413,26 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ShopRouteRoute: typeof ShopRouteRouteWithChildren
+  AccountRoute: typeof AccountRoute
   CanaryRoute: typeof CanaryRoute
+  CheckoutRoute: typeof CheckoutRoute
+  MarketplaceRoute: typeof MarketplaceRoute
   MerchRoute: typeof MerchRoute
   MusicRoute: typeof MusicRoute
   NetworkRoute: typeof NetworkRoute
+  OrdersRoute: typeof OrdersRouteWithChildren
   PayRoute: typeof PayRoute
   PipelineRoute: typeof PipelineRoute
   QueueRoute: typeof QueueRoute
+  SellerRoute: typeof SellerRoute
   SkillsRoute: typeof SkillsRoute
   Tier1Route: typeof Tier1Route
   WebhooksRoute: typeof WebhooksRoute
   AgentMerchRoute: typeof AgentMerchRoute
+  ApiAwsStatusRoute: typeof ApiAwsStatusRoute
   ApiPayOptionsRoute: typeof ApiPayOptionsRoute
   ApiPrintifySubscriptionsRoute: typeof ApiPrintifySubscriptionsRoute
+  ApiPrintifySyncRoute: typeof ApiPrintifySyncRoute
   ApiPrintifyWebhooksRoute: typeof ApiPrintifyWebhooksRoute
   ApiStoreCatalogRoute: typeof ApiStoreCatalogRoute
   ApiStoreImageRoute: typeof ApiStoreImageRoute
@@ -344,11 +447,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/canary': {
       id: '/canary'
       path: '/canary'
       fullPath: '/canary'
       preLoaderRoute: typeof CanaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketplace': {
+      id: '/marketplace'
+      path: '/marketplace'
+      fullPath: '/marketplace'
+      preLoaderRoute: typeof MarketplaceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/merch': {
@@ -372,6 +496,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NetworkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/orders': {
+      id: '/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof OrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pay': {
       id: '/pay'
       path: '/pay'
@@ -391,6 +522,13 @@ declare module '@tanstack/react-router' {
       path: '/queue'
       fullPath: '/queue'
       preLoaderRoute: typeof QueueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seller': {
+      id: '/seller'
+      path: '/seller'
+      fullPath: '/seller'
+      preLoaderRoute: typeof SellerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shop': {
@@ -428,6 +566,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentMerchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/orders/$id': {
+      id: '/orders/$id'
+      path: '/$id'
+      fullPath: '/orders/$id'
+      preLoaderRoute: typeof OrdersIdRouteImport
+      parentRoute: typeof OrdersRoute
+    }
     '/shop/': {
       id: '/shop/'
       path: '/'
@@ -463,6 +608,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopWishlistRouteImport
       parentRoute: typeof ShopRouteRoute
     }
+    '/api/aws/status': {
+      id: '/api/aws/status'
+      path: '/api/aws/status'
+      fullPath: '/api/aws/status'
+      preLoaderRoute: typeof ApiAwsStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/pay/options': {
       id: '/api/pay/options'
       path: '/api/pay/options'
@@ -475,6 +627,13 @@ declare module '@tanstack/react-router' {
       path: '/api/printify/subscriptions'
       fullPath: '/api/printify/subscriptions'
       preLoaderRoute: typeof ApiPrintifySubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/printify/sync': {
+      id: '/api/printify/sync'
+      path: '/api/printify/sync'
+      fullPath: '/api/printify/sync'
+      preLoaderRoute: typeof ApiPrintifySyncRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/printify/webhooks': {
@@ -530,22 +689,40 @@ const ShopRouteRouteWithChildren = ShopRouteRoute._addFileChildren(
   ShopRouteRouteChildren,
 )
 
+interface OrdersRouteChildren {
+  OrdersIdRoute: typeof OrdersIdRoute
+}
+
+const OrdersRouteChildren: OrdersRouteChildren = {
+  OrdersIdRoute: OrdersIdRoute,
+}
+
+const OrdersRouteWithChildren =
+  OrdersRoute._addFileChildren(OrdersRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ShopRouteRoute: ShopRouteRouteWithChildren,
+  AccountRoute: AccountRoute,
   CanaryRoute: CanaryRoute,
+  CheckoutRoute: CheckoutRoute,
+  MarketplaceRoute: MarketplaceRoute,
   MerchRoute: MerchRoute,
   MusicRoute: MusicRoute,
   NetworkRoute: NetworkRoute,
+  OrdersRoute: OrdersRouteWithChildren,
   PayRoute: PayRoute,
   PipelineRoute: PipelineRoute,
   QueueRoute: QueueRoute,
+  SellerRoute: SellerRoute,
   SkillsRoute: SkillsRoute,
   Tier1Route: Tier1Route,
   WebhooksRoute: WebhooksRoute,
   AgentMerchRoute: AgentMerchRoute,
+  ApiAwsStatusRoute: ApiAwsStatusRoute,
   ApiPayOptionsRoute: ApiPayOptionsRoute,
   ApiPrintifySubscriptionsRoute: ApiPrintifySubscriptionsRoute,
+  ApiPrintifySyncRoute: ApiPrintifySyncRoute,
   ApiPrintifyWebhooksRoute: ApiPrintifyWebhooksRoute,
   ApiStoreCatalogRoute: ApiStoreCatalogRoute,
   ApiStoreImageRoute: ApiStoreImageRoute,

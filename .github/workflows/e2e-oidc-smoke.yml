@@ -1,0 +1,71 @@
+# Optional: smoke-test a *protected* Vercel deployment URL using GitHub Actions OIDC.
+#
+# This does NOT deploy. It only proves Trusted Sources OIDC works so CI can
+# hit `*.vercel.app` without VERCEL_AUTOMATION_BYPASS_SECRET.
+#
+# One-time Vercel setup:
+#   Project → Settings → Deployment Protection → Trusted Sources → External
+#   → Add GitHub Actions → repo omgawdmadeit1/lvl-factory
+#   → allow production (and/or preview)
+#
+# Docs: DOMAIN.md § GitHub Actions OIDC
+# Upstream: https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/trusted-sources
+
+name: E2E OIDC smoke (protected Vercel URL)
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Protected deployment base URL (must be *.vercel.app unless custom domain is also protected)"
+        required: true
+        default: "https://lvl-factory.vercel.app"
+  # Uncomment after Trusted Sources is configured and you want PR checks:
+  # pull_request:
+  #   branches: [main]
+
+permissions:
+  contents: read
+  id-token: write # required to mint GitHub OIDC JWT
+
+concurrency:
+  group: e2e-oidc-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: GET /shop with OIDC bypass
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mint GitHub OIDC token
+        id: oidc
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Default aud is https://github.com/<owner> — matches Vercel Trusted Sources
+            const token = await core.getIDToken();
+            core.setSecret(token);
+            core.setOutput("token", token);
+
+      - name: Request protected deployment
+        env:
+          OIDC: ${{ steps.oidc.outputs.token }}
+          BASE: ${{ inputs.url || 'https://lvl-factory.vercel.app' }}
+        run: |
+          set -euo pipefail
+          echo "Target: $BASE/shop"
+          code=$(curl -sS -o /tmp/body.html -w "%{http_code}" \
+            -H "x-vercel-trusted-oidc-idp-token: $OIDC" \
+            --max-time 30 \
+            "$BASE/shop")
+          echo "HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "::error::Expected 200 from protected URL (got $code)."
+            echo "If 401/403: add GitHub Actions as Trusted Source for this project."
+            head -c 400 /tmp/body.html || true
+            exit 1
+          fi
+          if ! grep -qiE 'shop|lvl|factory|merch|product' /tmp/body.html; then
+            echo "::warning::200 OK but body may be empty/protection interstitial — inspect manually."
+          fi
+          echo "OIDC smoke OK"

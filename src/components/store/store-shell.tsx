@@ -6,6 +6,7 @@ import {
   Search,
   ShoppingBag,
   Store,
+  User,
 } from "lucide-react";
 import { useState } from "react";
 import { CartDrawer } from "@/components/store/cart-drawer";
@@ -46,8 +47,12 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
       <div className="border-b border-border bg-surface-2 px-4 py-2 text-center text-xs text-muted">
-        Free multi-rail agent checkout · Printify POD ships worldwide ·{" "}
-        <span className="text-fg">factory.lvlltd.com</span>
+        LVL marketplace · multi-rail + Printify POD ·{" "}
+        <span className="text-fg">shop.lvlltd.com</span>
+        {" · "}
+        <Link to="/marketplace" className="text-fg underline-offset-2 hover:underline">
+          hub
+        </Link>
       </div>
 
       <header className="sticky top-0 z-30 border-b border-border bg-bg/95 backdrop-blur-sm">
@@ -57,7 +62,7 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
             <div className="min-w-0">
               <p className="text-sm font-semibold tracking-tight">LVL Store</p>
               <p className="truncate text-[11px] text-subtle">
-                lvlltd.com · factory
+                lvlltd.com · marketplace
               </p>
             </div>
           </Link>
@@ -110,6 +115,14 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
               Agents
             </Link>
             <Link
+              to="/account"
+              className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-muted hover:bg-surface hover:text-fg sm:flex"
+              aria-label="Account"
+            >
+              <User className="size-3.5" />
+              Account
+            </Link>
+            <Link
               to="/shop/wishlist"
               className="relative flex size-11 items-center justify-center rounded-lg text-muted hover:bg-surface hover:text-fg"
               aria-label={`Wishlist, ${wishCount} items`}
@@ -122,8 +135,14 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
               ) : null}
             </Link>
             <Link
-              to="/"
+              to="/checkout"
               className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-muted hover:bg-surface hover:text-fg lg:flex"
+            >
+              Checkout
+            </Link>
+            <Link
+              to="/"
+              className="hidden items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs text-muted hover:bg-surface hover:text-fg xl:flex"
               title="Operator factory"
             >
               <LayoutDashboard className="size-3.5" />
@@ -170,65 +189,56 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto min-h-[60dvh] max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <WishlistHydrate />
+      <CartDrawer />
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         {children}
       </main>
 
-      <footer className="border-t border-border bg-surface">
+      <footer className="mt-auto border-t border-border">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3 sm:px-6">
-          <div>
-            <p className="text-sm font-semibold tracking-tight">LVL Ltd</p>
-            <p className="mt-2 text-sm text-muted">
-              Merch and art for humans and agents. Fulfillment by Printify.
-              Settlement multi-rail on factory.lvlltd.com.
+          <div className="space-y-2">
+            <p className="text-sm font-semibold">LVL Store</p>
+            <p className="text-xs text-muted">
+              Marketplace merch & art · Printify POD · multi-rail agent pay on
+              the lvlltd.com network.
             </p>
           </div>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-subtle">
-              Shop
-            </p>
-            <ul className="mt-3 space-y-2 text-sm text-muted">
+          <div className="space-y-2 text-xs text-muted">
+            <p className="font-medium text-fg">Shop</p>
+            <ul className="space-y-1">
               <li>
-                <Link to="/shop" className="hover:text-fg">
-                  All products
+                <Link to="/shop/collections/$handle" params={{ handle: "tees" }}>
+                  Tees
                 </Link>
               </li>
               <li>
-                <Link to="/shop/search" className="hover:text-fg">
-                  Search
+                <Link to="/shop/collections/$handle" params={{ handle: "art" }}>
+                  Art
                 </Link>
               </li>
               <li>
-                <Link to="/shop/wishlist" className="hover:text-fg">
-                  Wishlist
-                </Link>
+                <Link to="/checkout">Checkout</Link>
               </li>
               <li>
-                <Link to="/shop/cart" className="hover:text-fg">
-                  Cart
-                </Link>
+                <Link to="/account">Account</Link>
               </li>
             </ul>
           </div>
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-subtle">
-              Domain map
-            </p>
-            <ul className="mt-3 space-y-2 text-sm text-muted">
-              <li>Store · factory.lvlltd.com/shop</li>
-              <li>Agents · /agent/merch</li>
-              <li>Pay · /pay multi-rail</li>
-              <li>Printify · lvlxltd.printify.me</li>
+          <div className="space-y-2 text-xs text-muted">
+            <p className="font-medium text-fg">Network</p>
+            <ul className="space-y-1">
+              <li>Store · shop.lvlltd.com</li>
+              <li>Pay · pay.lvlltd.com</li>
+              <li>Hub · lvlltd.com/marketplace</li>
+              <li>POD · lvlxltd.printify.me</li>
             </ul>
           </div>
         </div>
-        <div className="border-t border-border px-4 py-4 text-center text-xs text-subtle">
-          © {new Date().getFullYear()} LVL X, Inc. · lvlltd.com
+        <div className="border-t border-border py-4 text-center text-[11px] text-subtle">
+          © {new Date().getFullYear()} LVL X, Inc. · lvlltd.com marketplace
         </div>
       </footer>
-
-      <WishlistHydrate />
-      <CartDrawer />
     </div>
   );
 }

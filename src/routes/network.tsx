@@ -3,6 +3,7 @@ import {
   Bot,
   ExternalLink,
   Globe,
+  LayoutGrid,
   ShoppingBag,
   Workflow,
   Wallet,
@@ -17,16 +18,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CLOUDFLARE_MAP, LVL_NETWORK, PRINTIFY_STORE } from "@/lib/merch/printify";
+import { MARKETPLACE_TOOLS } from "@/lib/marketplace/hosts";
 
 export const Route = createFileRoute("/network")({
   component: NetworkPage,
   head: () => ({
     meta: [
-      { title: "LVL Network — domains & rails | lvlltd.com" },
+      { title: "LVL Network — marketplace domains | lvlltd.com" },
       {
         name: "description",
         content:
-          "Domain map for LVL Ltd: apex, factory store, Printify, agent commerce, multi-rail pay.",
+          "Domain map for LVL marketplace: shop, pay, account, seller, agents, factory, Printify.",
       },
     ],
   }),
@@ -38,19 +40,25 @@ function NetworkPage() {
       <header className="space-y-3">
         <div className="flex flex-wrap gap-2">
           <Badge variant="info">lvlltd.com</Badge>
-          <Badge variant="default">Cloudflare</Badge>
+          <Badge variant="default">marketplace</Badge>
           <Badge variant="success">multi-rail</Badge>
         </div>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          LVL network model
+          LVL marketplace network
         </h1>
         <p className="max-w-2xl text-sm text-muted">
-          How {LVL_NETWORK.brand} surfaces connect: brand apex, factory
-          commerce, Printify fulfillment, and agent settlement.
+          How {LVL_NETWORK.brand} surfaces connect: brand hub, shop, checkout,
+          pay rails, seller tools, agent catalog, and Printify fulfillment.
         </p>
+        <Button asChild size="sm" variant="secondary">
+          <Link to="/marketplace">
+            <LayoutGrid className="size-4" />
+            Open marketplace hub
+          </Link>
+        </Button>
       </header>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {LVL_NETWORK.domains.map((d) => (
           <Card key={d.host} className="border-border bg-surface">
             <CardHeader className="pb-2">
@@ -62,6 +70,12 @@ function NetworkPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-xs text-subtle">
               <p className="font-mono text-muted">{d.role}</p>
+              {"surface" in d && d.surface ? (
+                <p>
+                  surface <span className="text-fg">{d.surface}</span> · home{" "}
+                  <span className="font-mono text-fg">{d.homePath}</span>
+                </p>
+              ) : null}
               {"paths" in d && d.paths
                 ? Object.entries(d.paths).map(([k, v]) => (
                     <p key={k}>
@@ -77,8 +91,29 @@ function NetworkPage() {
 
       <Card className="border-border bg-surface">
         <CardHeader>
+          <CardTitle className="text-base">Marketplace tools</CardTitle>
+          <CardDescription>
+            Path on factory · dedicated subdomain when DNS is live
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-2 sm:grid-cols-2">
+          {MARKETPLACE_TOOLS.map((t) => (
+            <Link
+              key={t.id}
+              to={t.path}
+              className="rounded-lg border border-border px-3 py-2 text-xs transition-colors hover:bg-surface-2"
+            >
+              <span className="font-medium text-fg">{t.title}</span>
+              <span className="mt-0.5 block font-mono text-subtle">{t.host}</span>
+            </Link>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card className="border-border bg-surface">
+        <CardHeader>
           <CardTitle className="text-base">Quick links</CardTitle>
-          <CardDescription>Live paths on this factory origin</CardDescription>
+          <CardDescription>Live paths on this origin</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           <Button asChild>
@@ -88,13 +123,19 @@ function NetworkPage() {
             </Link>
           </Button>
           <Button variant="secondary" asChild>
+            <Link to="/checkout">Checkout</Link>
+          </Button>
+          <Button variant="secondary" asChild>
             <Link to="/agent/merch">
               <Bot className="size-4" />
               Agent catalog
             </Link>
           </Button>
           <Button variant="secondary" asChild>
-            <Link to="/pay" search={{ skill: "merch", amount: 0.05, canceled: false }}>
+            <Link
+              to="/pay"
+              search={{ skill: "merch", amount: 0.05, canceled: false }}
+            >
               <Wallet className="size-4" />
               Multi-rail pay
             </Link>
@@ -102,70 +143,19 @@ function NetworkPage() {
           <Button variant="secondary" asChild>
             <Link to="/pipeline">
               <Workflow className="size-4" />
-              Imagine pipeline
+              Pipeline
             </Link>
           </Button>
           <Button variant="secondary" asChild>
-            <a href={PRINTIFY_STORE.storefrontUrl} target="_blank" rel="noreferrer">
+            <a href={CLOUDFLARE_MAP.printify} target="_blank" rel="noreferrer">
               <ExternalLink className="size-4" />
-              Printify
+              {PRINTIFY_STORE.slug}
             </a>
           </Button>
         </CardContent>
       </Card>
 
-      <Card className="border-border bg-surface">
-        <CardHeader>
-          <CardTitle className="text-base">Canonical URLs</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid gap-2 text-sm sm:grid-cols-2">
-            {Object.entries(CLOUDFLARE_MAP)
-              .filter(([, v]) => typeof v === "string" && v.startsWith("http"))
-              .map(([k, v]) => (
-                <div
-                  key={k}
-                  className="rounded-lg border border-border bg-bg px-3 py-2"
-                >
-                  <dt className="text-xs uppercase tracking-wider text-subtle">
-                    {k}
-                  </dt>
-                  <dd className="mt-0.5 break-all font-mono text-xs text-muted">
-                    {v}
-                  </dd>
-                </div>
-              ))}
-          </dl>
-          <p className="mt-4 text-xs text-subtle">{CLOUDFLARE_MAP.note}</p>
-        </CardContent>
-      </Card>
-
-      <Card className="border-border bg-surface">
-        <CardHeader>
-          <CardTitle className="text-base">Edge security</CardTitle>
-          <CardDescription>
-            Cloudflare unmetered DDoS + WAF packs + Worker v2
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted">
-          <p>
-            Zone packs: <span className="font-mono text-fg">printify</span> +{" "}
-            <span className="font-mono text-fg">shop-pay</span> · apply with{" "}
-            <span className="font-mono text-xs">npm run waf:all</span>
-          </p>
-          <p>
-            Image proxy: optimized Printify → S3 resolve with CDN cache headers.
-            AWS Shield / Global Accelerator not required on this edge.
-          </p>
-          <ul className="list-inside list-disc text-xs text-subtle">
-            <li>/shop · 300 GET/min/IP</li>
-            <li>/api/store/catalog · 120 GET/min/IP</li>
-            <li>/pay POST · 30/min/IP (bot fight skipped for callbacks)</li>
-            <li>webhooks POST · HMAC + 60/min/IP · no managed challenge</li>
-          </ul>
-        </CardContent>
-      </Card>
-
+      <p className="text-xs text-subtle">{CLOUDFLARE_MAP.note}</p>
     </div>
   );
 }

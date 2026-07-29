@@ -1,0 +1,259 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  ArrowRight,
+  Bot,
+  CreditCard,
+  LayoutGrid,
+  Package,
+  Shield,
+  Store,
+  Truck,
+  Wallet,
+  Workflow,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  MARKETPLACE_HOSTS,
+  MARKETPLACE_TOOLS,
+  MARKETPLACE_URLS,
+} from "@/lib/marketplace/hosts";
+import { LVL_PAYMENT } from "@/lib/factory/payment";
+import { PRINTIFY_STORE } from "@/lib/merch/printify";
+
+export const Route = createFileRoute("/marketplace")({
+  head: () => ({
+    meta: [
+      {
+        title: "LVL Marketplace — shop, pay, agents | lvlltd.com",
+      },
+      {
+        name: "description",
+        content:
+          "LVL marketplace hub: merch store, multi-rail checkout, agent catalog, seller tools, and Printify POD on the lvlltd.com domain family.",
+      },
+    ],
+  }),
+  component: MarketplaceHubPage,
+});
+
+function MarketplaceHubPage() {
+  const buyerTools = MARKETPLACE_TOOLS.filter((t) => t.audience === "buyer");
+  const opsTools = MARKETPLACE_TOOLS.filter(
+    (t) => t.audience === "operator" || t.audience === "agent",
+  );
+  const publicHosts = MARKETPLACE_HOSTS.filter(
+    (h) => h.surface !== "printify_external",
+  );
+
+  return (
+    <div className="space-y-10">
+      <header className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="info">lvlltd.com</Badge>
+          <Badge variant="default">{LVL_PAYMENT.label}</Badge>
+          <Badge variant="warning">marketplace hub</Badge>
+        </div>
+        <div className="max-w-2xl space-y-3">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Shop, settle, ship — one LVL network
+          </h1>
+          <p className="text-sm text-muted sm:text-base">
+            Merch & art via Printify POD, multi-rail crypto/card pay for agents
+            and humans, seller pipeline, and operator factory — wired across{" "}
+            <span className="text-fg">lvlltd.com</span> subdomains.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild>
+            <Link to="/shop">
+              <Store className="size-4" />
+              Open store
+            </Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link to="/checkout">Checkout</Link>
+          </Button>
+          <Button asChild variant="secondary">
+            <Link to="/agent/merch">
+              <Bot className="size-4" />
+              Agent shop
+            </Link>
+          </Button>
+        </div>
+      </header>
+
+      <section className="grid gap-3 sm:grid-cols-3">
+        {[
+          {
+            icon: Store,
+            title: "Catalog",
+            body: "LVL Store collections, search, wishlist, agent SKUs",
+          },
+          {
+            icon: Wallet,
+            title: "Settlement",
+            body: `${LVL_PAYMENT.label} · multi-chain USDC/USDT · Stripe card`,
+          },
+          {
+            icon: Truck,
+            title: "Fulfillment",
+            body: `${PRINTIFY_STORE.brand} POD · webhooks on factory`,
+          },
+        ].map((f) => (
+          <Card key={f.title} className="border-border bg-surface">
+            <CardHeader className="pb-2">
+              <div className="mb-2 flex size-9 items-center justify-center rounded-lg border border-border bg-surface-2">
+                <f.icon className="size-4" />
+              </div>
+              <CardTitle className="text-base">{f.title}</CardTitle>
+              <CardDescription>{f.body}</CardDescription>
+            </CardHeader>
+          </Card>
+        ))}
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-end justify-between gap-2">
+          <h2 className="text-lg font-semibold tracking-tight">Buy</h2>
+          <Link
+            to="/shop"
+            className="text-xs text-muted hover:text-fg"
+          >
+            Browse all <ArrowRight className="inline size-3" />
+          </Link>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {buyerTools.map((t) => (
+            <Link
+              key={t.id}
+              to={t.path}
+              className="group rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-surface-2"
+            >
+              <p className="text-sm font-semibold tracking-tight">{t.title}</p>
+              <p className="mt-1 text-xs text-muted">{t.blurb}</p>
+              <p className="mt-3 font-mono text-[11px] text-subtle">
+                {t.host}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold tracking-tight">
+          Sell · agents · ops
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {opsTools.map((t) => (
+            <Link
+              key={t.id}
+              to={t.path}
+              className="rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-surface-2"
+            >
+              <p className="text-sm font-semibold tracking-tight">{t.title}</p>
+              <p className="mt-1 text-xs text-muted">{t.blurb}</p>
+              <p className="mt-3 font-mono text-[11px] text-subtle">
+                {t.host}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Shield className="size-4 text-muted" />
+          <h2 className="text-lg font-semibold tracking-tight">
+            Domain matrix
+          </h2>
+        </div>
+        <Card className="border-border bg-surface">
+          <CardContent className="overflow-x-auto p-0">
+            <table className="w-full min-w-[36rem] text-left text-xs">
+              <thead className="border-b border-border text-muted">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Host</th>
+                  <th className="px-4 py-3 font-medium">Surface</th>
+                  <th className="px-4 py-3 font-medium">Home</th>
+                  <th className="px-4 py-3 font-medium">Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                {publicHosts.map((h) => (
+                  <tr
+                    key={h.host}
+                    className="border-b border-border/60 last:border-0"
+                  >
+                    <td className="px-4 py-2.5 font-mono text-fg">{h.host}</td>
+                    <td className="px-4 py-2.5 text-muted">{h.surface}</td>
+                    <td className="px-4 py-2.5 font-mono text-subtle">
+                      {h.homePath}
+                    </td>
+                    <td className="px-4 py-2.5 text-muted">{h.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+        <p className="text-xs text-subtle">
+          Point DNS CNAMEs at the factory origin (Cloudflare → Vercel). Host
+          rewrite sends <code className="text-muted">/</code> to each surface.
+          Full stack also lives on{" "}
+          <a
+            className="text-fg underline-offset-2 hover:underline"
+            href={MARKETPLACE_URLS.factory}
+          >
+            factory.lvlltd.com
+          </a>
+          .
+        </p>
+      </section>
+
+      <section className="grid gap-3 sm:grid-cols-2">
+        <Card className="border-border bg-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Workflow className="size-4" />
+              Seller loop
+            </CardTitle>
+            <CardDescription>
+              Imagine → mockup → Printify draft → review → publish · webhooks
+              mirror orders back to the factory.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="secondary" size="sm">
+              <Link to="/seller">Open seller portal</Link>
+            </Button>
+          </CardContent>
+        </Card>
+        <Card className="border-border bg-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Package className="size-4" />
+              Your orders
+            </CardTitle>
+            <CardDescription>
+              Checkout writes a local order ledger; Printify + pay rails deep-link
+              from each line.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="secondary" size="sm">
+              <Link to="/orders">View orders</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+}
