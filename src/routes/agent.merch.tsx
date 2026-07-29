@@ -66,7 +66,7 @@ function AgentMerchPage() {
           Download catalog
         </Button>
         <Button asChild variant="secondary">
-          <Link to="/merch" search={{}}>Human shop</Link>
+          <Link to="/shop">Human shop</Link>
         </Button>
         <Button asChild variant="secondary">
           <Link to="/pipeline">Pipeline</Link>

@@ -168,7 +168,7 @@ function WebhooksPage() {
             <Link to="/pipeline">Merch pipeline</Link>
           </Button>
           <Button asChild variant="secondary">
-            <Link to="/merch" search={{}}>
+            <Link to="/shop">
               Shop
             </Link>
           </Button>

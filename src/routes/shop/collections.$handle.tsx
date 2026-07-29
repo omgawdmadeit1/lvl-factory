@@ -1,7 +1,8 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ProductGrid } from "@/components/store/product-card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMerchStore } from "@/lib/merch/store";
 import {
@@ -22,18 +23,34 @@ export const Route = createFileRoute("/shop/collections/$handle")({
 function CollectionPage() {
   const { handle } = Route.useParams();
   const collection = collectionByHandle(handle);
-  if (!collection) throw notFound();
 
   const products = useMerchStore((s) => s.products);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortKey>("featured");
 
   const filtered = useMemo(() => {
+    if (!collection) return [];
     const base = products.filter(
       (p) => p.status === "published" && collection.match(p),
     );
     return sortProducts(filterProducts(base, query), sort);
   }, [products, collection, query, sort]);
+
+  if (!collection) {
+    return (
+      <div className="mx-auto max-w-lg space-y-4 py-16 text-center">
+        <h1 className="text-xl font-semibold tracking-tight">
+          Collection not found
+        </h1>
+        <p className="text-sm text-muted">
+          No collection named &ldquo;{handle}&rdquo;.
+        </p>
+        <Button asChild>
+          <Link to="/shop">Back to shop</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

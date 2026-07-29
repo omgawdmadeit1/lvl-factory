@@ -146,7 +146,7 @@ function PipelinePage() {
             Export agent catalog
           </Button>
           <Button asChild variant="secondary">
-            <Link to="/merch" search={{}}>Open shop</Link>
+            <Link to="/shop">Open shop</Link>
           </Button>
           <Button asChild variant="secondary">
             <Link to="/webhooks">Printify webhooks</Link>

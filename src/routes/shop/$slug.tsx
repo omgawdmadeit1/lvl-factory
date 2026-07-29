@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bot, ExternalLink, ShoppingBag, Wallet } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ProductGrid } from "@/components/store/product-card";
@@ -23,27 +23,40 @@ function ProductDetailPage() {
   );
   const add = useCartStore((s) => s.add);
 
-  if (!product) {
-    throw notFound();
-  }
-
-  const isApparel = product.kind === "tee" || product.kind === "hoodie";
-  const [size, setSize] = useState<CartSize>(isApparel ? "M" : "OS");
+  const isApparel = product
+    ? product.kind === "tee" || product.kind === "hoodie"
+    : false;
+  const [size, setSize] = useState<CartSize>("M");
   const [qty, setQty] = useState(1);
 
-  const related = useMemo(
-    () =>
-      products
-        .filter(
-          (p) =>
-            p.status === "published" &&
-            p.id !== product.id &&
-            (p.kind === product.kind ||
-              p.tags.some((t) => product.tags.includes(t))),
-        )
-        .slice(0, 4),
-    [products, product],
-  );
+  const related = useMemo(() => {
+    if (!product) return [];
+    return products
+      .filter(
+        (p) =>
+          p.status === "published" &&
+          p.id !== product.id &&
+          (p.kind === product.kind ||
+            p.tags.some((t) => product.tags.includes(t))),
+      )
+      .slice(0, 4);
+  }, [products, product]);
+
+  if (!product) {
+    return (
+      <div className="mx-auto max-w-lg space-y-4 py-16 text-center">
+        <h1 className="text-xl font-semibold tracking-tight">
+          Product not found
+        </h1>
+        <p className="text-sm text-muted">
+          No published product for &ldquo;{slug}&rdquo;.
+        </p>
+        <Button asChild>
+          <Link to="/shop">Back to shop</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-14">
@@ -132,7 +145,12 @@ function ProductDetailPage() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button
               className="min-h-12 flex-1"
-              onClick={() => add(product, { size, qty })}
+              onClick={() =>
+                add(product, {
+                  size: isApparel ? size : "OS",
+                  qty,
+                })
+              }
             >
               <ShoppingBag className="size-4" />
               Add to cart
