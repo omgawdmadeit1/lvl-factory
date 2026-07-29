@@ -139,6 +139,33 @@ function NetworkPage() {
           <p className="mt-4 text-xs text-subtle">{CLOUDFLARE_MAP.note}</p>
         </CardContent>
       </Card>
+
+      <Card className="border-border bg-surface">
+        <CardHeader>
+          <CardTitle className="text-base">Edge security</CardTitle>
+          <CardDescription>
+            Cloudflare unmetered DDoS + WAF packs + Worker v2
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-muted">
+          <p>
+            Zone packs: <span className="font-mono text-fg">printify</span> +{" "}
+            <span className="font-mono text-fg">shop-pay</span> · apply with{" "}
+            <span className="font-mono text-xs">npm run waf:all</span>
+          </p>
+          <p>
+            Image proxy: optimized Printify → S3 resolve with CDN cache headers.
+            AWS Shield / Global Accelerator not required on this edge.
+          </p>
+          <ul className="list-inside list-disc text-xs text-subtle">
+            <li>/shop · 300 GET/min/IP</li>
+            <li>/api/store/catalog · 120 GET/min/IP</li>
+            <li>/pay POST · 30/min/IP (bot fight skipped for callbacks)</li>
+            <li>webhooks POST · HMAC + 60/min/IP · no managed challenge</li>
+          </ul>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }

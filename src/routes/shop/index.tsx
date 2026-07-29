@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Bot, Sparkles, Truck } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ProductGrid } from "@/components/store/product-card";
 import { ProductImage } from "@/components/store/product-image";
 import { Button } from "@/components/ui/button";
 import { useMerchStore } from "@/lib/merch/store";
 import { STORE_COLLECTIONS } from "@/lib/store/collections";
+import { prefetchProductImages } from "@/lib/store/images";
 
 export const Route = createFileRoute("/shop/")({
   component: ShopHomePage,
@@ -18,6 +19,10 @@ function ShopHomePage() {
     [products],
   );
   const featured = published.slice(0, 4);
+
+  useEffect(() => {
+    prefetchProductImages(published.map((p) => ({ slug: p.slug, mockupUrl: p.mockupUrl })));
+  }, [published]);
 
   return (
     <div className="space-y-14">

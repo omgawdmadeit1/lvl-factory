@@ -2,14 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LIVE_PRINTIFY_PRODUCTS } from "@/lib/merch/catalog";
 import { buildAgentCatalog } from "@/lib/merch/agent-commerce";
 import { STORE_COLLECTIONS } from "@/lib/store/collections";
-import { CLOUDFLARE_MAP } from "@/lib/merch/printify";
+import { CLOUDFLARE_MAP, LVL_NETWORK } from "@/lib/merch/printify";
+import { enforceStoreEdgeWaf } from "@/lib/store/edge-waf.server";
 import { productImageSrc } from "@/lib/store/images";
-import { LVL_NETWORK } from "@/lib/merch/printify";
 
 export const Route = createFileRoute("/api/store/catalog")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
+        const denied = enforceStoreEdgeWaf(request, "catalog");
+        if (denied) return denied;
         const published = LIVE_PRINTIFY_PRODUCTS.filter(
           (p) => p.status === "published",
         );
@@ -49,6 +51,18 @@ export const Route = createFileRoute("/api/store/catalog")({
           })),
           agent_catalog: buildAgentCatalog(published, { origin }),
           network: LVL_NETWORK,
+          security: {
+            edge: "cloudflare",
+            ddos: "cloudflare_unmetered",
+            waf_packs: ["printify", "shop-pay"],
+            image_proxy: `${origin}/api/store/image`,
+            rate_limits: {
+              catalog_get_per_ip_min: 120,
+              image_get_per_ip_min: 240,
+              pay_post_per_ip_min: 30,
+            },
+            note: "Backoff on HTTP 429. Do not hammer /api/store/image — use mockup_url from this catalog (often direct S3).",
+          },
         });
       },
     },

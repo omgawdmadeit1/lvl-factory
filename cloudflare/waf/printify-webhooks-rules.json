@@ -45,7 +45,7 @@
       "action": "skip",
       "expression": "(http.host eq \"factory.lvlltd.com\" and http.request.uri.path eq \"/api/printify/webhooks\" and http.request.method eq \"POST\")",
       "action_parameters": {
-        "products": ["bic", "hot", "securityLevel", "uaBlock", "zoneLockdown", "rateLimit"]
+        "products": ["bic", "hot", "securityLevel", "uaBlock", "zoneLockdown"]
       },
       "note": "Skip only aggressive bot products — rate limit is re-applied by Rate limiting rules below. Adjust products if CF plan differs."
     }

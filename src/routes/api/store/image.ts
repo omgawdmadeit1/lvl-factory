@@ -8,6 +8,7 @@ import {
   warmImageResolutions,
 } from "@/lib/store/image-proxy.server";
 import { RESOLVED_MOCKUPS } from "@/lib/store/images";
+import { enforceStoreEdgeWaf } from "@/lib/store/edge-waf.server";
 
 /**
  * Optimized Printify → S3 image proxy.
@@ -23,6 +24,8 @@ export const Route = createFileRoute("/api/store/image")({
   server: {
     handlers: {
       GET: async ({ request }) => {
+        const denied = enforceStoreEdgeWaf(request, "image");
+        if (denied) return denied;
         const q = new URL(request.url).searchParams;
 
         if (q.get("stats") === "1") {

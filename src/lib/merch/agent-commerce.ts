@@ -1,15 +1,15 @@
-import { CLOUDFLARE_MAP, PRINTIFY_STORE } from "./printify";
+import { CLOUDFLARE_MAP, LVL_NETWORK, PRINTIFY_STORE } from "./printify";
+import { productImageSrc } from "@/lib/store/images";
 import type { AgentMerchListing, MerchProduct } from "./types";
 
 /**
  * Machine-readable catalog for shopping agents.
- * Humans use /shop; agents fetch this document (or /agent/merch UI).
+ * Humans use /shop; agents fetch this document, /api/store/catalog, or /agent/merch UI.
  */
 export function buildAgentCatalog(
   products: MerchProduct[],
   opts?: { origin?: string; generatedAt?: string },
 ): AgentMerchListing {
-  // Stable production origin — avoids SSR/client hydration mismatch
   const origin = opts?.origin ?? CLOUDFLARE_MAP.factory;
 
   const shopable = products.filter(
@@ -41,7 +41,7 @@ export function buildAgentCatalog(
       title: p.title,
       price_usd: p.priceUsd,
       kind: p.kind,
-      mockup: p.mockupUrl,
+      mockup: productImageSrc({ slug: p.slug, mockupUrl: p.mockupUrl }),
       printify_url: p.printifyUrl,
       agent_buy: `${origin}/pay?sku=${encodeURIComponent(p.sku)}&amount=${p.priceUsd}`,
       settlement: p.settlement,
@@ -55,8 +55,10 @@ export function agentBuyInstructions(product: MerchProduct): string[] {
   return [
     `SKU ${product.sku} — ${product.title}`,
     `Face price: ${product.priceUsd.toFixed(2)} USD (multi-rail crypto or Stripe)`,
+    `Human store: ${CLOUDFLARE_MAP.shop}/${product.slug}`,
     `Human checkout: /shop or Printify ${product.printifyUrl ?? PRINTIFY_STORE.storefrontUrl}`,
     `Agent crypto: open /pay?sku=${product.sku}&amount=${product.priceUsd} and settle mainnet rails (Base USDC default)`,
+    `Catalog API: GET /api/store/catalog`,
     `Default payTo EVM: ${product.settlement.payTo}`,
     `Protocol: x402 multi-rail — no testnets`,
     product.printifyUrl
@@ -67,10 +69,12 @@ export function agentBuyInstructions(product: MerchProduct): string[] {
 
 export const AGENT_PROTOCOL_README = `# LVL Merch Agent Protocol (lvl-merch-v1)
 
-Domain family: lvlltd.com (Cloudflare) · factory.lvlltd.com · Printify: lvlxltd.printify.me
+Domain family: ${LVL_NETWORK.brand} · lvlltd.com (Cloudflare) · factory.lvlltd.com · Printify: lvlxltd.printify.me
 
 ## Discover
-GET /shop · GET /agent/merch  → human-readable + JSON export of shopable SKUs
+GET /shop                    → human storefront (Shopify-style)
+GET /api/store/catalog       → machine catalog + collections + agent block
+GET /agent/merch             → human-readable + JSON export
 
 ## Buy (crypto / multi-rail)
 1. Pick SKU from catalog
@@ -81,6 +85,10 @@ GET /shop · GET /agent/merch  → human-readable + JSON export of shopable SKUs
 ## Fulfillment
 Physical goods fulfill via Printify POD storefront links.
 Digital proof / agent receipts stay under factory.lvlltd.com.
+
+## Edge / WAF
+Traffic to factory.lvlltd.com is proxied via Cloudflare (unmetered DDoS + WAF packs).
+Rate limits apply to /api/store/* and /pay; agents should backoff on 429.
 
 ## Pipeline (operators / agents with write intent)
 1. brief → 2. grok_imagine → 3. mockup → 4. printify_draft → 5. review → 6. published

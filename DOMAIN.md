@@ -1,201 +1,229 @@
-# Live domain
+# LVL Ltd — domain, commerce, edge (live model)
+
+> Source of truth for **lvlltd.com** factory commerce: store, agents, Printify, multi-rail pay, Cloudflare DDoS/WAF, image proxy.
+
+## Hosts
 
 | Host | Role |
 |------|------|
-| **https://lvlltd.com** | Brand apex |
-| **https://factory.lvlltd.com** | Production commerce + factory (Cloudflare Worker proxy) |
-| **https://factory.lvlltd.com/shop** | LVL Store (Shopify-style) |
-| **/network** | Domain & rails map (in-app) |
-| https://lvl-factory.vercel.app | Vercel origin |
-| https://lvl-factory-proxy.josephlamartaylor.workers.dev | Worker direct |
+| **https://lvlltd.com** | Brand apex (Cloudflare DNS) |
+| **https://www.lvlltd.com** | WWW |
+| **https://factory.lvlltd.com** | Commerce + operator factory (CF proxy → Vercel) |
+| **https://factory.lvlltd.com/shop** | **LVL Store** (Shopify-style merch & art) |
+| **https://factory.lvlltd.com/pay** | Multi-rail checkout (crypto + Stripe) |
+| **https://factory.lvlltd.com/network** | In-app domain & rails map |
+| **https://lvlxltd.printify.me** | Printify Pop-Up (physical POD) |
+| https://lvl-factory.vercel.app | Vercel origin (do not publish / grey-cloud) |
+| Worker | `cloudflare/workers/lvl-factory-proxy` |
 
-## Payment settlement (multi-rail)
+In-app model: `LVL_NETWORK` + `CLOUDFLARE_MAP` in `src/lib/merch/printify.ts`.
 
-**Buyers choose any supported mainnet crypto, or pay by card via Stripe.** Testnets are forbidden.
-
-### Crypto (buyer chooses)
-
-| Network | Chain ID | Assets |
-|---------|----------|--------|
-| **Ethereum mainnet** | `1` | USDC, USDT, ETH |
-| Base | `8453` | USDC, USDT, ETH |
-| **Solana mainnet** | `101` (cluster) | USDC (SPL), USDT (SPL), SOL |
-| Arbitrum One | `42161` | USDC, USDT, ETH |
-| Optimism | `10` | USDC, USDT, ETH |
-| Polygon | `137` | USDC, USDT, MATIC |
-
-Wallets:
-- **EVM:** MetaMask, Coinbase, Trust, Rainbow, Rabby, Brave, WalletConnect v2
-- **Solana:** Phantom, Solflare, Backpack, Glow + mobile deep links
-
-### Solana treasury
-
-| Item | Value |
-|------|--------|
-| Env key | `VITE_TREASURY_SOL` |
-| Format | base58 public key |
-| Active treasury | `8sjT1G2YWpscXbJmwv2UK1rHZmQFLaczU5KXiiS8gvDy` |
-| USDC mint | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` |
-| CAIP-2 | `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` |
-| Module | `src/lib/factory/solana-wallet.ts` |
-
-
-### WalletConnect v2
-
-| Item | Value |
-|------|--------|
-| Protocol | **WalletConnect v2** (Sign API) — not v1 |
-| Package | `@walletconnect/ethereum-provider` → Reown AppKit QR modal |
-| Relay | `wss://relay.walletconnect.com` |
-| Env key | `VITE_WALLETCONNECT_PROJECT_ID` |
-| Project ID | `7e30c6e6441bbc7523e87195868a572a` |
-| Dashboard | https://dashboard.reown.com |
-| Config | `src/lib/factory/wallet-config.ts` → `buildWalletConnectV2Options()` |
-| Connect | `src/lib/factory/wallet.ts` → `connectWalletConnect()` |
-| Chains | Ethereum `1`, Base `8453`, Arbitrum `42161`, Optimism `10`, Polygon `137` |
-| Methods | `eth_sendTransaction`, `personal_sign`, `wallet_switchEthereumChain`, … |
-| Production | Same env key on Vercel, then redeploy |
-
-
-
-
-| Field | Value |
-|-------|--------|
-| payTo (EVM treasury) | `0xa00876513bAA433ce2B58A5341Fd06d2b6f9A6ED` |
-| Default rail | Base USDC (x402 agents) |
-| Protocol (default) | x402 on Base |
-| Forbidden | Testnets only |
-
-### Stripe (card)
-
-| Link | Face | URL |
-|------|------|-----|
-| Card canary | $0.50 (Stripe min) | https://buy.stripe.com/4gM28r6Ap4QSb1126dgUM00 |
-| Starter unlock | $0.99 | https://buy.stripe.com/3cI5kDf6Vbfg2uv4elgUM01 |
-| Account | lvl X, Inc. | `acct_1TVJoWE6xjYB5uvs` |
-
-Crypto canary face stays **$0.05**. Card minimum is **$0.50**.
-
-Source of truth: `src/lib/factory/payment.ts` (`NETWORKS`, `STRIPE_LINKS`, `settlementBlock()`).
-
-Factory checkout UI: **/pay** (network + asset chooser, or Stripe). Canary guide: **/canary**.
+---
 
 ## Architecture
 
 ```
-browser → factory.lvlltd.com (Cloudflare)
-        → Worker `lvl-factory-proxy`
-        → https://lvl-factory.vercel.app (Nitro SSR)
+Internet / agents / Printify
+        │
+        ▼
+Cloudflare anycast (unmetered DDoS L3–L7)
+  · Zone WAF packs: printify + shop-pay
+  · Rate limiting rules
+  · Worker lvl-factory-proxy (edge methods, RL, signature gate)
+        │
+        ▼
+factory.lvlltd.com → Vercel Nitro SSR (origin WAF + HMAC + store RL)
+        │
+        ├─ /shop          LVL Store UI
+        ├─ /pay           multi-rail settlement UI
+        ├─ /api/store/*   catalog + optimized image proxy
+        ├─ /api/printify/* webhooks + subscriptions
+        ├─ /pipeline      Imagine → Printify drafts
+        └─ /agent/merch   agent protocol UI
 ```
 
-## Tier 1 operator loop (in this app)
+**Not used for this stack (by design):** AWS Shield Advanced, Global Accelerator, S3 Transfer Acceleration on Printify’s bucket (we don’t own it; mockups are small/cached).
 
-1. Open **Tier 1 Plan** → **Seed Tier 1 packs** (1 music + 3 skills).
-2. **Approve + publish ready**.
-3. **Export Tier 1 bundle** (flagship shelf + canary guide + listings JSON).
-4. Upload listings into lvlltd.com catalog deploy path (multi-rail settlement fields).
-5. Complete one live canary unlock via **/pay** (any mainnet crypto) or Stripe $0.50.
-6. Wire Stripe webhooks on lvlltd.com for automatic sealed unlock after card pay.
+---
+
+## LVL Store
+
+| Path | Purpose |
+|------|---------|
+| `/shop` | Home + latest drops |
+| `/shop/collections/:handle` | tees, art, agent, boston, statement, all + search/sort |
+| `/shop/:slug` | PDP (size, qty, cart, Printify + agent pay) |
+| `/shop/cart` | Cart · Printify checkout · multi-rail pay |
+| `/merch` | **Redirects** → `/shop` |
+
+| Module | Path |
+|--------|------|
+| Cart | `src/lib/store/cart.ts` |
+| Collections | `src/lib/store/collections.ts` |
+| Images | `src/lib/store/images.ts` + `image-proxy.server.ts` |
+| Origin store WAF | `src/lib/store/edge-waf.server.ts` |
+| UI shell | `src/components/store/*` |
+
+### Image proxy (Printify → S3)
+
+Printify `images-api` often returns empty body + `x-automaton-object-url` (S3).
+
+| Endpoint | Behavior |
+|----------|----------|
+| `GET /api/store/image?u=` | Resolve + **302** to S3 (default, cheapest) |
+| `?mode=stream` | Proxy JPEG bytes (same-origin, long CDN cache) |
+| `?mode=json` | `{ resolved, source, cached }` |
+| `?stats=1` | Cache stats |
+| `POST` `{ warm: [] }` | Warm resolve cache |
+
+Optimizations: TTL memory cache, in-flight coalescing, HEAD-first, seed map `RESOLVED_MOCKUPS`, CDN `s-maxage`.
+
+---
+
+## Agent commerce
+
+| Item | Value |
+|------|--------|
+| Protocol | `lvl-merch-v1` |
+| UI | `/agent/merch` |
+| API | `GET /api/store/catalog` |
+| Pay | `/pay?sku=SKU&amount=PRICE` |
+| Human store | `/shop` |
+| Module | `src/lib/merch/agent-commerce.ts` |
+
+---
+
+## Printify
+
+| Item | Value |
+|------|--------|
+| Store | https://lvlxltd.printify.me (`lvlxltd`) |
+| Webhook receive | `POST /api/printify/webhooks` |
+| Operator UI | `/webhooks` |
+| HMAC | `X-Pfy-Signature: sha256=<hex>` · `printify-hmac.server.ts` |
+| Secrets | `PRINTIFY_WEBHOOK_SECRET` (+ `_PREVIOUS`), `PRINTIFY_API_TOKEN`, `PRINTIFY_SHOP_ID` |
+| Pipeline UI | `/pipeline` · stages brief → imagine → mockup → draft → review → published |
+
+```bash
+npm run test:hmac
+```
+
+---
+
+## Multi-rail payment
+
+**Mainnets only.** Buyers choose crypto or Stripe card.
+
+| Network | Chain ID | Assets |
+|---------|----------|--------|
+| Ethereum | `1` | USDC, USDT, ETH |
+| Base | `8453` | USDC, USDT, ETH (default x402 rail) |
+| Solana | `101` | USDC SPL, USDT SPL, SOL |
+| Arbitrum / Optimism / Polygon | … | USDC, USDT, native |
+
+| Field | Value |
+|-------|--------|
+| EVM treasury | `0xa00876513bAA433ce2B58A5341Fd06d2b6f9A6ED` |
+| Sol treasury env | `VITE_TREASURY_SOL` |
+| WC project | `VITE_WALLETCONNECT_PROJECT_ID` |
+| Source | `src/lib/factory/payment.ts` |
+| UI | `/pay` · canary `/canary` |
+
+Stripe account `acct_1TVJoWE6xjYB5uvs` — card canary $0.50 min; crypto canary $0.05.
+
+---
+
+## Cloudflare DDoS + WAF
+
+### Automatic
+- **Unmetered DDoS** (L3–L7) on orange-clouded hostnames
+- Keep `factory.lvlltd.com` **proxied**; never publish Vercel origin
+
+### Zone packs (`cloudflare/waf/`)
+
+| Pack | File | Surfaces |
+|------|------|----------|
+| printify | `printify-webhooks-rules.json` | `/api/printify/*` |
+| shop-pay | `shop-pay-rules.json` | `/shop`, `/api/store/*`, `/pay`, `/agent/*` |
+
+| Path | Highlights |
+|------|------------|
+| `/shop` | Methods GET/HEAD; threat challenge; **300**/min |
+| `/api/store/catalog` | Agent-friendly; **120**/min |
+| `/api/store/image` | GET only; **240**/min |
+| `/pay` | Challenge GET; **skip Bot Fight on POST**; **30** POST/min |
+| Webhooks | **60** POST/min; signature rule optional; **no** challenge on POST |
+
+```bash
+export CLOUDFLARE_API_TOKEN=...
+export CLOUDFLARE_ZONE_ID=...
+
+npm run waf:all:dry          # preview
+npm run waf:all              # printify + shop-pay
+npm run waf:shop             # shop-pay only
+ENABLE_SIGNATURE_RULE=1 npm run waf:all
+```
+
+### Worker edge (`cloudflare/workers/lvl-factory-proxy`)
+
+v2 enforces method allowlists + Cache-API rate limits for **printify, store, shop, pay, agent** before proxying to Vercel. Security headers + edge version `x-lvl-edge-version: 2`.
+
+```bash
+npx wrangler deploy -c cloudflare/workers/lvl-factory-proxy/wrangler.toml
+# vars/secrets: ORIGIN_URL, ENFORCE_SIGNATURE, WEBHOOK_GATE_TOKEN, WEBHOOK_ADMIN_TOKEN
+```
+
+### Origin
+
+| Layer | Module |
+|-------|--------|
+| Webhooks | `webhook-waf.server.ts` + HMAC |
+| Store/image | `edge-waf.server.ts` on catalog + image handlers |
+
+### Under Attack Mode
+If enabled zone-wide, exclude or carefully test **webhook POST** and **pay POST** (providers cannot solve challenges). Prefer path rules over global UAM.
+
+### AWS note
+**Shield Advanced / Global Accelerator** only matter if you later put a public **AWS** edge (CloudFront/ALB/AGA). Current edge is Cloudflare — do not buy Shield for Vercel.
+
+---
+
+## Tier 1 operator loop
+
+1. **Tier 1 Plan** → Seed packs  
+2. Approve + publish  
+3. Export bundle  
+4. Canary unlock via `/pay`  
+5. Stripe webhooks on apex for sealed unlock (marketplace path)
+
+---
 
 ## Ops
 
-Re-provision / redeploy proxy (marketplace repo secrets):
-
 ```bash
+# Redeploy factory DNS proxy (marketplace repo)
 gh workflow run "Provision Factory DNS" -R omgawdmadeit1/lvlltd-agent-marketplace -f subdomain=factory
+
+# This repo
+npm run typecheck
+npm run build
+npm run waf:all
 ```
 
-Source: `workers/lvl-factory-proxy` in `lvlltd-agent-marketplace`.
+Env (server): `PRINTIFY_*`, `DATABASE_URL` / PGLite, payment `VITE_*` for client rails.
 
-## Merch + art (agent pipeline)
+---
 
-| Item | Value |
-|------|--------|
-| Human shop | **`/shop`** (Shopify-style LVL Store) on factory.lvlltd.com |
-| Collections | `/shop/collections/:handle` (tees, art, agent, …) |
-| Product PDP | `/shop/:slug` |
-| Cart | `/shop/cart` · multi-rail + Printify checkout |
-| Legacy | `/merch` redirects to `/shop` |
-| Operator pipeline | `/pipeline` — Grok Imagine brief → mockup → Printify draft → publish |
-| Agent catalog | `/agent/merch` — protocol `lvl-merch-v1` JSON |
-| Printify store | https://lvlxltd.printify.me |
-| Cloudflare | factory.lvlltd.com → Vercel; merch UI on factory |
-| Fulfillment | Printify POD (physical) |
-| Agent pay | `/pay?sku=SKU&amount=PRICE` multi-rail |
-| API token (optional) | `PRINTIFY_API_TOKEN` server-only — never `VITE_*` |
-| Shop id (optional) | `PRINTIFY_SHOP_ID` |
+## Quick links (production)
 
-Modules: `src/lib/merch/*` · Live products seeded from Printify storefront mockups.
-
-Pipeline stages: `brief` → `imagine` → `mockup` → `printify_draft` → `review` → `published`
-
-## Printify webhooks
-
-| Item | Value |
-|------|--------|
-| Receive URL | `POST https://factory.lvlltd.com/api/printify/webhooks` |
-| Status / event log | `GET /api/printify/webhooks` |
-| Manage subscriptions | `GET/POST /api/printify/subscriptions` |
-| Operator UI | `/webhooks` |
-| Topics | shop:disconnected, product:*, order:*, order:shipment:* |
-| Signature | **HMAC-SHA256** raw body · header `X-Pfy-Signature: sha256=<hex>` |
-| HMAC module | `src/lib/merch/printify-hmac.server.ts` |
-| Secret rotation | `PRINTIFY_WEBHOOK_SECRET` + `PRINTIFY_WEBHOOK_SECRET_PREVIOUS` |
-| Compare | timingSafeEqual on 32-byte digests + full `sha256=` header (Printify Python parity) |
-| Max age | `PRINTIFY_WEBHOOK_MAX_AGE_SEC` (optional replay guard) |
-| Reject audit | `printify_webhook_rejects` table |
-| Self-test | `GET /api/printify/webhooks?hmac_self_test=1` · UI **HMAC self-test** · `npm run test:hmac` |
-| Secret env | `PRINTIFY_WEBHOOK_SECRET` |
-| Token / shop | `PRINTIFY_API_TOKEN`, `PRINTIFY_SHOP_ID` |
-| Storage | `printify_webhook_events`, `printify_orders_mirror` (PGLite/Neon) |
-
-Install all topics from `/webhooks` → **Install all topics** (requires token + shop id).
-Local QA without Printify: **Local simulate** on the same page.
-
-## Cloudflare WAF (shop + pay)
-
-Pack: [`cloudflare/waf/shop-pay-rules.json`](cloudflare/waf/shop-pay-rules.json)
-
-| Path | Protection |
-|------|------------|
-| `/shop` | Method allowlist, threat challenge, 300 GET/min/IP |
-| `/api/store/catalog` | Agent-friendly, 120 GET/min/IP |
-| `/api/store/image` | GET only, 240/min/IP |
-| `/pay` | GET challenge; POST skip bot-fight; 30 POST/min/IP |
-| `/agent/*` | Soft challenge, 90 GET/min/IP |
-
-```bash
-RULE_PACK=shop-pay node scripts/apply-cloudflare-waf.mjs
-RULE_PACK=all node scripts/apply-cloudflare-waf.mjs
-```
-
-## Cloudflare WAF (Printify webhooks)
-
-| Layer | Location |
-|-------|----------|
-| Edge worker | `cloudflare/workers/lvl-factory-proxy` (factory.lvlltd.com proxy) |
-| Zone custom rules | `cloudflare/waf/printify-webhooks-rules.json` |
-| Apply script | `node scripts/apply-cloudflare-waf.mjs` |
-| Origin WAF | `src/lib/merch/webhook-waf.server.ts` on `/api/printify/*` |
-
-### Protections
-- Rate limit webhook POST 60/min/IP (edge + origin)
-- Rate limit Printify API GET 120/min/IP
-- Block body > 512KB
-- Method allowlist on `/api/printify/webhooks`
-- Optional require `X-Pfy-Signature` (`ENFORCE_SIGNATURE=1` on worker / `PRINTIFY_WEBHOOK_STRICT=1` origin)
-- Optional `WEBHOOK_GATE_TOKEN` → header `x-lvl-webhook-gate`
-- Optional `WEBHOOK_ADMIN_TOKEN` for subscription management POST
-- Skip bot challenge on legitimate webhook POST (zone rule)
-
-### Deploy
-```bash
-# Zone WAF rules (needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ZONE_ID)
-export CLOUDFLARE_API_TOKEN=...
-export CLOUDFLARE_ZONE_ID=...
-node scripts/apply-cloudflare-waf.mjs
-
-# Edge worker (from factory repo or marketplace workers/lvl-factory-proxy)
-npx wrangler deploy -c cloudflare/workers/lvl-factory-proxy/wrangler.toml
-# set worker secrets/vars: ENFORCE_SIGNATURE, WEBHOOK_GATE_TOKEN, WEBHOOK_ADMIN_TOKEN
-```
+| Surface | URL |
+|---------|-----|
+| Store | https://factory.lvlltd.com/shop |
+| Cart | https://factory.lvlltd.com/shop/cart |
+| Pay | https://factory.lvlltd.com/pay |
+| Agents | https://factory.lvlltd.com/agent/merch |
+| Catalog API | https://factory.lvlltd.com/api/store/catalog |
+| Network map | https://factory.lvlltd.com/network |
+| Webhooks ops | https://factory.lvlltd.com/webhooks |
+| Pipeline | https://factory.lvlltd.com/pipeline |
+| Printify | https://lvlxltd.printify.me |
