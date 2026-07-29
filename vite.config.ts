@@ -131,6 +131,14 @@ export default defineConfig(({ command }) => ({
     strictPort: true,
   },
   resolve: { tsconfigPaths: true },
+  optimizeDeps: {
+    include: [
+      "@walletconnect/ethereum-provider",
+      "@walletconnect/universal-provider",
+      "@reown/appkit",
+      "@reown/appkit/core",
+    ],
+  },
   plugins: [
     pgliteBootstrapPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.
@@ -141,3 +149,4 @@ export default defineConfig(({ command }) => ({
     viteReact(),
   ],
 }));
+

@@ -5,6 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** USD face mirror only — prefer formatUsdc for product prices. */
 export function formatUsd(n: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -13,8 +14,17 @@ export function formatUsd(n: number) {
   }).format(n);
 }
 
+/** Product price: USDC face amount. */
 export function formatUsdc(n: number) {
   return `${n.toFixed(2)} USDC`;
+}
+
+/**
+ * Purchase surface label. Face quoted in USDC;
+ * settlement is multi-rail (any mainnet crypto or Stripe).
+ */
+export function formatUsdcOnBase(n: number) {
+  return `${n.toFixed(2)} USDC face`;
 }
 
 export function slugify(input: string) {

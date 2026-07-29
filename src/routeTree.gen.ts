@@ -10,18 +10,31 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CanaryRouteImport } from './routes/canary'
 import { Route as MusicRouteImport } from './routes/music'
+import { Route as PayRouteImport } from './routes/pay'
 import { Route as QueueRouteImport } from './routes/queue'
 import { Route as SkillsRouteImport } from './routes/skills'
+import { Route as Tier1RouteImport } from './routes/tier1'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CanaryRoute = CanaryRouteImport.update({
+  id: '/canary',
+  path: '/canary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MusicRoute = MusicRouteImport.update({
   id: '/music',
   path: '/music',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PayRoute = PayRouteImport.update({
+  id: '/pay',
+  path: '/pay',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QueueRoute = QueueRouteImport.update({
@@ -34,39 +47,65 @@ const SkillsRoute = SkillsRouteImport.update({
   path: '/skills',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Tier1Route = Tier1RouteImport.update({
+  id: '/tier1',
+  path: '/tier1',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/canary': typeof CanaryRoute
   '/music': typeof MusicRoute
+  '/pay': typeof PayRoute
   '/queue': typeof QueueRoute
   '/skills': typeof SkillsRoute
+  '/tier1': typeof Tier1Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/canary': typeof CanaryRoute
   '/music': typeof MusicRoute
+  '/pay': typeof PayRoute
   '/queue': typeof QueueRoute
   '/skills': typeof SkillsRoute
+  '/tier1': typeof Tier1Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/canary': typeof CanaryRoute
   '/music': typeof MusicRoute
+  '/pay': typeof PayRoute
   '/queue': typeof QueueRoute
   '/skills': typeof SkillsRoute
+  '/tier1': typeof Tier1Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/music' | '/queue' | '/skills'
+  fullPaths:
+    '/' | '/canary' | '/music' | '/pay' | '/queue' | '/skills' | '/tier1'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/music' | '/queue' | '/skills'
-  id: '__root__' | '/' | '/music' | '/queue' | '/skills'
+  to: '/' | '/canary' | '/music' | '/pay' | '/queue' | '/skills' | '/tier1'
+  id:
+    | '__root__'
+    | '/'
+    | '/canary'
+    | '/music'
+    | '/pay'
+    | '/queue'
+    | '/skills'
+    | '/tier1'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CanaryRoute: typeof CanaryRoute
   MusicRoute: typeof MusicRoute
+  PayRoute: typeof PayRoute
   QueueRoute: typeof QueueRoute
   SkillsRoute: typeof SkillsRoute
+  Tier1Route: typeof Tier1Route
 }
 
 declare module '@tanstack/react-router' {
@@ -78,11 +117,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/canary': {
+      id: '/canary'
+      path: '/canary'
+      fullPath: '/canary'
+      preLoaderRoute: typeof CanaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/music': {
       id: '/music'
       path: '/music'
       fullPath: '/music'
       preLoaderRoute: typeof MusicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pay': {
+      id: '/pay'
+      path: '/pay'
+      fullPath: '/pay'
+      preLoaderRoute: typeof PayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/queue': {
@@ -99,14 +152,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SkillsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tier1': {
+      id: '/tier1'
+      path: '/tier1'
+      fullPath: '/tier1'
+      preLoaderRoute: typeof Tier1RouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CanaryRoute: CanaryRoute,
   MusicRoute: MusicRoute,
+  PayRoute: PayRoute,
   QueueRoute: QueueRoute,
   SkillsRoute: SkillsRoute,
+  Tier1Route: Tier1Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -19,6 +19,7 @@ import { StatusBadge } from "@/components/factory/status-badge";
 import type { FactoryPackage } from "@/lib/factory/types";
 import { useFactoryStore } from "@/lib/factory/store";
 import { formatUsdc } from "@/lib/utils";
+import { LVL_PAYMENT } from "@/lib/factory/payment";
 
 export function PackDetail({ pack }: { pack: FactoryPackage }) {
   const approve = useFactoryStore((s) => s.approve);
@@ -213,7 +214,12 @@ function SkillBody({ pack }: { pack: Extract<FactoryPackage, { kind: "skill" }> 
       <Section title="Marketplace">
         <KV label="Skill ID" value={pack.skillId} mono />
         <KV label="Price" value={formatUsdc(pack.priceUsdc)} />
+        <KV label="Settlement" value={LVL_PAYMENT.label} />
+        <KV label="payTo" value={LVL_PAYMENT.payTo} mono />
         <KV label="x402 path" value={pack.marketplace.x402Path} mono />
+        <p className="mt-2 text-xs text-subtle">
+          Buyer chooses mainnet crypto or Stripe card. Default agent rail: Base USDC.
+        </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {pack.marketplace.tags.map((t) => (
             <span

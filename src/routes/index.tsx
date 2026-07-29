@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  ArrowRight,
   Boxes,
   Disc3,
   PackageCheck,
   Sparkles,
   Wallet,
+  ArrowRight,
+  FlaskConical,
 } from "lucide-react";
 import {
   Area,
@@ -24,36 +25,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MUSIC_CATALOG, SKILL_TEMPLATES, CANARY } from "@/lib/factory/catalog";
+import { LVL_PAYMENT } from "@/lib/factory/payment";
 import { useFactoryStore } from "@/lib/factory/store";
-import { formatUsdc } from "@/lib/utils";
-import { StatusBadge } from "@/components/factory/status-badge";
-import { MUSIC_CATALOG } from "@/lib/factory/catalog";
+import { formatUsdc, formatUsdcOnBase } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   component: DashboardPage,
 });
 
-const pipeline = [
-  { step: "1", name: "Ingest", detail: "Catalog track or skill template" },
-  { step: "2", name: "Compose", detail: "Local factory builds sealed pack" },
-  { step: "3", name: "Review", detail: "You approve — zero phone calls" },
-  { step: "4", name: "Publish", detail: "Export to lvlltd.com rails" },
-];
-
 const activity = [
-  { day: "Mon", packs: 1 },
-  { day: "Tue", packs: 2 },
-  { day: "Wed", packs: 1 },
-  { day: "Thu", packs: 3 },
-  { day: "Fri", packs: 2 },
-  { day: "Sat", packs: 4 },
-  { day: "Sun", packs: 3 },
+  { day: "Mon", packs: 2 },
+  { day: "Tue", packs: 4 },
+  { day: "Wed", packs: 3 },
+  { day: "Thu", packs: 6 },
+  { day: "Fri", packs: 5 },
+  { day: "Sat", packs: 2 },
+  { day: "Sun", packs: 1 },
 ];
 
 function DashboardPage() {
   const packages = useFactoryStore((s) => s.packages);
-  const packsReady = packages.filter((p) =>
-    ["ready", "approved"].includes(p.status),
+  const seedTier1 = useFactoryStore((s) => s.seedTier1);
+  const lastMessage = useFactoryStore((s) => s.lastMessage);
+  const processingId = useFactoryStore((s) => s.processingId);
+
+  const packsReady = packages.filter(
+    (p) => p.status === "ready" || p.status === "approved",
   ).length;
   const packsPublished = packages.filter((p) => p.status === "published").length;
   const estimatedUsdc = packages
@@ -62,38 +61,43 @@ function DashboardPage() {
       if (p.kind === "skill") return sum + p.priceUsdc;
       return sum + p.metadata.downloadPriceUsdc;
     }, 0);
-  const recent = packages.slice(0, 5);
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="info">lvlltd.com factory</Badge>
+            <Badge variant="default">{LVL_PAYMENT.label}</Badge>
+            <Badge variant="warning">chain {LVL_PAYMENT.chainId}</Badge>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Skill + Music Pack Factory
           </h1>
-          <p className="max-w-2xl text-sm text-muted md:text-base">
-            Private production backend for{" "}
-            <span className="text-fg">lvlltd.com</span> and{" "}
-            <span className="text-fg">music.lvlltd.com</span>. Compose sealed
-            agent skills and music release kits, approve locally, export to your
-            live x402 rails — no phone path required.
+          <p className="max-w-2xl text-sm text-muted">
+            Compose flagship skills and music release kits, approve, export
+            listings that always settle in {LVL_PAYMENT.label}. Ethereum
+            mainnet is forbidden on every export.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild>
-            <Link to="/music">
-              <Disc3 className="size-4" />
-              Compose music
-            </Link>
+          <Button onClick={() => seedTier1()} disabled={processingId !== null}>
+            Seed Tier 1 packs
           </Button>
           <Button asChild variant="secondary">
-            <Link to="/skills">
-              <Boxes className="size-4" />
-              Compose skill
+            <Link to="/canary">
+              Canary {formatUsdc(CANARY.amountUsdc)}
+              <ArrowRight className="size-4" />
             </Link>
           </Button>
         </div>
-      </section>
+      </header>
+
+      {lastMessage ? (
+        <p className="rounded-lg border border-border bg-surface-2/50 px-3 py-2 text-xs text-muted">
+          {lastMessage}
+        </p>
+      ) : null}
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
@@ -104,9 +108,9 @@ function DashboardPage() {
         />
         <StatCard
           icon={Boxes}
-          label="Live skill shelf"
-          value="236"
-          hint="lvlltd.com catalog size"
+          label="Flagship templates"
+          value={String(SKILL_TEMPLATES.filter((t) => t.flagship).length)}
+          hint="Unique samples · after-pay ready"
         />
         <StatCard
           icon={PackageCheck}
@@ -118,7 +122,7 @@ function DashboardPage() {
           icon={Wallet}
           label="Published USDC face"
           value={formatUsdc(estimatedUsdc)}
-          hint={`${packsPublished} published packs`}
+          hint={`${packsPublished} published · multi-rail`}
         />
       </section>
 
@@ -140,26 +144,13 @@ function DashboardPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="day"
-                  stroke="#71717a"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="#71717a"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  allowDecimals={false}
-                />
+                <XAxis dataKey="day" stroke="#71717a" fontSize={12} />
+                <YAxis stroke="#71717a" fontSize={12} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
-                    background: "#121214",
+                    background: "#18181b",
                     border: "1px solid #27272a",
                     borderRadius: 8,
-                    color: "#f4f4f5",
                   }}
                 />
                 <Area
@@ -176,72 +167,6 @@ function DashboardPage() {
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>How it ships</CardTitle>
-            <CardDescription>All under the LVL domain family</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {pipeline.map((p) => (
-              <div
-                key={p.step}
-                className="flex gap-3 rounded-lg border border-border bg-surface-2/50 p-3"
-              >
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-surface text-xs font-semibold tabular">
-                  {p.step}
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{p.name}</p>
-                  <p className="text-xs text-muted">{p.detail}</p>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle>Recent packs</CardTitle>
-              <CardDescription>Latest factory output</CardDescription>
-            </div>
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/queue">
-                Queue
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {recent.length === 0 ? (
-              <Empty
-                title="No packs yet"
-                body="Compose a music release kit or sealed skill pack to fill the queue."
-              />
-            ) : (
-              <ul className="divide-y divide-border">
-                {recent.map((p) => (
-                  <li
-                    key={p.id}
-                    className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{p.title}</p>
-                      <p className="text-xs text-subtle">
-                        {p.kind === "music" ? "Music" : "Skill"} ·{" "}
-                        {new Date(p.updatedAt).toLocaleString()}
-                      </p>
-                    </div>
-                    <StatusBadge status={p.status} />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="size-4" />
               Operator constraints
@@ -251,20 +176,31 @@ function DashboardPage() {
           <CardContent>
             <ul className="space-y-3 text-sm text-muted">
               <li className="rounded-lg border border-border bg-surface-2/40 p-3">
-                All tools and products stay under{" "}
+                All tools stay under{" "}
                 <span className="text-fg">lvlltd.com</span> /{" "}
-                <span className="text-fg">music.lvlltd.com</span>.
+                <span className="text-fg">music.lvlltd.com</span> /{" "}
+                <span className="text-fg">factory.lvlltd.com</span>.
               </li>
               <li className="rounded-lg border border-border bg-surface-2/40 p-3">
-                No phone-call workflows. Digital compose → review → export only.
+                No phone-call workflows. Compose → review → export only.
+              </li>
+              <li className="rounded-lg border border-success/30 bg-success/10 p-3 text-fg">
+                All purchases settle in{" "}
+                <span className="font-medium">{LVL_PAYMENT.label}</span> ·{" "}
+                <span className="font-mono">chain {LVL_PAYMENT.chainId}</span>.
+                Ethereum mainnet forbidden.
               </li>
               <li className="rounded-lg border border-border bg-surface-2/40 p-3">
-                Payments stay on existing x402 Base USDC rails — factory only
-                produces sealed inventory.
+                Flagship templates ship unique samples — boiler outlines demoted.
               </li>
               <li className="rounded-lg border border-border bg-surface-2/40 p-3">
-                Low-physical: approve and export from this console; no wrenches,
-                no meetings.
+                <Link
+                  to="/canary"
+                  className="inline-flex items-center gap-1 text-info hover:underline"
+                >
+                  <FlaskConical className="size-3.5" />
+                  Run canary ({formatUsdcOnBase(CANARY.amountUsdc)})
+                </Link>
               </li>
             </ul>
           </CardContent>
@@ -293,21 +229,10 @@ function StatCard({
         </div>
         <div className="min-w-0">
           <p className="text-xs text-subtle">{label}</p>
-          <p className="mt-0.5 text-2xl font-semibold tracking-tight tabular">
-            {value}
-          </p>
+          <p className="text-xl font-semibold tabular tracking-tight">{value}</p>
           <p className="text-xs text-muted">{hint}</p>
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-function Empty({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="rounded-lg border border-dashed border-border px-4 py-10 text-center">
-      <p className="text-sm font-medium">{title}</p>
-      <p className="mt-1 text-sm text-muted">{body}</p>
-    </div>
   );
 }

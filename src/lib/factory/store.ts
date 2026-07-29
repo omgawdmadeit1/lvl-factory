@@ -1,9 +1,11 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { MUSIC_CATALOG } from "./catalog";
+import { MUSIC_CATALOG, SKILL_TEMPLATES, TIER1_SEED } from "./catalog";
 import {
   buildMusicPackage,
   buildSkillPackage,
+  toCanaryGuideExport,
+  toFlagshipShelfExport,
   toMarketplaceListing,
   toMusicReleaseExport,
 } from "./generators";
@@ -12,6 +14,7 @@ import type {
   FactoryStats,
   MusicTrack,
   PackStatus,
+  Tier1ChecklistItem,
 } from "./types";
 import { downloadJson, downloadText } from "@/lib/utils";
 
@@ -21,6 +24,7 @@ interface FactoryState {
   processingId: string | null;
   lastMessage: string | null;
   hydrated: boolean;
+  tier1SeededAt: string | null;
   select: (id: string | null) => void;
   composeMusic: (trackId: string) => void;
   composeSkill: (templateId: string) => void;
@@ -34,6 +38,10 @@ interface FactoryState {
   getStats: () => FactoryStats;
   catalog: () => MusicTrack[];
   setHydrated: (v: boolean) => void;
+  seedTier1: () => void;
+  approveAndPublishAllReady: () => void;
+  exportTier1Bundle: () => void;
+  getTier1Checklist: () => Tier1ChecklistItem[];
 }
 
 function touch(pack: FactoryPackage, patch: Partial<FactoryPackage>): FactoryPackage {
@@ -77,6 +85,7 @@ export const useFactoryStore = create<FactoryState>()(
       processingId: null,
       lastMessage: null,
       hydrated: false,
+      tier1SeededAt: null,
 
       setHydrated: (v) => set({ hydrated: v }),
 
@@ -133,8 +142,8 @@ export const useFactoryStore = create<FactoryState>()(
           pack.id,
           [
             { progress: 40, note: "Writing free outline.json…" },
-            { progress: 65, note: "Generating sample.md…" },
-            { progress: 88, note: "Sealing file manifest…" },
+            { progress: 65, note: "Generating unique sample.md…" },
+            { progress: 88, note: "Sealing after-pay artifacts…" },
             { progress: 100, note: "Skill pack ready for review." },
           ],
           400,
@@ -188,8 +197,8 @@ export const useFactoryStore = create<FactoryState>()(
                   status: "published",
                   notes:
                     p.kind === "music"
-                      ? "Staged for music.lvlltd.com + x402 download path."
-                      : "Staged for lvlltd.com skill catalog + x402 unlock.",
+                      ? "Staged for music.lvlltd.com + x402/fiat download path."
+                      : "Staged for lvlltd.com skill catalog + x402/fiat unlock.",
                 })
               : p,
           ),
@@ -234,6 +243,183 @@ export const useFactoryStore = create<FactoryState>()(
 
       clearMessage: () => set({ lastMessage: null }),
 
+      seedTier1: () => {
+        if (typeof window === "undefined") return;
+        if (get().processingId) {
+          set({ lastMessage: "Wait for processing to finish before seeding." });
+          return;
+        }
+
+        const track = MUSIC_CATALOG.find(
+          (t) => t.id === TIER1_SEED.musicTrackId,
+        );
+        if (!track) {
+          set({ lastMessage: "Tier 1 music track missing from catalog." });
+          return;
+        }
+
+        const music = buildMusicPackage(track);
+        music.notes = "Tier 1 seed — music release kit (Dirt Road Kings).";
+        music.status = "ready";
+        music.progress = 100;
+
+        const skills = TIER1_SEED.skillIds.map((sid) => {
+          const p = buildSkillPackage(sid);
+          p.notes = "Tier 1 seed — flagship / canary pack.";
+          p.status = "ready";
+          p.progress = 100;
+          return p;
+        });
+
+        const seeded = [music, ...skills];
+        set({
+          packages: [...seeded, ...get().packages],
+          selectedId: seeded[0]?.id ?? null,
+          tier1SeededAt: new Date().toISOString(),
+          lastMessage:
+            "Tier 1 seeded: 1 music kit + canary + wallet onboarding + music release skill. Review → approve → publish → export.",
+        });
+      },
+
+      approveAndPublishAllReady: () => {
+        const ready = get().packages.filter((p) =>
+          ["ready", "approved"].includes(p.status),
+        );
+        if (ready.length === 0) {
+          set({ lastMessage: "No ready packs to approve/publish." });
+          return;
+        }
+        set((state) => ({
+          packages: state.packages.map((p) =>
+            ["ready", "approved"].includes(p.status)
+              ? touch(p, {
+                  status: "published",
+                  notes:
+                    p.kind === "music"
+                      ? "Tier 1 batch publish → music.lvlltd.com rails."
+                      : "Tier 1 batch publish → lvlltd.com catalog rails.",
+                })
+              : p,
+          ),
+          lastMessage: `Published ${ready.length} pack(s). Export the Tier 1 bundle next.`,
+        }));
+      },
+
+      exportTier1Bundle: () => {
+        if (typeof window === "undefined") return;
+        const published = get().packages.filter((p) => p.status === "published");
+        const readyish = get().packages.filter((p) =>
+          ["ready", "approved", "published"].includes(p.status),
+        );
+
+        downloadJson("tier1-flagship-shelf.json", toFlagshipShelfExport());
+        downloadJson("tier1-canary-guide.json", toCanaryGuideExport());
+        downloadJson("tier1-queue-export.json", {
+          exportedAt: new Date().toISOString(),
+          domain: "lvlltd.com",
+          musicDomain: "music.lvlltd.com",
+          packages: readyish.map((p) =>
+            p.kind === "music"
+              ? toMusicReleaseExport(p)
+              : toMarketplaceListing(p),
+          ),
+          publishedCount: published.length,
+        });
+
+        const listings = readyish
+          .filter((p): p is Extract<FactoryPackage, { kind: "skill" }> => p.kind === "skill")
+          .map((p) => toMarketplaceListing(p));
+        if (listings.length) {
+          downloadJson("tier1-skill-listings.json", { skills: listings });
+        }
+
+        set({
+          lastMessage:
+            "Tier 1 bundle downloaded (flagship shelf + canary guide + queue exports). Upload listings to lvlltd.com catalog.",
+        });
+      },
+
+      getTier1Checklist: () => {
+        const packages = get().packages;
+        const hasMusic = packages.some(
+          (p) =>
+            p.kind === "music" &&
+            p.sourceTrackId === TIER1_SEED.musicTrackId &&
+            ["ready", "approved", "published"].includes(p.status),
+        );
+        const hasCanary = packages.some(
+          (p) =>
+            p.kind === "skill" &&
+            p.skillId === "agent-x402-first-buy" &&
+            ["ready", "approved", "published"].includes(p.status),
+        );
+        const hasWallet = packages.some(
+          (p) =>
+            p.kind === "skill" &&
+            p.skillId === "wallet-onboarding-noncrypto-buyers" &&
+            ["ready", "approved", "published"].includes(p.status),
+        );
+        const published = packages.filter((p) => p.status === "published").length;
+        const flagships = SKILL_TEMPLATES.filter((t) => t.flagship).length;
+
+        return [
+          {
+            id: "flagships",
+            label: "Flagship skill rewrites ready",
+            done: flagships >= 5,
+            detail: `${flagships} unique non-boiler templates in factory shelf`,
+          },
+          {
+            id: "seed-music",
+            label: "Music release kit composed (Dirt Road Kings)",
+            done: hasMusic,
+            detail: hasMusic
+              ? "Music pack in queue"
+              : "Run Seed Tier 1 or compose from Music Factory",
+          },
+          {
+            id: "seed-canary",
+            label: "Canary skill pack composed ($0.05)",
+            done: hasCanary,
+            detail: hasCanary
+              ? "Canary pack in queue"
+              : "Seed Tier 1 includes agent-x402-first-buy",
+          },
+          {
+            id: "seed-wallet",
+            label: "Wallet onboarding skill composed",
+            done: hasWallet,
+            detail: hasWallet
+              ? "Onboarding pack in queue"
+              : "Seed Tier 1 includes wallet onboarding",
+          },
+          {
+            id: "published",
+            label: "At least 3 packs published",
+            done: published >= 3,
+            detail: `${published} published — approve + publish or use batch publish`,
+          },
+          {
+            id: "export",
+            label: "Tier 1 export bundle available",
+            done: get().tier1SeededAt !== null || published > 0,
+            detail: "Use Export Tier 1 Bundle on dashboard or Tier 1 page",
+          },
+          {
+            id: "canary-page",
+            label: "Human canary path documented",
+            done: true,
+            detail: "Open /canary for MetaMask + fiat dual path",
+          },
+          {
+            id: "fiat",
+            label: "Fiat fallback staged for humans",
+            done: true,
+            detail: "Dual rails marked on flagship templates; Stripe session path staged",
+          },
+        ];
+      },
+
       getStats: () => {
         const packages = get().packages;
         return {
@@ -250,13 +436,20 @@ export const useFactoryStore = create<FactoryState>()(
               if (p.kind === "skill") return sum + p.priceUsdc;
               return sum + p.metadata.downloadPriceUsdc;
             }, 0),
+          flagshipsReady: SKILL_TEMPLATES.filter((t) => t.flagship).length,
+          canaryReady: packages.some(
+            (p) =>
+              p.kind === "skill" &&
+              p.canary &&
+              ["ready", "approved", "published"].includes(p.status),
+          ),
         };
       },
 
       catalog: () => MUSIC_CATALOG,
     }),
     {
-      name: "lvl-factory-v1",
+      name: "lvl-factory-v2-tier1",
       storage: createJSONStorage(() =>
         typeof window !== "undefined"
           ? localStorage
@@ -269,6 +462,7 @@ export const useFactoryStore = create<FactoryState>()(
       partialize: (s) => ({
         packages: s.packages,
         selectedId: s.selectedId,
+        tier1SeededAt: s.tier1SeededAt,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);

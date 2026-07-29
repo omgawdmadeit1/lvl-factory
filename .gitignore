@@ -1,0 +1,11 @@
+node_modules/
+.vercel/
+screenshots/
+.grok/
+*.log
+node_modules/.nitro/
+dist/
+
+.env
+.env.local
+.env.*.local

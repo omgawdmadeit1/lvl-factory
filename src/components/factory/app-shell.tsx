@@ -1,49 +1,44 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Boxes,
+  CreditCard,
   Disc3,
-  Factory,
+  FlaskConical,
   LayoutDashboard,
-  ListChecks,
+  ListOrdered,
   Package,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFactoryStore } from "@/lib/factory/store";
 
-const nav = [
+const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/music", label: "Music Factory", icon: Disc3 },
-  { to: "/skills", label: "Skill Factory", icon: Boxes },
-  { to: "/queue", label: "Review Queue", icon: ListChecks },
+  { to: "/pay", label: "Pay", icon: CreditCard },
+  { to: "/tier1", label: "Tier 1 Plan", icon: Sparkles },
+  { to: "/music", label: "Music packs", icon: Disc3 },
+  { to: "/skills", label: "Skill packs", icon: Boxes },
+  { to: "/queue", label: "Queue", icon: ListOrdered },
+  { to: "/canary", label: "Canary", icon: FlaskConical },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const message = useFactoryStore((s) => s.lastMessage);
-  const clearMessage = useFactoryStore((s) => s.clearMessage);
-  const packages = useFactoryStore((s) => s.packages);
-  const queueCount = packages.filter((p) =>
-    ["ready", "processing", "approved"].includes(p.status),
-  ).length;
 
   return (
-    <div className="min-h-dvh bg-bg text-fg">
-      <div className="mx-auto flex min-h-dvh max-w-7xl flex-col md:flex-row">
-        <aside className="border-b border-border md:w-60 md:shrink-0 md:border-b-0 md:border-r">
-          <div className="flex items-center gap-3 px-4 py-4 md:px-5 md:py-6">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-border bg-surface-2">
-              <Factory className="size-4 text-fg" />
-            </div>
-            <div className="min-w-0">
-              <div className="truncate text-sm font-semibold tracking-tight">
-                LVL Factory
-              </div>
-              <div className="truncate text-xs text-subtle">lvlltd.com rails</div>
-            </div>
+    <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
+      <div className="mx-auto flex min-h-dvh max-w-7xl">
+        <aside className="hidden w-60 shrink-0 border-r border-border md:flex md:flex-col">
+          <div className="border-b border-border px-4 py-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-subtle">
+              LVL Factory
+            </p>
+            <p className="text-sm font-semibold tracking-tight">
+              Skill + Music packs
+            </p>
+            <p className="mt-1 text-xs text-muted">lvlltd.com operator</p>
           </div>
-
-          <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-col md:overflow-visible md:px-3 md:pb-6">
-            {nav.map((item) => {
+          <nav className="flex flex-1 flex-col gap-1 p-3">
+            {NAV.map((item) => {
               const active =
                 item.to === "/"
                   ? pathname === "/"
@@ -54,73 +49,76 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-ring",
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
                     active
                       ? "bg-surface-2 text-fg"
-                      : "text-muted hover:bg-surface-2/70 hover:text-fg",
+                      : "text-muted hover:bg-surface hover:text-fg",
                   )}
                 >
                   <Icon className="size-4 shrink-0" />
-                  <span className="whitespace-nowrap">{item.label}</span>
-                  {item.to === "/queue" && queueCount > 0 ? (
-                    <span className="ml-auto rounded-full bg-surface-3 px-2 py-0.5 text-[11px] tabular text-muted">
-                      {queueCount}
-                    </span>
-                  ) : null}
+                  {item.label}
                 </Link>
               );
             })}
           </nav>
-
-          <div className="hidden border-t border-border p-4 md:block">
+          <div className="space-y-3 border-t border-border p-3">
             <div className="rounded-xl border border-border bg-surface p-3">
               <div className="mb-2 flex items-center gap-2 text-xs font-medium text-muted">
                 <Package className="size-3.5" />
-                Domain family
+                Payment rails
               </div>
               <ul className="space-y-1.5 text-xs text-subtle">
-                <li>lvlltd.com — skill market</li>
-                <li>music.lvlltd.com — catalog</li>
-                <li>x402 · Base · USDC</li>
+                <li>Crypto: buyer picks mainnet</li>
+                <li>Base · ETH · ARB · OP · Polygon</li>
+                <li>USDC / USDT / native</li>
+                <li className="font-medium text-fg">Stripe card · live</li>
               </ul>
             </div>
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
           <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 md:px-6">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider text-subtle">
                 Operator console
               </p>
               <p className="text-sm text-muted">
-                Local pack factory for music + agent skills
+                Multi-rail pay · Stripe · factory
               </p>
             </div>
             <div className="hidden items-center gap-2 sm:flex">
               <span className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted">
                 No phone path
               </span>
-              <span className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted">
-                Digital only
+              <span className="rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs text-success">
+                Multi-rail + Stripe
               </span>
             </div>
           </header>
 
-          {message ? (
-            <div className="border-b border-border bg-surface-2/60 px-4 py-2.5 md:px-6">
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-sm text-fg">{message}</p>
-                <button
-                  type="button"
-                  onClick={clearMessage}
-                  className="shrink-0 text-xs text-muted hover:text-fg focus-ring rounded"
+          <nav className="flex gap-1 overflow-x-auto border-b border-border px-2 py-2 md:hidden">
+            {NAV.map((item) => {
+              const active =
+                item.to === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.to);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={cn(
+                    "shrink-0 rounded-full px-3 py-1.5 text-xs",
+                    active
+                      ? "bg-surface-2 text-fg"
+                      : "text-muted hover:bg-surface",
+                  )}
                 >
-                  Dismiss
-                </button>
-              </div>
-            </div>
-          ) : null}
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
 
           <main className="flex-1 px-4 py-5 md:px-6 md:py-6">{children}</main>
         </div>

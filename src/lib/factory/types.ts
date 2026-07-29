@@ -17,6 +17,40 @@ export type Genre =
   | "fusion"
   | "sessions";
 
+export type PaymentRail = "x402" | "fiat" | "both" | "multi";
+
+/** Multi-rail settlement — default Base USDC, buyer may pick mainnet + asset or Stripe */
+export interface SettlementBlock {
+  priceUsdc: number;
+  price_usd: number;
+  price_label: string;
+  amount_atomic: string;
+  maxAmountRequired: string;
+  network: "base";
+  chain_id: 8453;
+  network_caip2: "eip155:8453";
+  asset: "USDC";
+  assetContract: string;
+  decimals: 6;
+  payTo: string;
+  protocol: "x402";
+  settlement: "multi-rail" | "base-usdc";
+  default_rail?: string;
+  accepted_networks?: { id: string; chainId: number; assets: string[] }[];
+  stripe?: {
+    enabled: boolean;
+    min_usd: number;
+    canary_url: string;
+    unlock_99_url: string;
+  };
+  forbidden: {
+    testnets?: boolean;
+    ethereum_mainnet?: boolean;
+    eth_as_payment?: boolean;
+    note: string;
+  };
+}
+
 export interface MusicTrack {
   id: string;
   title: string;
@@ -46,6 +80,8 @@ export interface MusicPackage {
     tags: string[];
     platforms: string[];
     downloadPriceUsdc: number;
+    paymentRails: PaymentRail;
+    settlement?: SettlementBlock;
   };
   alternativeMaster: {
     loudnessLufs: number;
@@ -70,6 +106,24 @@ export interface MusicPackage {
   notes: string;
 }
 
+export interface SkillTemplate {
+  id: string;
+  title: string;
+  category: string;
+  priceUsdc: number;
+  summary: string;
+  capabilities: string[];
+  flagship: boolean;
+  canary: boolean;
+  paymentRails: PaymentRail;
+  afterPay: string[];
+  uniqueSample: string;
+  inputs: string[];
+  outputs: string[];
+  constraints: string[];
+  buyerProof: string;
+}
+
 export interface SkillPackage {
   id: string;
   kind: "skill";
@@ -80,6 +134,10 @@ export interface SkillPackage {
   title: string;
   category: string;
   priceUsdc: number;
+  flagship: boolean;
+  canary: boolean;
+  paymentRails: PaymentRail;
+  afterPay: string[];
   outline: {
     summary: string;
     capabilities: string[];
@@ -96,7 +154,10 @@ export interface SkillPackage {
   marketplace: {
     freeOutline: boolean;
     x402Path: string;
+    fiatPath: string;
     tags: string[];
+    buyerProof: string;
+    settlement?: SettlementBlock;
   };
   progress: number;
   notes: string;
@@ -110,4 +171,13 @@ export interface FactoryStats {
   packsReady: number;
   packsPublished: number;
   estimatedUsdc: number;
+  flagshipsReady: number;
+  canaryReady: boolean;
+}
+
+export interface Tier1ChecklistItem {
+  id: string;
+  label: string;
+  done: boolean;
+  detail: string;
 }
