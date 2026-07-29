@@ -1,128 +1,138 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  buildPrintifyMockupUrl,
+  imageProxyStats,
+  redirectToResolved,
+  resolveImageUrl,
+  streamResolvedImage,
+  warmImageResolutions,
+} from "@/lib/store/image-proxy.server";
+import { RESOLVED_MOCKUPS } from "@/lib/store/images";
 
 /**
- * Printify images-api often returns empty body + x-automaton-object-url.
- * This proxy resolves to the real JPEG (S3) so storefront <img> tags work.
+ * Optimized Printify → S3 image proxy.
  *
- * GET /api/store/image?u=<encoded images-api or any https printify URL>
- * GET /api/store/image?id=&path=&slug=&rev=  (build printify mockup URL)
+ * GET /api/store/image?u=<encoded url>
+ * GET /api/store/image?id=&path=&slug=&rev=
+ * GET /api/store/image?mode=stream&u=...   → proxy bytes (same-origin, long cache)
+ * GET /api/store/image?mode=redirect&u=... → 302 to S3 (default, cheapest)
+ * GET /api/store/image?stats=1            → cache stats
+ * POST /api/store/image { warm: string[] } → warm resolve cache
  */
-const ALLOWED_HOSTS = new Set([
-  "images-api.printify.com",
-  "pfy-prod-automaton-cache.s3.us-east-2.amazonaws.com",
-  "printify-mockup.s3.amazonaws.com",
-  "images.printify.com",
-]);
-
-function isAllowed(url: URL): boolean {
-  if (ALLOWED_HOSTS.has(url.hostname)) return true;
-  if (url.hostname.endsWith(".printify.com")) return true;
-  if (url.hostname.endsWith(".amazonaws.com") && url.hostname.includes("printify"))
-    return true;
-  if (
-    url.hostname.endsWith(".amazonaws.com") &&
-    url.pathname.includes("/mockup/")
-  )
-    return true;
-  return false;
-}
-
-async function resolvePrintifyImage(target: string): Promise<string | null> {
-  let url: URL;
-  try {
-    url = new URL(target);
-  } catch {
-    return null;
-  }
-  if (url.protocol !== "https:" || !isAllowed(url)) return null;
-
-  // Already a direct S3 object with content — return as-is
-  if (url.hostname.includes("amazonaws.com")) {
-    return url.toString();
-  }
-
-  try {
-    const head = await fetch(url.toString(), {
-      method: "HEAD",
-      redirect: "follow",
-      headers: {
-        Accept: "image/jpeg,image/*,*/*",
-        "User-Agent": "LVL-Store-Image-Proxy/1.0",
-      },
-    });
-    const objectUrl = head.headers.get("x-automaton-object-url");
-    if (objectUrl && objectUrl.startsWith("https://")) {
-      return objectUrl;
-    }
-    // Some CDNs return the image on GET with body
-    if (
-      head.ok &&
-      Number(head.headers.get("content-length") || 0) > 1000
-    ) {
-      return url.toString();
-    }
-    // Fallback GET to read headers again
-    const get = await fetch(url.toString(), {
-      method: "GET",
-      redirect: "follow",
-      headers: {
-        Accept: "image/jpeg,image/*,*/*",
-        "User-Agent": "LVL-Store-Image-Proxy/1.0",
-      },
-    });
-    const objectUrl2 = get.headers.get("x-automaton-object-url");
-    if (objectUrl2?.startsWith("https://")) return objectUrl2;
-    if (get.ok && Number(get.headers.get("content-length") || 0) > 1000) {
-      return url.toString();
-    }
-  } catch (e) {
-    console.warn("[store image proxy]", e);
-  }
-  return null;
-}
-
 export const Route = createFileRoute("/api/store/image")({
   server: {
     handlers: {
       GET: async ({ request }) => {
         const q = new URL(request.url).searchParams;
-        let target = q.get("u");
 
+        if (q.get("stats") === "1") {
+          return Response.json({ ok: true, ...imageProxyStats() });
+        }
+
+        let target = q.get("u");
         if (!target) {
           const id = q.get("id");
           const path = q.get("path");
           const slug = q.get("slug");
-          const rev = q.get("rev");
           if (id && path && slug) {
-            target = `https://images-api.printify.com/mockup/${id}/${path}/${slug}.jpg?camera_label=front${
-              rev ? `&revision=${rev}` : ""
-            }`;
+            const seed = RESOLVED_MOCKUPS[slug];
+            if (seed && q.get("mode") !== "resolve_only") {
+              target = seed;
+            } else {
+              target = buildPrintifyMockupUrl({
+                id,
+                path,
+                slug,
+                rev: q.get("rev"),
+                camera: q.get("camera"),
+              });
+            }
           }
         }
 
         if (!target) {
           return Response.json(
-            { ok: false, error: "missing u or id/path/slug" },
+            {
+              ok: false,
+              error: "missing u or id/path/slug",
+              usage: {
+                redirect: "/api/store/image?u=<url>",
+                stream: "/api/store/image?mode=stream&u=<url>",
+                parts: "/api/store/image?id=&path=&slug=&rev=",
+              },
+            },
             { status: 400 },
           );
         }
 
-        const resolved = await resolvePrintifyImage(target);
-        if (!resolved) {
+        if (target.length > 2048) {
           return Response.json(
-            { ok: false, error: "unable to resolve image" },
-            { status: 404 },
+            { ok: false, error: "url_too_long" },
+            { status: 400 },
           );
         }
 
-        // 302 so CDN caches the destination; short cache on the hop
-        return new Response(null, {
-          status: 302,
-          headers: {
-            Location: resolved,
-            "Cache-Control": "public, max-age=3600",
-            "X-Lvl-Image-Proxy": "1",
-          },
+        const resolved = await resolveImageUrl(target);
+        if (!resolved) {
+          return Response.json(
+            { ok: false, error: "unable to resolve image" },
+            {
+              status: 404,
+              headers: {
+                "Cache-Control": "public, max-age=60",
+                "X-Lvl-Image-Proxy": "miss",
+              },
+            },
+          );
+        }
+
+        const mode = (q.get("mode") || "redirect").toLowerCase();
+
+        if (mode === "json" || mode === "resolve_only") {
+          return Response.json(
+            {
+              ok: true,
+              resolved: resolved.url,
+              source: resolved.source,
+              cached: resolved.cached,
+            },
+            {
+              headers: {
+                "Cache-Control":
+                  "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
+              },
+            },
+          );
+        }
+
+        if (mode === "stream" || mode === "proxy") {
+          return streamResolvedImage(resolved.url, request);
+        }
+
+        return redirectToResolved(resolved);
+      },
+
+      POST: async ({ request }) => {
+        let body: { warm?: string[] };
+        try {
+          body = (await request.json()) as { warm?: string[] };
+        } catch {
+          return Response.json(
+            { ok: false, error: "invalid_json" },
+            { status: 400 },
+          );
+        }
+        const urls = Array.isArray(body.warm)
+          ? body.warm.filter((u) => typeof u === "string").slice(0, 50)
+          : [];
+        const usingSeeds = urls.length === 0;
+        const list = usingSeeds ? Object.values(RESOLVED_MOCKUPS) : urls;
+        const result = await warmImageResolutions(list);
+        return Response.json({
+          ok: true,
+          used_seeds: usingSeeds,
+          ...result,
+          stats: imageProxyStats(),
         });
       },
     },

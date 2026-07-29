@@ -1,10 +1,9 @@
 /**
- * Storefront image helpers.
- * Printify images-api returns empty body to many clients; we route through
- * /api/store/image which resolves x-automaton-object-url → S3 JPEG.
+ * Storefront image helpers (client + server safe).
+ * Printify images-api often returns empty body; resolve via S3 or /api/store/image.
  */
 
-/** Known stable S3 seeds (refreshed periodically; proxy is the durable path). */
+/** Known S3 seeds (fast path; expire ~weekly — proxy refreshes). */
 export const RESOLVED_MOCKUPS: Record<string, string> = {
   "boston-native-logo-t-shirt":
     "https://pfy-prod-automaton-cache.s3.us-east-2.amazonaws.com/mockup/706/6a6a3fb4b321eb70a0045515/73207/98445/11363530777891837245_1200.jpeg",
@@ -20,27 +19,65 @@ export const RESOLVED_MOCKUPS: Record<string, string> = {
     "https://pfy-prod-automaton-cache.s3.us-east-2.amazonaws.com/mockup/380/69a288b146730b56700a03de/45150/1530/8150530740031892652_1200.jpeg",
 };
 
-/** Build proxy URL for any Printify images-api mockup URL */
-export function proxyStoreImage(sourceUrl: string): string {
+export type ProxyMode = "redirect" | "stream";
+
+/**
+ * Build optimized proxy URL.
+ * - redirect (default): one resolve hop → 302 S3 (cheapest, browser caches S3)
+ * - stream: same-origin bytes when S3/referrer is blocked
+ */
+export function proxyStoreImage(
+  sourceUrl: string,
+  mode: ProxyMode = "redirect",
+): string {
   if (!sourceUrl) return "";
-  // Already S3 — use directly (fast path)
+  if (sourceUrl.startsWith("/api/store/image")) return sourceUrl;
+  // S3 direct is fastest when available
   if (
+    mode === "redirect" &&
     sourceUrl.includes("amazonaws.com") &&
     sourceUrl.includes("/mockup/")
   ) {
     return sourceUrl;
   }
-  // Already our proxy
-  if (sourceUrl.startsWith("/api/store/image")) return sourceUrl;
-  return `/api/store/image?u=${encodeURIComponent(sourceUrl)}`;
+  const q = new URLSearchParams();
+  q.set("u", sourceUrl);
+  if (mode === "stream") q.set("mode", "stream");
+  return `/api/store/image?${q.toString()}`;
 }
 
-/** Prefer resolved S3 by slug, else proxy original mockupUrl */
+/**
+ * Best image URL for a product:
+ * 1) seeded S3 (0 hop)
+ * 2) proxy of Printify images-api (1 hop resolve + 302)
+ */
 export function productImageSrc(opts: {
   slug: string;
   mockupUrl: string;
+  /** Force same-origin stream (rare) */
+  stream?: boolean;
 }): string {
+  const mode: ProxyMode = opts.stream ? "stream" : "redirect";
   const resolved = RESOLVED_MOCKUPS[opts.slug];
-  if (resolved) return resolved;
-  return proxyStoreImage(opts.mockupUrl);
+  if (resolved) {
+    if (mode === "stream") return proxyStoreImage(resolved, "stream");
+    return resolved;
+  }
+  return proxyStoreImage(opts.mockupUrl, mode);
+}
+
+/** Prefetch / warm browser cache for visible product images */
+export function prefetchProductImages(
+  items: Array<{ slug: string; mockupUrl: string }>,
+): void {
+  if (typeof document === "undefined") return;
+  for (const item of items.slice(0, 12)) {
+    const href = productImageSrc(item);
+    if (!href) continue;
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = href;
+    document.head.appendChild(link);
+  }
 }

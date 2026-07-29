@@ -1,5 +1,9 @@
-import { useState } from "react";
-import { productImageSrc, proxyStoreImage } from "@/lib/store/images";
+import { useEffect, useState } from "react";
+import {
+  productImageSrc,
+  proxyStoreImage,
+  RESOLVED_MOCKUPS,
+} from "@/lib/store/images";
 import { cn } from "@/lib/utils";
 
 export function ProductImage({
@@ -8,36 +12,63 @@ export function ProductImage({
   alt,
   className,
   priority,
+  sizes = "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px",
 }: {
   slug: string;
   mockupUrl: string;
   alt: string;
   className?: string;
   priority?: boolean;
+  sizes?: string;
 }) {
   const primary = productImageSrc({ slug, mockupUrl });
   const [src, setSrc] = useState(primary);
   const [failed, setFailed] = useState(false);
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    setSrc(productImageSrc({ slug, mockupUrl }));
+    setFailed(false);
+    setStep(0);
+  }, [slug, mockupUrl]);
 
   return (
-    <div className={cn("relative size-full bg-surface-2", className)}>
+    <div
+      className={cn(
+        "relative size-full overflow-hidden bg-surface-2",
+        className,
+      )}
+    >
       {!failed ? (
         <img
           src={src}
           alt={alt}
           width={800}
           height={1000}
+          sizes={sizes}
           loading={priority ? "eager" : "lazy"}
           decoding="async"
+          fetchPriority={priority ? "high" : "auto"}
           className="size-full object-cover"
           onError={() => {
-            // Fallback: try proxy of original printify URL
-            const fallback = proxyStoreImage(mockupUrl);
-            if (src !== fallback && mockupUrl) {
-              setSrc(fallback);
-            } else {
-              setFailed(true);
+            // Cascade: primary → proxy redirect → stream → seed stream → fail
+            if (step === 0 && mockupUrl) {
+              setStep(1);
+              setSrc(proxyStoreImage(mockupUrl, "redirect"));
+              return;
             }
+            if (step === 1 && mockupUrl) {
+              setStep(2);
+              setSrc(proxyStoreImage(mockupUrl, "stream"));
+              return;
+            }
+            const seed = RESOLVED_MOCKUPS[slug];
+            if (step === 2 && seed) {
+              setStep(3);
+              setSrc(proxyStoreImage(seed, "stream"));
+              return;
+            }
+            setFailed(true);
           }}
         />
       ) : (
