@@ -1,0 +1,77 @@
+{
+  "$schema_note": "Cloudflare Custom Rules (WAF) for factory.lvlltd.com Printify webhooks. Apply with scripts/apply-cloudflare-waf.mjs or paste into Dashboard → Security → WAF → Custom rules.",
+  "zone_name": "lvlltd.com",
+  "host": "factory.lvlltd.com",
+  "description": "LVL Factory Printify webhook edge WAF",
+  "rules": [
+    {
+      "id": "lvl-pfy-block-oversized-post",
+      "description": "Block oversized POST bodies to Printify webhooks (>512KB)",
+      "enabled": true,
+      "action": "block",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and http.request.uri.path eq \"/api/printify/webhooks\" and http.request.method eq \"POST\" and http.request.body.size gt 524288)",
+      "action_parameters": {}
+    },
+    {
+      "id": "lvl-pfy-require-signature-header",
+      "description": "Block webhook POST without X-Pfy-Signature (enable after secret installed)",
+      "enabled": false,
+      "action": "block",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and http.request.uri.path eq \"/api/printify/webhooks\" and http.request.method eq \"POST\" and not len(http.request.headers[\"x-pfy-signature\"]) > 0)",
+      "action_parameters": {},
+      "note": "Enable after PRINTIFY_WEBHOOK_SECRET is configured and Printify sends signatures"
+    },
+    {
+      "id": "lvl-pfy-block-bad-methods",
+      "description": "Block non GET/POST/HEAD/OPTIONS on webhook endpoint",
+      "enabled": true,
+      "action": "block",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and http.request.uri.path eq \"/api/printify/webhooks\" and not http.request.method in {\"GET\" \"POST\" \"HEAD\" \"OPTIONS\"})",
+      "action_parameters": {}
+    },
+    {
+      "id": "lvl-pfy-managed-challenge-scanners",
+      "description": "Managed challenge high threat scores on Printify API paths",
+      "enabled": true,
+      "action": "managed_challenge",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/api/printify/\") and cf.threat_score gt 30 and not http.request.method eq \"POST\")",
+      "action_parameters": {},
+      "note": "Does not challenge POST webhooks (Printify cannot solve challenges)"
+    },
+    {
+      "id": "lvl-pfy-skip-bot-fight-on-webhook-post",
+      "description": "Skip Bot Fight Mode interference on legitimate webhook POST",
+      "enabled": true,
+      "action": "skip",
+      "expression": "(http.host eq \"factory.lvlltd.com\" and http.request.uri.path eq \"/api/printify/webhooks\" and http.request.method eq \"POST\")",
+      "action_parameters": {
+        "products": ["bic", "hot", "securityLevel", "uaBlock", "zoneLockdown", "rateLimit"]
+      },
+      "note": "Skip only aggressive bot products — rate limit is re-applied by Rate limiting rules below. Adjust products if CF plan differs."
+    }
+  ],
+  "rate_limiting_rules": [
+    {
+      "id": "lvl-pfy-rl-webhook-post",
+      "description": "Rate limit Printify webhook POST 60/min per IP",
+      "enabled": true,
+      "expression": "(http.host eq \"factory.lvlltd.com\" and http.request.uri.path eq \"/api/printify/webhooks\" and http.request.method eq \"POST\")",
+      "characteristics": ["ip.src"],
+      "period": 60,
+      "requests_per_period": 60,
+      "mitigation_timeout": 60,
+      "action": "block"
+    },
+    {
+      "id": "lvl-pfy-rl-api-get",
+      "description": "Rate limit Printify API GET 120/min per IP",
+      "enabled": true,
+      "expression": "(http.host eq \"factory.lvlltd.com\" and starts_with(http.request.uri.path, \"/api/printify/\") and http.request.method eq \"GET\")",
+      "characteristics": ["ip.src"],
+      "period": 60,
+      "requests_per_period": 120,
+      "mitigation_timeout": 60,
+      "action": "block"
+    }
+  ]
+}

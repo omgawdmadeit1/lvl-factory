@@ -1,0 +1,14 @@
+name = "lvl-factory-proxy"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+workers_dev = true
+
+# Custom domain: factory.lvlltd.com (routes configured in CF dashboard / provision workflow)
+# routes = [{ pattern = "factory.lvlltd.com/*", zone_name = "lvlltd.com" }]
+
+[vars]
+# ORIGIN_URL = "https://lvl-factory.vercel.app"
+# ENFORCE_SIGNATURE = "1"   # require X-Pfy-Signature on POST /api/printify/webhooks
+# PRINTIFY_WEBHOOK_STRICT = "1"
+# WEBHOOK_GATE_TOKEN = ""   # optional shared secret header x-lvl-webhook-gate
+# WEBHOOK_ADMIN_TOKEN = ""  # protect POST /api/printify/subscriptions

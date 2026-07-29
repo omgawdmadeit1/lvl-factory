@@ -11,6 +11,10 @@ import {
   verifyPrintifySignature,
   getWebhookSecretOrUndefined,
 } from "@/lib/merch/webhooks.server";
+import {
+  enforceWebhookWaf,
+  wafStatusPublic,
+} from "@/lib/merch/webhook-waf.server";
 import type { PrintifyWebhookPayload } from "@/lib/merch/webhook-topics";
 
 export const Route = createFileRoute("/api/printify/webhooks")({
@@ -18,6 +22,9 @@ export const Route = createFileRoute("/api/printify/webhooks")({
     handlers: {
       /** Health + recent events (operator / agents) */
       GET: async ({ request }) => {
+        const waf = await enforceWebhookWaf(request, { path: "webhooks" });
+        if (!waf.ok) return waf.response;
+
         const url = new URL(request.url);
         const limit = Math.min(
           100,
@@ -34,6 +41,13 @@ export const Route = createFileRoute("/api/printify/webhooks")({
             endpoint: getWebhookPublicUrl(),
             path: "/api/printify/webhooks",
             status,
+            waf: wafStatusPublic(),
+            edge: {
+              ip: waf.ip,
+              ray: waf.ray,
+              country: waf.country,
+              edge: waf.edge,
+            },
             events,
             orders,
           });
@@ -51,11 +65,21 @@ export const Route = createFileRoute("/api/printify/webhooks")({
 
       /**
        * Inbound Printify webhook delivery.
-       * Header: X-Pfy-Signature: sha256=<hmac>
-       * Body: JSON event envelope
+       * Edge: Cloudflare worker WAF + zone rules
+       * Origin: enforceWebhookWaf + HMAC X-Pfy-Signature
        */
       POST: async ({ request }) => {
+        const waf = await enforceWebhookWaf(request, { path: "webhooks" });
+        if (!waf.ok) return waf.response;
+
         const rawBody = await request.text();
+        if (rawBody.length > 512 * 1024) {
+          return Response.json(
+            { ok: false, error: "payload_too_large", waf: "lvl-origin" },
+            { status: 413 },
+          );
+        }
+
         const secret = getWebhookSecretOrUndefined();
         const sig =
           request.headers.get("x-pfy-signature") ||
@@ -69,14 +93,16 @@ export const Route = createFileRoute("/api/printify/webhooks")({
 
         if (!accept) {
           return Response.json(
-            { ok: false, error: check.reason },
+            { ok: false, error: check.reason, waf: "lvl-origin" },
             { status: 403 },
           );
         }
 
         let payload: PrintifyWebhookPayload;
         try {
-          payload = rawBody ? (JSON.parse(rawBody) as PrintifyWebhookPayload) : {};
+          payload = rawBody
+            ? (JSON.parse(rawBody) as PrintifyWebhookPayload)
+            : {};
         } catch {
           return Response.json(
             { ok: false, error: "Invalid JSON body" },
@@ -95,6 +121,7 @@ export const Route = createFileRoute("/api/printify/webhooks")({
             id: result.eventId,
             notes: result.notes,
             signature: check.reason,
+            edge: { ip: waf.ip, ray: waf.ray, country: waf.country },
           });
         } catch (err) {
           console.error("[printify webhook]", err);

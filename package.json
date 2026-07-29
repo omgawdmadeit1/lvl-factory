@@ -14,7 +14,9 @@
     "preview": "vite preview --host 0.0.0.0 --port 8080",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "waf:apply": "node scripts/apply-cloudflare-waf.mjs",
+    "waf:dry": "DRY_RUN=1 node scripts/apply-cloudflare-waf.mjs"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.3",

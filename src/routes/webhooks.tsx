@@ -73,6 +73,7 @@ function WebhooksPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [simTopic, setSimTopic] = useState<string>("order:created");
   const [note, setNote] = useState<string | null>(null);
+  const [wafInfo, setWafInfo] = useState<Record<string, unknown> | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -87,6 +88,7 @@ function WebhooksPage() {
       if (evRes.orders) setOrders(evRes.orders);
       if (evRes.endpoint) setEndpoint(evRes.endpoint);
       if (evRes.status) setStatus(evRes.status);
+      if ((evRes as { waf?: Record<string, unknown> }).waf) setWafInfo((evRes as { waf?: Record<string, unknown> }).waf ?? null);
       if (subRes.remote) setRemote(subRes.remote);
       if (subRes.status) setStatus(subRes.status);
       if (subRes.note) setNote(subRes.note);
@@ -264,6 +266,30 @@ function WebhooksPage() {
           </p>
         </CardContent>
       </Card>
+
+      <Card className="border-border bg-surface">
+        <CardHeader>
+          <CardTitle className="text-base">Cloudflare WAF</CardTitle>
+          <CardDescription>
+            Edge worker + zone rules protect /api/printify/*
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2 text-xs text-muted">
+          <ul className="list-inside list-disc space-y-1">
+            <li>Worker rate limit: 60 POST/min/IP on webhooks</li>
+            <li>Body cap 512KB · method allowlist · optional signature gate</li>
+            <li>Zone rules: cloudflare/waf/printify-webhooks-rules.json</li>
+            <li>Apply: node scripts/apply-cloudflare-waf.mjs</li>
+            <li>Deploy proxy: wrangler deploy -c cloudflare/workers/lvl-factory-proxy/wrangler.toml</li>
+          </ul>
+          {wafInfo ? (
+            <pre className="mt-2 max-h-40 overflow-auto rounded-lg border border-border bg-bg p-2 font-mono text-[10px] text-subtle">
+              {JSON.stringify(wafInfo, null, 2)}
+            </pre>
+          ) : null}
+        </CardContent>
+      </Card>
+
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="border-border bg-surface">

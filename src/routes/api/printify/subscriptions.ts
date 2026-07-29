@@ -17,6 +17,7 @@ import {
   isPrintifyTopic,
 } from "@/lib/merch/webhook-topics";
 import { processWebhookEvent } from "@/lib/merch/webhooks.server";
+import { enforceWebhookWaf } from "@/lib/merch/webhook-waf.server";
 
 function json(data: unknown, status = 200) {
   return Response.json(data, { status });
@@ -26,7 +27,9 @@ export const Route = createFileRoute("/api/printify/subscriptions")({
   server: {
     handlers: {
       /** List remote Printify webhooks + local credential status */
-      GET: async () => {
+      GET: async ({ request }) => {
+        const waf = await enforceWebhookWaf(request, { path: "subscriptions" });
+        if (!waf.ok) return waf.response;
         const status = printifyCredentialsStatus();
         const token = getPrintifyToken();
         const shopId = getPrintifyShopId();
@@ -62,6 +65,8 @@ export const Route = createFileRoute("/api/printify/subscriptions")({
        * { action: "local_simulate", topic, resource? } — inject event without Printify
        */
       POST: async ({ request }) => {
+        const waf = await enforceWebhookWaf(request, { path: "subscriptions" });
+        if (!waf.ok) return waf.response;
         let body: Record<string, unknown>;
         try {
           body = (await request.json()) as Record<string, unknown>;

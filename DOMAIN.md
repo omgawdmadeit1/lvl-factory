@@ -138,3 +138,34 @@ Pipeline stages: `brief` → `imagine` → `mockup` → `printify_draft` → `re
 
 Install all topics from `/webhooks` → **Install all topics** (requires token + shop id).
 Local QA without Printify: **Local simulate** on the same page.
+
+## Cloudflare WAF (Printify webhooks)
+
+| Layer | Location |
+|-------|----------|
+| Edge worker | `cloudflare/workers/lvl-factory-proxy` (factory.lvlltd.com proxy) |
+| Zone custom rules | `cloudflare/waf/printify-webhooks-rules.json` |
+| Apply script | `node scripts/apply-cloudflare-waf.mjs` |
+| Origin WAF | `src/lib/merch/webhook-waf.server.ts` on `/api/printify/*` |
+
+### Protections
+- Rate limit webhook POST 60/min/IP (edge + origin)
+- Rate limit Printify API GET 120/min/IP
+- Block body > 512KB
+- Method allowlist on `/api/printify/webhooks`
+- Optional require `X-Pfy-Signature` (`ENFORCE_SIGNATURE=1` on worker / `PRINTIFY_WEBHOOK_STRICT=1` origin)
+- Optional `WEBHOOK_GATE_TOKEN` → header `x-lvl-webhook-gate`
+- Optional `WEBHOOK_ADMIN_TOKEN` for subscription management POST
+- Skip bot challenge on legitimate webhook POST (zone rule)
+
+### Deploy
+```bash
+# Zone WAF rules (needs CLOUDFLARE_API_TOKEN + CLOUDFLARE_ZONE_ID)
+export CLOUDFLARE_API_TOKEN=...
+export CLOUDFLARE_ZONE_ID=...
+node scripts/apply-cloudflare-waf.mjs
+
+# Edge worker (from factory repo or marketplace workers/lvl-factory-proxy)
+npx wrangler deploy -c cloudflare/workers/lvl-factory-proxy/wrangler.toml
+# set worker secrets/vars: ENFORCE_SIGNATURE, WEBHOOK_GATE_TOKEN, WEBHOOK_ADMIN_TOKEN
+```
