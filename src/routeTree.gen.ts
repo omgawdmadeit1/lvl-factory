@@ -18,7 +18,10 @@ import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as QueueRouteImport } from './routes/queue'
 import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as Tier1RouteImport } from './routes/tier1'
+import { Route as WebhooksRouteImport } from './routes/webhooks'
 import { Route as AgentMerchRouteImport } from './routes/agent.merch'
+import { Route as ApiPrintifySubscriptionsRouteImport } from './routes/api/printify/subscriptions'
+import { Route as ApiPrintifyWebhooksRouteImport } from './routes/api/printify/webhooks'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -65,9 +68,25 @@ const Tier1Route = Tier1RouteImport.update({
   path: '/tier1',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WebhooksRoute = WebhooksRouteImport.update({
+  id: '/webhooks',
+  path: '/webhooks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgentMerchRoute = AgentMerchRouteImport.update({
   id: '/agent/merch',
   path: '/agent/merch',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPrintifySubscriptionsRoute =
+  ApiPrintifySubscriptionsRouteImport.update({
+    id: '/api/printify/subscriptions',
+    path: '/api/printify/subscriptions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPrintifyWebhooksRoute = ApiPrintifyWebhooksRouteImport.update({
+  id: '/api/printify/webhooks',
+  path: '/api/printify/webhooks',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -81,7 +100,10 @@ export interface FileRoutesByFullPath {
   '/queue': typeof QueueRoute
   '/skills': typeof SkillsRoute
   '/tier1': typeof Tier1Route
+  '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
+  '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,7 +115,10 @@ export interface FileRoutesByTo {
   '/queue': typeof QueueRoute
   '/skills': typeof SkillsRoute
   '/tier1': typeof Tier1Route
+  '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
+  '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,7 +131,10 @@ export interface FileRoutesById {
   '/queue': typeof QueueRoute
   '/skills': typeof SkillsRoute
   '/tier1': typeof Tier1Route
+  '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
+  '/api/printify/webhooks': typeof ApiPrintifyWebhooksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,7 +148,10 @@ export interface FileRouteTypes {
     | '/queue'
     | '/skills'
     | '/tier1'
+    | '/webhooks'
     | '/agent/merch'
+    | '/api/printify/subscriptions'
+    | '/api/printify/webhooks'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -132,7 +163,10 @@ export interface FileRouteTypes {
     | '/queue'
     | '/skills'
     | '/tier1'
+    | '/webhooks'
     | '/agent/merch'
+    | '/api/printify/subscriptions'
+    | '/api/printify/webhooks'
   id:
     | '__root__'
     | '/'
@@ -144,7 +178,10 @@ export interface FileRouteTypes {
     | '/queue'
     | '/skills'
     | '/tier1'
+    | '/webhooks'
     | '/agent/merch'
+    | '/api/printify/subscriptions'
+    | '/api/printify/webhooks'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -157,7 +194,10 @@ export interface RootRouteChildren {
   QueueRoute: typeof QueueRoute
   SkillsRoute: typeof SkillsRoute
   Tier1Route: typeof Tier1Route
+  WebhooksRoute: typeof WebhooksRoute
   AgentMerchRoute: typeof AgentMerchRoute
+  ApiPrintifySubscriptionsRoute: typeof ApiPrintifySubscriptionsRoute
+  ApiPrintifyWebhooksRoute: typeof ApiPrintifyWebhooksRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -225,11 +265,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Tier1RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/webhooks': {
+      id: '/webhooks'
+      path: '/webhooks'
+      fullPath: '/webhooks'
+      preLoaderRoute: typeof WebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agent/merch': {
       id: '/agent/merch'
       path: '/agent/merch'
       fullPath: '/agent/merch'
       preLoaderRoute: typeof AgentMerchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/printify/subscriptions': {
+      id: '/api/printify/subscriptions'
+      path: '/api/printify/subscriptions'
+      fullPath: '/api/printify/subscriptions'
+      preLoaderRoute: typeof ApiPrintifySubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/printify/webhooks': {
+      id: '/api/printify/webhooks'
+      path: '/api/printify/webhooks'
+      fullPath: '/api/printify/webhooks'
+      preLoaderRoute: typeof ApiPrintifyWebhooksRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -245,7 +306,10 @@ const rootRouteChildren: RootRouteChildren = {
   QueueRoute: QueueRoute,
   SkillsRoute: SkillsRoute,
   Tier1Route: Tier1Route,
+  WebhooksRoute: WebhooksRoute,
   AgentMerchRoute: AgentMerchRoute,
+  ApiPrintifySubscriptionsRoute: ApiPrintifySubscriptionsRoute,
+  ApiPrintifyWebhooksRoute: ApiPrintifyWebhooksRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

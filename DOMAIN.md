@@ -121,3 +121,20 @@ Source: `workers/lvl-factory-proxy` in `lvlltd-agent-marketplace`.
 Modules: `src/lib/merch/*` · Live products seeded from Printify storefront mockups.
 
 Pipeline stages: `brief` → `imagine` → `mockup` → `printify_draft` → `review` → `published`
+
+## Printify webhooks
+
+| Item | Value |
+|------|--------|
+| Receive URL | `POST https://factory.lvlltd.com/api/printify/webhooks` |
+| Status / event log | `GET /api/printify/webhooks` |
+| Manage subscriptions | `GET/POST /api/printify/subscriptions` |
+| Operator UI | `/webhooks` |
+| Topics | shop:disconnected, product:*, order:*, order:shipment:* |
+| Signature header | `X-Pfy-Signature: sha256=<hmac>` |
+| Secret env | `PRINTIFY_WEBHOOK_SECRET` |
+| Token / shop | `PRINTIFY_API_TOKEN`, `PRINTIFY_SHOP_ID` |
+| Storage | `printify_webhook_events`, `printify_orders_mirror` (PGLite/Neon) |
+
+Install all topics from `/webhooks` → **Install all topics** (requires token + shop id).
+Local QA without Printify: **Local simulate** on the same page.
