@@ -1,5 +1,5 @@
 /** Which database backend is active. */
-export type DbSource = "neon" | "pglite";
+export type DbSource = "neon" | "pglite" | "unavailable";
 
 // An empty/whitespace DATABASE_URL (an easy misconfig in deploy UIs) must mean
 // "unset" — otherwise production would silently run on the PGLite fallback.
@@ -9,12 +9,34 @@ const databaseUrl =
   rawDatabaseUrl && rawDatabaseUrl.trim() ? rawDatabaseUrl : undefined;
 
 /**
- * Active backend: real **Neon** when `DATABASE_URL` is set (deployed / configured
- * sandbox), otherwise a local embedded **PGLite** (Postgres compiled to WASM) so
- * the app has a working database even with nothing configured — the live preview
- * included. Swap in Neon later by just setting `DATABASE_URL`; no code changes.
+ * Serverless (Vercel / Lambda) cannot load PGLite's WASM data file from the
+ * nitro bundle (`/var/task/_libs/pglite.data` ENOENT). Without DATABASE_URL we
+ * mark the backend unavailable instead of crashing every request with an
+ * unhandled rejection + process exit 128.
  */
-export const dbSource: DbSource = databaseUrl ? "neon" : "pglite";
+function isServerlessRuntime(): boolean {
+  if (typeof process === "undefined") return false;
+  return Boolean(
+    process.env.VERCEL ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.LAMBDA_TASK_ROOT ||
+      process.env.NETLIFY ||
+      process.env.VERCEL_ENV,
+  );
+}
+
+const serverless = isServerlessRuntime();
+
+/**
+ * Active backend: real **Neon** when `DATABASE_URL` is set; local embedded
+ * **PGLite** in Node dev/preview; **unavailable** on serverless without Neon
+ * (callers must catch `getSql()` or use in-memory fallbacks like agent orders).
+ */
+export const dbSource: DbSource = databaseUrl
+  ? "neon"
+  : serverless
+    ? "unavailable"
+    : "pglite";
 
 /**
  * Minimal shared SQL surface, satisfied by both Neon and PGLite. Both the
@@ -46,6 +68,7 @@ const globalRef = globalThis as typeof globalThis & {
   __pgSqlPromise__?: Promise<Sql>;
   __pgliteInstance__?: Promise<import("@electric-sql/pglite").PGlite>;
   __pgliteMigrateChain__?: Promise<void>;
+  __dbUnavailableLogged__?: boolean;
 };
 
 /**
@@ -75,11 +98,14 @@ function toSql(run: Run): Sql {
   ): Promise<T[]> => {
     // Rebuild with $1, $2, … placeholders so values stay parameterized.
     let text = strings[0];
-    for (let i = 0; i < values.length; i += 1) text += `$${i + 1}${strings[i + 1]}`;
+    for (let i = 0; i < values.length; i += 1)
+      text += `$${i + 1}${strings[i + 1]}`;
     return run<T>(text, values);
   }) as unknown as Sql;
-  sql.query = <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
-    run<T>(text, params);
+  sql.query = <T = Record<string, unknown>>(
+    text: string,
+    params: unknown[] = [],
+  ) => run<T>(text, params);
   return sql;
 }
 
@@ -176,6 +202,17 @@ async function createPgliteSql(): Promise<Sql> {
 
 let sqlPromise: Promise<Sql> | null = null;
 
+export class DbUnavailableError extends Error {
+  readonly code = "db_unavailable";
+  constructor(message?: string) {
+    super(
+      message ??
+        "Database unavailable: set DATABASE_URL (Neon) for durable storage on serverless. Agent orders use sealed tokens + memory fallback.",
+    );
+    this.name = "DbUnavailableError";
+  }
+}
+
 async function createSql(): Promise<Sql> {
   if (typeof window !== "undefined") {
     throw new Error(
@@ -183,12 +220,23 @@ async function createSql(): Promise<Sql> {
         "or a server route loader, never from client code.",
     );
   }
-  return dbSource === "neon" ? createNeonSql() : createPgliteSql();
+  if (dbSource === "neon") return createNeonSql();
+  if (dbSource === "unavailable") {
+    if (!globalRef.__dbUnavailableLogged__) {
+      globalRef.__dbUnavailableLogged__ = true;
+      console.warn(
+        "[db] No DATABASE_URL on serverless — PGLite skipped (WASM asset missing on Vercel). Set Neon DATABASE_URL for durable tables; agent orders use memory + sealed tokens.",
+      );
+    }
+    throw new DbUnavailableError();
+  }
+  return createPgliteSql();
 }
 
 /**
  * Get the shared, **server-only** SQL client. Neon when `DATABASE_URL` is set,
- * otherwise the local PGLite fallback. Memoized — safe to call per request.
+ * otherwise the local PGLite fallback (dev only). On serverless without Neon,
+ * rejects with `DbUnavailableError` (no process crash).
  *
  * Schema comes from `migrations/*.sql`, auto-applied before the first query on
  * both backends — define tables there, never inline in server functions.
@@ -208,7 +256,9 @@ export function getSql(): Promise<Sql> {
  */
 export async function getPglite(): Promise<import("@electric-sql/pglite").PGlite> {
   if (dbSource !== "pglite") {
-    throw new Error("getPglite() is only available on the PGLite fallback (no DATABASE_URL)");
+    throw new Error(
+      "getPglite() is only available on the PGLite fallback (local Node, no DATABASE_URL)",
+    );
   }
   await getSql();
   const pg = await globalRef.__pgliteInstance__;
@@ -219,20 +269,20 @@ export async function getPglite(): Promise<import("@electric-sql/pglite").PGlite
 /**
  * Finish DB bootstrap before the server handles traffic.
  *
- * - **PGLite** (preview / no `DATABASE_URL`): open the in-memory DB and apply
+ * - **PGLite** (local preview / no `DATABASE_URL`): open the in-memory DB and apply
  *   `migrations/*.sql`. Idempotent — concurrent callers share one promise.
  * - **Neon**: no-op (pool is created lazily on first query).
+ * - **Serverless without Neon**: no-op (do not attempt PGLite).
  *
- * Vite `configureServer` awaits this at dev startup; production imports of this
- * module kick it off immediately (see bottom of file).
+ * Vite `configureServer` awaits this at dev startup.
  */
 export function ensureDbReady(): Promise<void> {
   if (dbSource !== "pglite") return Promise.resolve();
   return getSql().then(() => undefined);
 }
 
-// Server-only eager start: kick PGLite bootstrap as soon as this module loads in
-// Node. Client bundles never hit this path (`getSql` throws in the browser).
+// Eager PGLite bootstrap only on local Node (never on Vercel serverless).
+// Must NOT rethrow — an unhandled rejection exits the Node process (exit 128).
 const globalBoot = globalThis as typeof globalThis & {
   __pgBootstrapPromise__?: Promise<void>;
 };
@@ -240,6 +290,6 @@ if (typeof window === "undefined" && dbSource === "pglite") {
   globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
     globalBoot.__pgBootstrapPromise__ = undefined;
     console.error("[db] PGLite bootstrap failed:", err);
-    throw err;
+    // swallow — callers of getSql() will retry / surface the error
   });
 }

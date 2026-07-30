@@ -2,7 +2,7 @@
  * Agent quote + order + pay-verify + Printify fulfill spine.
  */
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { getSql } from "@/lib/db";
+import { dbSource, getSql } from "@/lib/db";
 import { LVL_PAYMENT, TREASURY_EVM, TREASURY_SOL } from "@/lib/factory/payment";
 import { LIVE_PRINTIFY_PRODUCTS } from "@/lib/merch/catalog";
 import { CLOUDFLARE_MAP } from "@/lib/merch/printify";
@@ -51,9 +51,65 @@ function orderSealSecret(): string {
   );
 }
 
+/** Strip to portable fields so tokens stay small and stable across pay hops. */
+function sealableOrder(row: Record<string, unknown>): Record<string, unknown> {
+  const keys = [
+    "id",
+    "external_ref",
+    "status",
+    "sku",
+    "product_id",
+    "printify_product_id",
+    "variant_id",
+    "size",
+    "quantity",
+    "face_usd",
+    "agent_fee_usd",
+    "shipping_estimate_usd",
+    "total_usd",
+    "currency",
+    "ship_to",
+    "buyer_email",
+    "buyer_ref",
+    "rail",
+    "tx_hash",
+    "payment_proof",
+    "paid_at",
+    "printify_order_id",
+    "printify_status",
+    "fulfill_mode",
+    "fulfill_error",
+    "quote",
+    "created_at",
+    "updated_at",
+    // design tickets
+    "protocol",
+    "ticket_kind",
+    "title",
+    "concept",
+    "product_kind",
+    "style",
+    "imagine_prompt",
+    "negative_prompt",
+    "aspect_ratio",
+    "print_safe_notes",
+    "palette",
+    "suggested_blank",
+  ] as const;
+  const out: Record<string, unknown> = {};
+  for (const k of keys) {
+    if (row[k] !== undefined) out[k] = row[k];
+  }
+  if (!out.id && row.id != null) out.id = row.id;
+  return out;
+}
+
 /** Portable order ticket — survives multi-instance serverless without shared DB. */
 export function sealOrder(row: Record<string, unknown>): string {
-  const payload = Buffer.from(JSON.stringify(row), "utf8").toString("base64url");
+  const payload = Buffer.from(
+    JSON.stringify(sealableOrder(row)),
+    "utf8",
+  ).toString("base64url");
   const sig = createHmac("sha256", orderSealSecret())
     .update(payload)
     .digest("base64url");
@@ -263,6 +319,11 @@ async function resolveSql(): Promise<
   | { mode: "memory" }
 > {
   if (g.__lvlAgentSqlMode__ === "memory") return { mode: "memory" };
+  // Serverless without Neon: skip getSql() (no PGLite WASM crash / log spam)
+  if (dbSource === "unavailable") {
+    g.__lvlAgentSqlMode__ = "memory";
+    return { mode: "memory" };
+  }
   try {
     const sql = await getSql();
     await sql.query(`select 1 as ok`);

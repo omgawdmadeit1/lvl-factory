@@ -27,8 +27,13 @@ export const Route = createRootRoute({
         content:
           "LVL marketplace on lvlltd.com: merch store, multi-rail pay, agent catalog, seller tools, and Printify POD across factory and subdomains.",
       },
+      { name: "theme-color", content: "#0a0a0b" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/favicon.svg" },
+    ],
   }),
   component: RootComponent,
 });

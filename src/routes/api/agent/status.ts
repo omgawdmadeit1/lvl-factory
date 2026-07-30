@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { dbSource } from "@/lib/db";
 import {
   AGENT_FEE_USD,
   corsPreflight,
@@ -30,6 +31,16 @@ export const Route = createFileRoute("/api/agent/status")({
           domain: "lvlltd.com",
           origin,
           agent_fee_usd: AGENT_FEE_USD,
+          database: {
+            source: dbSource,
+            durable: dbSource === "neon",
+            note:
+              dbSource === "neon"
+                ? "Orders persist in Neon"
+                : dbSource === "pglite"
+                  ? "Local PGLite (dev)"
+                  : "No DATABASE_URL — agent orders use sealed tokens + per-instance memory",
+          },
           catalog: {
             published_skus: published.length,
             sample: published.slice(0, 3).map((p) => ({
