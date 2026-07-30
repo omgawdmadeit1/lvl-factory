@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { BrandMark } from "@/components/brand/visual-hero";
 import { BuyerShell } from "@/components/marketplace/buyer-shell";
+import { NetworkMenu } from "@/components/marketplace/network-menu";
 import { isBuyerPath } from "@/lib/marketplace/hosts";
 import { cn } from "@/lib/utils";
 
@@ -168,33 +169,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </p>
               <p className="text-sm text-muted">Markets · packs · rails</p>
             </div>
-            <div className="hidden items-center gap-2 sm:flex">
+            <div className="flex items-center gap-2">
               <Link
                 to="/labs"
-                className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg"
+                className="hidden rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg sm:inline"
               >
                 Labs
               </Link>
               <Link
-                to="/syndicate"
-                className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg"
-              >
-                Syndicate
-              </Link>
-              <Link
                 to="/shop"
-                className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg"
+                className="hidden rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg sm:inline"
               >
                 Store
               </Link>
-              <span className="rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs text-success">
+              <NetworkMenu variant="pill" label="Menu" />
+              <span className="hidden rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs text-success sm:inline">
                 Live
               </span>
             </div>
           </header>
 
           <nav className="flex gap-1 overflow-x-auto border-b border-border px-2 py-2 md:hidden">
-            {NAV.slice(0, 14).map((item) => {
+            {NAV.map((item) => {
               const active =
                 item.to === "/"
                   ? pathname === "/"

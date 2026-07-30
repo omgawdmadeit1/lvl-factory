@@ -1,14 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Activity,
   Beaker,
   ChartCandlestick,
   Crosshair,
   CreditCard,
   Flame,
-  Lock,
-  Activity,
   Layers,
   LayoutGrid,
+  Lock,
   Package,
   Radio,
   Rocket,
@@ -18,32 +18,42 @@ import {
   User,
   Users,
   UsersRound,
+  type LucideIcon,
 } from "lucide-react";
 import { BrandMark } from "@/components/brand/visual-hero";
+import {
+  NavChipRow,
+  NetworkMenu,
+} from "@/components/marketplace/network-menu";
 import { useLoyaltyStore } from "@/lib/edge/loyalty";
+import {
+  BUYER_PRIMARY_NAV,
+  BUYER_SECONDARY_NAV,
+  isNavActive,
+} from "@/lib/marketplace/nav";
 import { useCartStore } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 
-const NAV = [
-  { to: "/marketplace" as const, label: "Hub", icon: LayoutGrid },
-  { to: "/labs" as const, label: "Labs", icon: Beaker },
-  { to: "/exchange" as const, label: "Exchange", icon: ChartCandlestick },
-  { to: "/syndicate" as const, label: "Syndicate", icon: UsersRound },
-  { to: "/launch" as const, label: "Launch", icon: Rocket },
-  { to: "/bounty" as const, label: "Bounty", icon: Crosshair },
-  { to: "/vault" as const, label: "Vault", icon: Lock },
-  { to: "/signal" as const, label: "Signal", icon: Activity },
-  { to: "/arena" as const, label: "Arena", icon: Flame },
-  { to: "/fleet" as const, label: "Fleet", icon: Users },
-  { to: "/shop" as const, label: "Shop", icon: Store },
-  { to: "/drops" as const, label: "Drops", icon: Timer },
-  { to: "/bundles" as const, label: "Stacks", icon: Layers },
-  { to: "/pulse" as const, label: "Pulse", icon: Radio },
-  { to: "/checkout" as const, label: "Checkout", icon: ShoppingBag },
-  { to: "/pay" as const, label: "Pay", icon: CreditCard },
-  { to: "/orders" as const, label: "Orders", icon: Package },
-  { to: "/account" as const, label: "Account", icon: User },
-];
+const PRIMARY_ICONS: Record<string, LucideIcon> = {
+  "/marketplace": LayoutGrid,
+  "/labs": Beaker,
+  "/shop": Store,
+  "/exchange": ChartCandlestick,
+  "/vault": Lock,
+  "/arena": Flame,
+  "/drops": Timer,
+  "/checkout": ShoppingBag,
+  "/account": User,
+  "/signal": Activity,
+  "/syndicate": UsersRound,
+  "/launch": Rocket,
+  "/bounty": Crosshair,
+  "/fleet": Users,
+  "/bundles": Layers,
+  "/pulse": Radio,
+  "/pay": CreditCard,
+  "/orders": Package,
+};
 
 export function BuyerShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -53,7 +63,7 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
       <div className="border-b border-border bg-surface-2 px-4 py-2 text-center text-xs text-muted">
-        LVL · vault · signal · arena · syndicate · launch · markets ·{" "}
+        LVL · vault · signal · arena · markets ·{" "}
         <span className="text-fg">lvlltd.com</span>
         {credits > 0 ? (
           <>
@@ -64,20 +74,23 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
       </div>
       <header className="sticky top-0 z-30 border-b border-border bg-bg/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link to="/marketplace" className="flex items-center gap-2.5">
+          <Link to="/marketplace" className="flex min-w-0 items-center gap-2.5">
             <BrandMark size="sm" />
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-semibold tracking-tight">LVL Market</p>
-              <p className="text-[11px] text-subtle">lvlltd.com network</p>
+              <p className="truncate text-[11px] text-subtle">
+                lvlltd.com network
+              </p>
             </div>
           </Link>
-          <nav className="hidden items-center gap-1 xl:flex">
-            {NAV.map((item) => {
-              const active =
-                item.to === "/marketplace"
-                  ? pathname === "/marketplace"
-                  : pathname === item.to || pathname.startsWith(`${item.to}/`);
-              const Icon = item.icon;
+
+          <nav
+            className="hidden items-center gap-0.5 lg:flex"
+            aria-label="Primary"
+          >
+            {BUYER_PRIMARY_NAV.map((item) => {
+              const active = isNavActive(pathname, item.to);
+              const Icon = PRIMARY_ICONS[item.to];
               return (
                 <Link
                   key={item.to}
@@ -89,7 +102,7 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
                       : "text-muted hover:bg-surface hover:text-fg",
                   )}
                 >
-                  <Icon className="size-3.5" />
+                  {Icon ? <Icon className="size-3.5 shrink-0" /> : null}
                   {item.label}
                   {item.to === "/checkout" && count > 0 ? (
                     <span className="rounded-full bg-surface-3 px-1.5 text-[10px] tabular">
@@ -99,34 +112,28 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
+            <NetworkMenu className="ml-1" label="All" />
           </nav>
-          <Link
-            to="/checkout"
-            className="rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs text-fg xl:hidden"
-          >
-            Cart {count > 0 ? `(${count})` : ""}
-          </Link>
+
+          <div className="flex items-center gap-1.5 lg:hidden">
+            <Link
+              to="/checkout"
+              className="rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs text-fg"
+            >
+              Cart {count > 0 ? `(${count})` : ""}
+            </Link>
+            <NetworkMenu variant="pill" label="Menu" />
+          </div>
         </div>
-        <nav className="flex gap-1 overflow-x-auto border-t border-border px-2 py-2 xl:hidden">
-          {NAV.map((item) => {
-            const active =
-              pathname === item.to || pathname.startsWith(`${item.to}/`);
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "shrink-0 rounded-full px-3 py-1.5 text-xs",
-                  active
-                    ? "bg-surface-2 text-fg"
-                    : "text-muted hover:bg-surface",
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+
+        <div className="border-t border-border">
+          <div className="mx-auto flex max-w-6xl items-center gap-1 px-2 sm:px-4">
+            <NavChipRow
+              links={BUYER_SECONDARY_NAV}
+              className="min-w-0 flex-1 border-0 px-0"
+            />
+          </div>
+        </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         {children}

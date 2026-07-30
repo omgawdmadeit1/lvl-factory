@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { BrandMark } from "@/components/brand/visual-hero";
+import { NavChipRow, NetworkMenu } from "@/components/marketplace/network-menu";
+import { STORE_NETWORK_NAV } from "@/lib/marketplace/nav";
 import { CartDrawer } from "@/components/store/cart-drawer";
 import { WishlistHydrate } from "@/components/store/wishlist-hydrate";
 import { ShopSearch } from "@/components/store/shop-search";
@@ -114,6 +116,12 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-1.5">
+            <NetworkMenu variant="icon" className="md:hidden" />
+            <NetworkMenu
+              variant="default"
+              label="Network"
+              className="hidden md:inline-flex"
+            />
             <button
               type="button"
               className="flex size-11 items-center justify-center rounded-lg text-muted hover:bg-surface hover:text-fg md:hidden"
@@ -191,50 +199,32 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
           </div>
         ) : null}
 
-        <div className="flex gap-1 overflow-x-auto border-t border-border px-2 py-2 md:hidden">
-          <Link
-            to="/drops"
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs",
-              pathname.startsWith("/drops")
-                ? "bg-surface-2 text-fg"
-                : "text-muted hover:bg-surface",
-            )}
-          >
-            <Timer className="size-3" />
-            Drops
-          </Link>
-          <Link
-            to="/bundles"
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs",
-              pathname.startsWith("/bundles")
-                ? "bg-surface-2 text-fg"
-                : "text-muted hover:bg-surface",
-            )}
-          >
-            <Layers className="size-3" />
-            Stacks
-          </Link>
-          {STORE_COLLECTIONS.filter((c) => c.handle !== "all").map((c) => {
-            const href = `/shop/collections/${c.handle}`;
-            const active = pathname === href;
-            return (
-              <Link
-                key={c.handle}
-                to="/shop/collections/$handle"
-                params={{ handle: c.handle }}
-                className={cn(
-                  "shrink-0 rounded-full px-3 py-1.5 text-xs",
-                  active
-                    ? "bg-surface-2 text-fg"
-                    : "text-muted hover:bg-surface",
-                )}
-              >
-                {c.title}
-              </Link>
-            );
-          })}
+        <div className="border-t border-border">
+          <NavChipRow
+            links={STORE_NETWORK_NAV}
+            className="border-0"
+          />
+          <div className="flex gap-1 overflow-x-auto border-t border-border px-2 py-2 md:hidden">
+            {STORE_COLLECTIONS.filter((c) => c.handle !== "all").map((c) => {
+              const href = `/shop/collections/${c.handle}`;
+              const active = pathname === href;
+              return (
+                <Link
+                  key={c.handle}
+                  to="/shop/collections/$handle"
+                  params={{ handle: c.handle }}
+                  className={cn(
+                    "shrink-0 rounded-full px-3 py-1.5 text-xs",
+                    active
+                      ? "bg-surface-2 text-fg"
+                      : "text-muted hover:bg-surface",
+                  )}
+                >
+                  {c.title}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </header>
 
@@ -284,10 +274,21 @@ export function StoreShell({ children }: { children: React.ReactNode }) {
             <div className="space-y-2 text-xs text-muted">
               <p className="font-medium text-fg">Network</p>
               <ul className="space-y-1">
-                <li>Store · shop.lvlltd.com</li>
-                <li>Drops · drops.lvlltd.com</li>
-                <li>Pulse · pulse.lvlltd.com</li>
-                <li>Relay · relay.lvlltd.com</li>
+                <li>
+                  <Link to="/marketplace">Marketplace hub</Link>
+                </li>
+                <li>
+                  <Link to="/labs">Labs demos</Link>
+                </li>
+                <li>
+                  <Link to="/vault">IP Vault</Link>
+                </li>
+                <li>
+                  <Link to="/pulse">Network pulse</Link>
+                </li>
+                <li>
+                  <Link to="/relay">Agent relay</Link>
+                </li>
               </ul>
             </div>
           </div>
