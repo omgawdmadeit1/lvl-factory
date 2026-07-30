@@ -37,7 +37,10 @@ export type MarketplaceSurface =
   | "whisper"
   | "quest"
   | "ledger"
-  | "oracle";
+  | "oracle"
+  | "mirror"
+  | "circuit"
+  | "anchor";
 
 export type HostEntry = {
   host: string;
@@ -346,6 +349,33 @@ export const MARKETPLACE_HOSTS: HostEntry[] = [
     publicUrl: "https://oracle.lvlltd.com",
   },
   {
+    host: "mirror.lvlltd.com",
+    surface: "mirror",
+    homePath: "/mirror",
+    role: "clone_fit",
+    description: "Clone-a-fit social merch stacks",
+    audience: "buyer",
+    publicUrl: "https://mirror.lvlltd.com",
+  },
+  {
+    host: "circuit.lvlltd.com",
+    surface: "circuit",
+    homePath: "/circuit",
+    role: "agent_workflows",
+    description: "Agent workflow builder · A2A circuits",
+    audience: "agent",
+    publicUrl: "https://circuit.lvlltd.com",
+  },
+  {
+    host: "anchor.lvlltd.com",
+    surface: "anchor",
+    homePath: "/anchor",
+    role: "subscriptions",
+    description: "Recurring boxes · restock anchors",
+    audience: "buyer",
+    publicUrl: "https://anchor.lvlltd.com",
+  },
+  {
     host: "music.lvlltd.com",
     surface: "music",
     homePath: "/music",
@@ -403,6 +433,9 @@ export const BUYER_PATH_PREFIXES = [
   "/quest",
   "/ledger",
   "/oracle",
+  "/mirror",
+  "/circuit",
+  "/anchor",
 ] as const;
 
 export function isBuyerPath(pathname: string): boolean {
@@ -464,6 +497,9 @@ export const MARKETPLACE_URLS = {
   quest: "https://quest.lvlltd.com",
   ledger: "https://ledger.lvlltd.com",
   oracle: "https://oracle.lvlltd.com",
+  mirror: "https://mirror.lvlltd.com",
+  circuit: "https://circuit.lvlltd.com",
+  anchor: "https://anchor.lvlltd.com",
   drops: "https://drops.lvlltd.com",
   pulse: "https://pulse.lvlltd.com",
   studio: "https://studio.lvlltd.com",
@@ -600,6 +636,31 @@ export const MARKETPLACE_TOOLS = [
     blurb: "Forecasts · restock intel",
     audience: "buyer" as const,
   },
+  {
+    id: "mirror",
+    title: "Mirror fits",
+    path: "/mirror",
+    host: "mirror.lvlltd.com",
+    blurb: "Clone social merch stacks",
+    audience: "buyer" as const,
+  },
+  {
+    id: "circuit",
+    title: "Agent Circuit",
+    path: "/circuit",
+    host: "circuit.lvlltd.com",
+    blurb: "Visual A2A workflow runs",
+    audience: "agent" as const,
+  },
+  {
+    id: "anchor",
+    title: "Anchor subs",
+    path: "/anchor",
+    host: "anchor.lvlltd.com",
+    blurb: "Recurring boxes & restock",
+    audience: "buyer" as const,
+  },
+
 
 
   {

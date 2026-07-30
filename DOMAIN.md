@@ -32,6 +32,9 @@
 | **https://quest.lvlltd.com** | Commerce quests · XP layer | `/quest` |
 | **https://ledger.lvlltd.com** | Multi-rail settlement proofs | `/ledger` |
 | **https://oracle.lvlltd.com** | Demand forecasts · restock intel | `/oracle` |
+| **https://mirror.lvlltd.com** | Clone-a-fit social stacks | `/mirror` |
+| **https://circuit.lvlltd.com** | Agent workflow circuits | `/circuit` |
+| **https://anchor.lvlltd.com** | Subscription boxes / anchors | `/anchor` |
 | **https://music.lvlltd.com** | Music packs | `/music` |
 | **https://api.lvlltd.com** | Catalog API | `/api/store/catalog` |
 | **https://factory.lvlltd.com/shop** | Store path (same app) | `/shop` |

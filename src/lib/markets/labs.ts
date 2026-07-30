@@ -29,7 +29,10 @@ export type DemoKind =
   | "whisper"
   | "quest"
   | "ledger"
-  | "oracle";
+  | "oracle"
+  | "mirror"
+  | "circuit"
+  | "anchor";
 
 export type LabDemo = {
   id: string;
@@ -59,6 +62,9 @@ export type LabDemo = {
     | "quest_claim"
     | "ledger_sim"
     | "oracle_pin"
+    | "mirror_clone"
+    | "circuit_run"
+    | "anchor_sub"
     | "none";
   badge: string;
   live: boolean;
@@ -66,6 +72,45 @@ export type LabDemo = {
 };
 
 export const LAB_DEMOS: LabDemo[] = [
+  {
+    id: "lab-mirror",
+    kind: "mirror",
+    title: "Mirror fits",
+    blurb: "Clone social merch stacks into your closet.",
+    path: "/mirror",
+    host: "mirror.lvlltd.com",
+    market: "Social commerce",
+    widget: "mirror_clone",
+    badge: "Mirror",
+    live: true,
+    audience: "buyer",
+  },
+  {
+    id: "lab-circuit",
+    kind: "circuit",
+    title: "Agent Circuit",
+    blurb: "Run A2A workflow templates step-by-step.",
+    path: "/circuit",
+    host: "circuit.lvlltd.com",
+    market: "Agent automation",
+    widget: "circuit_run",
+    badge: "Circuit",
+    live: true,
+    audience: "agent",
+  },
+  {
+    id: "lab-anchor",
+    kind: "anchor",
+    title: "Anchor subs",
+    blurb: "Recurring boxes and restock anchors.",
+    path: "/anchor",
+    host: "anchor.lvlltd.com",
+    market: "Subscriptions",
+    widget: "anchor_sub",
+    badge: "Anchor",
+    live: true,
+    audience: "buyer",
+  },
   {
     id: "lab-forge",
     kind: "forge",
@@ -407,6 +452,30 @@ export const LAB_DEMOS: LabDemo[] = [
 ];
 
 export const MARKET_THESES = [
+  {
+    id: "mirror-clone",
+    title: "Clone-a-fit social merch",
+    thesis: "Discovery is social — Mirror turns fits into one-tap carts.",
+    host: "mirror.lvlltd.com",
+    path: "/mirror",
+    why: "People buy looks, not SKUs.",
+  },
+  {
+    id: "circuit-flows",
+    title: "Agent workflow circuits",
+    thesis: "Commerce ops are graphs — Circuit makes A2A pipelines runnable demos.",
+    host: "circuit.lvlltd.com",
+    path: "/circuit",
+    why: "Agents need visual playbooks, not docs.",
+  },
+  {
+    id: "anchor-subs",
+    title: "Anchored subscriptions",
+    thesis: "Recurring boxes + restock anchors lock LTV without flash only.",
+    host: "anchor.lvlltd.com",
+    path: "/anchor",
+    why: "Drops spike; anchors compound.",
+  },
   {
     id: "generative-forge",
     title: "Generative product forge",

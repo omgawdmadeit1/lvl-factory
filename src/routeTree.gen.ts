@@ -11,11 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as AnchorRouteImport } from './routes/anchor'
 import { Route as ArenaRouteImport } from './routes/arena'
 import { Route as BountyRouteImport } from './routes/bounty'
 import { Route as BundlesRouteImport } from './routes/bundles'
 import { Route as CanaryRouteImport } from './routes/canary'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as CircuitRouteImport } from './routes/circuit'
 import { Route as DropsRouteImport } from './routes/drops'
 import { Route as ExchangeRouteImport } from './routes/exchange'
 import { Route as FleetRouteImport } from './routes/fleet'
@@ -26,6 +28,7 @@ import { Route as LaunchRouteImport } from './routes/launch'
 import { Route as LedgerRouteImport } from './routes/ledger'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MerchRouteImport } from './routes/merch'
+import { Route as MirrorRouteImport } from './routes/mirror'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as NetworkRouteImport } from './routes/network'
 import { Route as OracleRouteImport } from './routes/oracle'
@@ -74,6 +77,11 @@ const AccountRoute = AccountRouteImport.update({
   path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnchorRoute = AnchorRouteImport.update({
+  id: '/anchor',
+  path: '/anchor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ArenaRoute = ArenaRouteImport.update({
   id: '/arena',
   path: '/arena',
@@ -97,6 +105,11 @@ const CanaryRoute = CanaryRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CircuitRoute = CircuitRouteImport.update({
+  id: '/circuit',
+  path: '/circuit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DropsRoute = DropsRouteImport.update({
@@ -147,6 +160,11 @@ const MarketplaceRoute = MarketplaceRouteImport.update({
 const MerchRoute = MerchRouteImport.update({
   id: '/merch',
   path: '/merch',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MirrorRoute = MirrorRouteImport.update({
+  id: '/mirror',
+  path: '/mirror',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MusicRoute = MusicRouteImport.update({
@@ -340,11 +358,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/shop': typeof ShopRouteRouteWithChildren
   '/account': typeof AccountRoute
+  '/anchor': typeof AnchorRoute
   '/arena': typeof ArenaRoute
   '/bounty': typeof BountyRoute
   '/bundles': typeof BundlesRoute
   '/canary': typeof CanaryRoute
   '/checkout': typeof CheckoutRoute
+  '/circuit': typeof CircuitRoute
   '/drops': typeof DropsRoute
   '/exchange': typeof ExchangeRoute
   '/fleet': typeof FleetRoute
@@ -355,6 +375,7 @@ export interface FileRoutesByFullPath {
   '/ledger': typeof LedgerRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
+  '/mirror': typeof MirrorRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
   '/oracle': typeof OracleRoute
@@ -395,11 +416,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/anchor': typeof AnchorRoute
   '/arena': typeof ArenaRoute
   '/bounty': typeof BountyRoute
   '/bundles': typeof BundlesRoute
   '/canary': typeof CanaryRoute
   '/checkout': typeof CheckoutRoute
+  '/circuit': typeof CircuitRoute
   '/drops': typeof DropsRoute
   '/exchange': typeof ExchangeRoute
   '/fleet': typeof FleetRoute
@@ -410,6 +433,7 @@ export interface FileRoutesByTo {
   '/ledger': typeof LedgerRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
+  '/mirror': typeof MirrorRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
   '/oracle': typeof OracleRoute
@@ -452,11 +476,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/shop': typeof ShopRouteRouteWithChildren
   '/account': typeof AccountRoute
+  '/anchor': typeof AnchorRoute
   '/arena': typeof ArenaRoute
   '/bounty': typeof BountyRoute
   '/bundles': typeof BundlesRoute
   '/canary': typeof CanaryRoute
   '/checkout': typeof CheckoutRoute
+  '/circuit': typeof CircuitRoute
   '/drops': typeof DropsRoute
   '/exchange': typeof ExchangeRoute
   '/fleet': typeof FleetRoute
@@ -467,6 +493,7 @@ export interface FileRoutesById {
   '/ledger': typeof LedgerRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
+  '/mirror': typeof MirrorRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
   '/oracle': typeof OracleRoute
@@ -510,11 +537,13 @@ export interface FileRouteTypes {
     | '/'
     | '/shop'
     | '/account'
+    | '/anchor'
     | '/arena'
     | '/bounty'
     | '/bundles'
     | '/canary'
     | '/checkout'
+    | '/circuit'
     | '/drops'
     | '/exchange'
     | '/fleet'
@@ -525,6 +554,7 @@ export interface FileRouteTypes {
     | '/ledger'
     | '/marketplace'
     | '/merch'
+    | '/mirror'
     | '/music'
     | '/network'
     | '/oracle'
@@ -565,11 +595,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/anchor'
     | '/arena'
     | '/bounty'
     | '/bundles'
     | '/canary'
     | '/checkout'
+    | '/circuit'
     | '/drops'
     | '/exchange'
     | '/fleet'
@@ -580,6 +612,7 @@ export interface FileRouteTypes {
     | '/ledger'
     | '/marketplace'
     | '/merch'
+    | '/mirror'
     | '/music'
     | '/network'
     | '/oracle'
@@ -621,11 +654,13 @@ export interface FileRouteTypes {
     | '/'
     | '/shop'
     | '/account'
+    | '/anchor'
     | '/arena'
     | '/bounty'
     | '/bundles'
     | '/canary'
     | '/checkout'
+    | '/circuit'
     | '/drops'
     | '/exchange'
     | '/fleet'
@@ -636,6 +671,7 @@ export interface FileRouteTypes {
     | '/ledger'
     | '/marketplace'
     | '/merch'
+    | '/mirror'
     | '/music'
     | '/network'
     | '/oracle'
@@ -678,11 +714,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ShopRouteRoute: typeof ShopRouteRouteWithChildren
   AccountRoute: typeof AccountRoute
+  AnchorRoute: typeof AnchorRoute
   ArenaRoute: typeof ArenaRoute
   BountyRoute: typeof BountyRoute
   BundlesRoute: typeof BundlesRoute
   CanaryRoute: typeof CanaryRoute
   CheckoutRoute: typeof CheckoutRoute
+  CircuitRoute: typeof CircuitRoute
   DropsRoute: typeof DropsRoute
   ExchangeRoute: typeof ExchangeRoute
   FleetRoute: typeof FleetRoute
@@ -693,6 +731,7 @@ export interface RootRouteChildren {
   LedgerRoute: typeof LedgerRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MerchRoute: typeof MerchRoute
+  MirrorRoute: typeof MirrorRoute
   MusicRoute: typeof MusicRoute
   NetworkRoute: typeof NetworkRoute
   OracleRoute: typeof OracleRoute
@@ -740,6 +779,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/anchor': {
+      id: '/anchor'
+      path: '/anchor'
+      fullPath: '/anchor'
+      preLoaderRoute: typeof AnchorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/arena': {
       id: '/arena'
       path: '/arena'
@@ -773,6 +819,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/circuit': {
+      id: '/circuit'
+      path: '/circuit'
+      fullPath: '/circuit'
+      preLoaderRoute: typeof CircuitRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/drops': {
@@ -843,6 +896,13 @@ declare module '@tanstack/react-router' {
       path: '/merch'
       fullPath: '/merch'
       preLoaderRoute: typeof MerchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mirror': {
+      id: '/mirror'
+      path: '/mirror'
+      fullPath: '/mirror'
+      preLoaderRoute: typeof MirrorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/music': {
@@ -1144,11 +1204,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ShopRouteRoute: ShopRouteRouteWithChildren,
   AccountRoute: AccountRoute,
+  AnchorRoute: AnchorRoute,
   ArenaRoute: ArenaRoute,
   BountyRoute: BountyRoute,
   BundlesRoute: BundlesRoute,
   CanaryRoute: CanaryRoute,
   CheckoutRoute: CheckoutRoute,
+  CircuitRoute: CircuitRoute,
   DropsRoute: DropsRoute,
   ExchangeRoute: ExchangeRoute,
   FleetRoute: FleetRoute,
@@ -1159,6 +1221,7 @@ const rootRouteChildren: RootRouteChildren = {
   LedgerRoute: LedgerRoute,
   MarketplaceRoute: MarketplaceRoute,
   MerchRoute: MerchRoute,
+  MirrorRoute: MirrorRoute,
   MusicRoute: MusicRoute,
   NetworkRoute: NetworkRoute,
   OracleRoute: OracleRoute,

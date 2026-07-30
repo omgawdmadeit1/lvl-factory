@@ -39,6 +39,9 @@ import { useWhisperStore } from "@/lib/markets/whisper";
 import { QUEST_CATALOG, useQuestStore } from "@/lib/markets/quest";
 import { useLedgerStore } from "@/lib/markets/ledger";
 import { ORACLE_FORECASTS, useOracleStore } from "@/lib/markets/oracle";
+import { MIRROR_FITS, useMirrorStore } from "@/lib/markets/mirror";
+import { useCircuitStore } from "@/lib/markets/circuit";
+import { ANCHOR_PLANS, useAnchorStore } from "@/lib/markets/anchor";
 
 import {
   LAB_DEMOS,
@@ -667,6 +670,76 @@ function OraclePinWidget() {
   );
 }
 
+
+function MirrorCloneWidget() {
+  const fit = MIRROR_FITS[0];
+  const clone = useMirrorStore((s) => s.clone);
+  const n = useMirrorStore((s) => s.cloned.length);
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-sm font-semibold line-clamp-1">{fit.title}</p>
+      <p className="text-xs text-muted">{n} clones · {fit.items.length} items</p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          const c = clone(fit.id);
+          toast[c ? "success" : "error"](c ? `Cloned $${c.totalUsdc}` : "Failed");
+        }}
+      >
+        Clone fit
+      </Button>
+    </div>
+  );
+}
+
+function CircuitRunWidget() {
+  const start = useCircuitStore((s) => s.start);
+  const reset = useCircuitStore((s) => s.reset);
+  const done = useCircuitStore((s) => s.runs.filter((r) => r.status === "done").length);
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-sm font-semibold">Circuit run</p>
+      <p className="text-xs text-muted">{done} completed runs</p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          reset();
+          const ok = start();
+          toast[ok ? "success" : "error"](ok ? "Circuit started" : "Failed");
+        }}
+      >
+        Run template
+      </Button>
+    </div>
+  );
+}
+
+function AnchorSubWidget() {
+  const plan = ANCHOR_PLANS[0];
+  const subscribe = useAnchorStore((s) => s.subscribe);
+  const active = useAnchorStore((s) => Object.values(s.subs).filter((x) => x.status === "active").length);
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-sm font-semibold">{plan.name}</p>
+      <p className="text-xs text-muted">
+        ${plan.priceUsdc}/{plan.cadence} · {active} active
+      </p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          const ok = subscribe(plan.id);
+          toast[ok ? "success" : "error"](ok ? "Subscribed" : "Already active / low wallet");
+        }}
+      >
+        Subscribe
+      </Button>
+    </div>
+  );
+}
+
 function widgetFor(id: LabDemo["widget"]) {
   switch (id) {
     case "drop_claim":
@@ -705,6 +778,12 @@ function widgetFor(id: LabDemo["widget"]) {
       return <LedgerSimWidget />;
     case "oracle_pin":
       return <OraclePinWidget />;
+    case "mirror_clone":
+      return <MirrorCloneWidget />;
+    case "circuit_run":
+      return <CircuitRunWidget />;
+    case "anchor_sub":
+      return <AnchorSubWidget />;
     default:
       return null;
   }

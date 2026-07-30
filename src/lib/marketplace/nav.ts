@@ -47,6 +47,9 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/quest", label: "Quest" },
       { to: "/ledger", label: "Ledger" },
       { to: "/oracle", label: "Oracle" },
+      { to: "/mirror", label: "Mirror" },
+      { to: "/circuit", label: "Circuit" },
+      { to: "/anchor", label: "Anchor" },
     ],
   },
   {
@@ -128,6 +131,9 @@ export const BUYER_SECONDARY_NAV: NavLink[] = [
   { to: "/quest", label: "Quest" },
   { to: "/ledger", label: "Ledger" },
   { to: "/oracle", label: "Oracle" },
+  { to: "/mirror", label: "Mirror" },
+  { to: "/circuit", label: "Circuit" },
+  { to: "/anchor", label: "Anchor" },
 ];
 
 /** Compact operator mobile strip (full list lives in NetworkMenu) */
@@ -155,6 +161,8 @@ export const STORE_NETWORK_NAV: NavLink[] = [
   { to: "/account", label: "Account" },
   { to: "/forge", label: "Forge" },
   { to: "/quest", label: "Quest" },
+  { to: "/mirror", label: "Mirror" },
+  { to: "/anchor", label: "Anchor" },
 ];
 
 export function isNavActive(pathname: string, to: string): boolean {
