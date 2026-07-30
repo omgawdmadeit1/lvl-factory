@@ -15,7 +15,13 @@ export const Route = createFileRoute("/api/agent/orders/$id")({
       GET: async ({ request, params }) => {
         const denied = enforceStoreEdgeWaf(request, "store");
         if (denied) return denied;
-        const order = await getAgentOrder(params.id, requestOrigin(request));
+        const url = new URL(request.url);
+        const token = url.searchParams.get("token");
+        const order = await getAgentOrder(
+          params.id,
+          requestOrigin(request),
+          token,
+        );
         if (!order) return jsonErr("order_not_found", 404);
         return jsonOk({ ok: true, order });
       },

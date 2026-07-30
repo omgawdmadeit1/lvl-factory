@@ -1,6 +1,7 @@
 /**
  * Agent quote + order + pay-verify + Printify fulfill spine.
  */
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { getSql } from "@/lib/db";
 import { LVL_PAYMENT, TREASURY_EVM, TREASURY_SOL } from "@/lib/factory/payment";
 import { LIVE_PRINTIFY_PRODUCTS } from "@/lib/merch/catalog";
@@ -41,6 +42,49 @@ export type CatalogHit = {
 function id(prefix: string) {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 9)}`;
 }
+
+function orderSealSecret(): string {
+  return (
+    (typeof process !== "undefined" && process.env.AGENT_ORDER_SECRET?.trim()) ||
+    (typeof process !== "undefined" && process.env.PRINTIFY_API_TOKEN?.trim()?.slice(0, 48)) ||
+    `lvl-agent-order:${TREASURY_EVM}`
+  );
+}
+
+/** Portable order ticket — survives multi-instance serverless without shared DB. */
+export function sealOrder(row: Record<string, unknown>): string {
+  const payload = Buffer.from(JSON.stringify(row), "utf8").toString("base64url");
+  const sig = createHmac("sha256", orderSealSecret())
+    .update(payload)
+    .digest("base64url");
+  return `${payload}.${sig}`;
+}
+
+export function unsealOrder(token: string): Record<string, unknown> | null {
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [payload, sig] = parts;
+  if (!payload || !sig) return null;
+  const expect = createHmac("sha256", orderSealSecret())
+    .update(payload)
+    .digest("base64url");
+  try {
+    const a = Buffer.from(sig);
+    const b = Buffer.from(expect);
+    if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  } catch {
+    return null;
+  }
+  try {
+    const json = Buffer.from(payload, "base64url").toString("utf8");
+    const row = JSON.parse(json) as Record<string, unknown>;
+    if (!row || typeof row.id !== "string") return null;
+    return row;
+  } catch {
+    return null;
+  }
+}
+
 
 export async function resolveCatalogSku(sku: string): Promise<CatalogHit | null> {
   const key = sku.trim().toUpperCase();
@@ -474,13 +518,17 @@ function publicOrder(
     fulfill_mode: row.fulfill_mode,
     fulfill_error: row.fulfill_error,
     quote: row.quote,
+    token: sealOrder(row),
     links: {
       self: `${base}/api/agent/orders/${id_}`,
       pay: `${base}/api/agent/orders/${id_}/pay`,
       human_pay: `${base}/pay?sku=${encodeURIComponent(String(row.sku))}&amount=${num(row.total_usd)}`,
       openapi: `${base}/api/openapi.json`,
     },
-    next_steps: paymentNextSteps(row, base),
+    next_steps: [
+      ...paymentNextSteps(row, base),
+      "Include order.token in pay body when running multi-instance (Vercel): { method, token }",
+    ],
   };
 }
 
@@ -578,8 +626,13 @@ export async function createAgentOrder(input: {
 export async function getAgentOrder(
   orderId: string,
   origin?: string,
+  token?: string | null,
 ): Promise<Record<string, unknown> | null> {
-  const raw = await loadOrderRaw(orderId);
+  let raw = await loadOrderRaw(orderId);
+  if (!raw && token) {
+    const sealed = unsealOrder(token);
+    if (sealed && String(sealed.id) === orderId) raw = sealed;
+  }
   if (!raw) return null;
   return publicOrder(normalizeRow(raw), origin);
 }
@@ -591,6 +644,8 @@ export type PayInput = {
   confirm?: boolean;
   stripe_session_id?: string;
   force_simulate_printify?: boolean;
+  /** Sealed order ticket from create response — required across serverless instances */
+  token?: string;
 };
 
 
@@ -608,7 +663,15 @@ export async function payAndFulfillAgentOrder(
     }
 > {
   const store = await resolveSql();
-  const raw = await loadOrderRaw(orderId);
+  let raw = await loadOrderRaw(orderId);
+  if (!raw && pay.token) {
+    const sealed = unsealOrder(pay.token);
+    if (sealed && String(sealed.id) === orderId) {
+      raw = sealed;
+      // rehydrate into this instance store
+      await insertOrder(store, normalizeRow(sealed));
+    }
+  }
   if (!raw) return { ok: false, error: "order_not_found", status: 404 };
   const row = normalizeRow(raw);
 

@@ -37,6 +37,7 @@ export const Route = createFileRoute("/api/agent/orders/$id/pay")({
               ? body.stripe_session_id
               : undefined,
           force_simulate_printify: body.force_simulate_printify === true,
+          token: typeof body.token === "string" ? body.token : undefined,
         };
         const result = await payAndFulfillAgentOrder(
           params.id,
