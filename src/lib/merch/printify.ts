@@ -31,6 +31,9 @@ export const CLOUDFLARE_MAP = {
   seller: MARKETPLACE_URLS.seller,
   admin: MARKETPLACE_URLS.admin,
   agents: MARKETPLACE_URLS.agents,
+  labs: MARKETPLACE_URLS.labs,
+  exchange: MARKETPLACE_URLS.exchange,
+  fleet: MARKETPLACE_URLS.fleet,
   music: MARKETPLACE_URLS.music,
   pipeline: "https://factory.lvlltd.com/pipeline",
   agentCatalog: "https://factory.lvlltd.com/agent/merch",
@@ -39,7 +42,7 @@ export const CLOUDFLARE_MAP = {
   webhooks: "https://factory.lvlltd.com/webhooks",
   printify: PRINTIFY_STORE.storefrontUrl,
   note:
-    "Cloudflare: lvlltd.com hub + marketplace subdomains (shop, pay, checkout, account, orders, seller, admin, agents, music, api) → same Vercel origin as factory.lvlltd.com. POD = Printify.",
+    "Cloudflare: lvlltd.com hub + marketplace subdomains (shop, pay, checkout, account, orders, seller, admin, agents, labs, exchange, fleet, music, api) → same Vercel origin as factory.lvlltd.com. POD = Printify.",
 } as const;
 
 /** Subdomain / path roles for docs and agent discovery */
@@ -62,6 +65,9 @@ export const LVL_NETWORK = {
             account: "/account",
             orders: "/orders",
             marketplace: "/marketplace",
+            labs: "/labs",
+            exchange: "/exchange",
+            fleet: "/fleet",
             drops: "/drops",
             bundles: "/bundles",
             radar: "/radar",

@@ -15,6 +15,9 @@ import { Route as BundlesRouteImport } from './routes/bundles'
 import { Route as CanaryRouteImport } from './routes/canary'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as DropsRouteImport } from './routes/drops'
+import { Route as ExchangeRouteImport } from './routes/exchange'
+import { Route as FleetRouteImport } from './routes/fleet'
+import { Route as LabsRouteImport } from './routes/labs'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MerchRouteImport } from './routes/merch'
 import { Route as MusicRouteImport } from './routes/music'
@@ -77,6 +80,21 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const DropsRoute = DropsRouteImport.update({
   id: '/drops',
   path: '/drops',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExchangeRoute = ExchangeRouteImport.update({
+  id: '/exchange',
+  path: '/exchange',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FleetRoute = FleetRouteImport.update({
+  id: '/fleet',
+  path: '/fleet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LabsRoute = LabsRouteImport.update({
+  id: '/labs',
+  path: '/labs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplaceRoute = MarketplaceRouteImport.update({
@@ -254,6 +272,9 @@ export interface FileRoutesByFullPath {
   '/canary': typeof CanaryRoute
   '/checkout': typeof CheckoutRoute
   '/drops': typeof DropsRoute
+  '/exchange': typeof ExchangeRoute
+  '/fleet': typeof FleetRoute
+  '/labs': typeof LabsRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
@@ -294,6 +315,9 @@ export interface FileRoutesByTo {
   '/canary': typeof CanaryRoute
   '/checkout': typeof CheckoutRoute
   '/drops': typeof DropsRoute
+  '/exchange': typeof ExchangeRoute
+  '/fleet': typeof FleetRoute
+  '/labs': typeof LabsRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
@@ -336,6 +360,9 @@ export interface FileRoutesById {
   '/canary': typeof CanaryRoute
   '/checkout': typeof CheckoutRoute
   '/drops': typeof DropsRoute
+  '/exchange': typeof ExchangeRoute
+  '/fleet': typeof FleetRoute
+  '/labs': typeof LabsRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
@@ -379,6 +406,9 @@ export interface FileRouteTypes {
     | '/canary'
     | '/checkout'
     | '/drops'
+    | '/exchange'
+    | '/fleet'
+    | '/labs'
     | '/marketplace'
     | '/merch'
     | '/music'
@@ -419,6 +449,9 @@ export interface FileRouteTypes {
     | '/canary'
     | '/checkout'
     | '/drops'
+    | '/exchange'
+    | '/fleet'
+    | '/labs'
     | '/marketplace'
     | '/merch'
     | '/music'
@@ -460,6 +493,9 @@ export interface FileRouteTypes {
     | '/canary'
     | '/checkout'
     | '/drops'
+    | '/exchange'
+    | '/fleet'
+    | '/labs'
     | '/marketplace'
     | '/merch'
     | '/music'
@@ -502,6 +538,9 @@ export interface RootRouteChildren {
   CanaryRoute: typeof CanaryRoute
   CheckoutRoute: typeof CheckoutRoute
   DropsRoute: typeof DropsRoute
+  ExchangeRoute: typeof ExchangeRoute
+  FleetRoute: typeof FleetRoute
+  LabsRoute: typeof LabsRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MerchRoute: typeof MerchRoute
   MusicRoute: typeof MusicRoute
@@ -571,6 +610,27 @@ declare module '@tanstack/react-router' {
       path: '/drops'
       fullPath: '/drops'
       preLoaderRoute: typeof DropsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exchange': {
+      id: '/exchange'
+      path: '/exchange'
+      fullPath: '/exchange'
+      preLoaderRoute: typeof ExchangeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fleet': {
+      id: '/fleet'
+      path: '/fleet'
+      fullPath: '/fleet'
+      preLoaderRoute: typeof FleetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/labs': {
+      id: '/labs'
+      path: '/labs'
+      fullPath: '/labs'
+      preLoaderRoute: typeof LabsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/marketplace': {
@@ -848,6 +908,9 @@ const rootRouteChildren: RootRouteChildren = {
   CanaryRoute: CanaryRoute,
   CheckoutRoute: CheckoutRoute,
   DropsRoute: DropsRoute,
+  ExchangeRoute: ExchangeRoute,
+  FleetRoute: FleetRoute,
+  LabsRoute: LabsRoute,
   MarketplaceRoute: MarketplaceRoute,
   MerchRoute: MerchRoute,
   MusicRoute: MusicRoute,

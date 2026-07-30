@@ -1,6 +1,6 @@
 # LVL Ltd — domain, commerce, edge (live model)
 
-> Source of truth for **lvlltd.com** factory commerce: store, agents, Printify, multi-rail pay, Cloudflare DDoS/WAF, image proxy.
+> Source of truth for **lvlltd.com** factory commerce: store, agents, Printify, multi-rail pay, Cloudflare DDoS/WAF, image proxy, Labs demos, Exchange, Fleet.
 
 ## Hosts
 
@@ -17,6 +17,9 @@
 | **https://seller.lvlltd.com** | Seller portal (pipeline / hooks) | `/seller` |
 | **https://admin.lvlltd.com** | Operator console | `/` |
 | **https://agents.lvlltd.com** | Agent protocol UI | `/agent/merch` |
+| **https://labs.lvlltd.com** | Live product demos showroom | `/labs` |
+| **https://exchange.lvlltd.com** | Secondary digital goods market | `/exchange` |
+| **https://fleet.lvlltd.com** | Agent labor marketplace | `/fleet` |
 | **https://music.lvlltd.com** | Music packs | `/music` |
 | **https://api.lvlltd.com** | Catalog API | `/api/store/catalog` |
 | **https://factory.lvlltd.com/shop** | Store path (same app) | `/shop` |
@@ -40,7 +43,15 @@ Host rewrite: `HostRewrite` maps dedicated subdomain `/` → surface home.
 | **https://bundles.lvlltd.com** | Multi-SKU stack packs | `/bundles` |
 | **https://radar.lvlltd.com** | Restock watches | `/radar` |
 
-Edge paths also live on factory: `/drops` `/pulse` `/studio` `/relay` `/bundles` `/radar`.  
+### Markets Suite hosts (next big markets)
+
+| Host | Role | App home |
+|------|------|----------|
+| **https://labs.lvlltd.com** | Interactive demos for every product | `/labs` |
+| **https://exchange.lvlltd.com** | Secondary market: skills, music, licenses, rights | `/exchange` |
+| **https://fleet.lvlltd.com** | Hire agent fleets for commerce ops | `/fleet` |
+
+Edge + Markets paths also live on factory: `/labs` `/exchange` `/fleet` `/drops` `/pulse` `/studio` `/relay` `/bundles` `/radar`.  
 Loyalty + gift checkout: `/account` · `/checkout`. Fit assistant on apparel PDPs. ⌘K command palette.
 
 ## Marketplace surfaces (paths)
@@ -48,6 +59,9 @@ Loyalty + gift checkout: `/account` · `/checkout`. Fit assistant on apparel PDP
 | Path | Purpose |
 |------|---------|
 | `/marketplace` | Hub (all tools + domain matrix) |
+| `/labs` | Live demos showroom (widgets for every product) |
+| `/exchange` | LVL Exchange — secondary digital goods order book |
+| `/fleet` | Agent labor — hire autonomous crews |
 | `/shop/*` | LVL Store |
 | `/checkout` | Unified checkout + order ledger |
 | `/account` | Buyer account |
@@ -56,6 +70,17 @@ Loyalty + gift checkout: `/account` · `/checkout`. Fit assistant on apparel PDP
 | `/pay` | Multi-rail pay |
 | `/agent/merch` | Agent catalog |
 | `/pipeline` · `/webhooks` | Seller/ops Printify |
+
+### Markets modules
+
+| Module | Path |
+|--------|------|
+| Labs catalog | `src/lib/markets/labs.ts` |
+| Exchange book | `src/lib/markets/exchange.ts` |
+| Fleet labor | `src/lib/markets/fleet.ts` |
+| UI | `/labs` · `/exchange` · `/fleet` |
+
+**Next big market thesis:** secondary liquidity (Exchange) + agent labor (Fleet) + demo-first distribution (Labs).
 
 ---
 
@@ -74,6 +99,9 @@ Cloudflare anycast (unmetered DDoS L3–L7)
 factory.lvlltd.com → Vercel Nitro SSR (origin WAF + HMAC + store RL)
         │
         ├─ /shop          LVL Store UI
+        ├─ /labs          Live demos
+        ├─ /exchange      Secondary digital market
+        ├─ /fleet         Agent labor
         ├─ /pay           multi-rail settlement UI
         ├─ /api/store/*   catalog + optimized image proxy
         ├─ /api/printify/* webhooks + subscriptions

@@ -22,7 +22,10 @@ export type MarketplaceSurface =
   | "studio"
   | "relay"
   | "bundles"
-  | "radar";
+  | "radar"
+  | "labs"
+  | "exchange"
+  | "fleet";
 
 export type HostEntry = {
   host: string;
@@ -140,6 +143,33 @@ export const MARKETPLACE_HOSTS: HostEntry[] = [
     publicUrl: "https://agents.lvlltd.com",
   },
   {
+    host: "labs.lvlltd.com",
+    surface: "labs",
+    homePath: "/labs",
+    role: "live_demos",
+    description: "Interactive demos for every LVL product surface",
+    audience: "buyer",
+    publicUrl: "https://labs.lvlltd.com",
+  },
+  {
+    host: "exchange.lvlltd.com",
+    surface: "exchange",
+    homePath: "/exchange",
+    role: "secondary_market",
+    description: "Secondary digital goods order book (skills, licenses, rights)",
+    audience: "buyer",
+    publicUrl: "https://exchange.lvlltd.com",
+  },
+  {
+    host: "fleet.lvlltd.com",
+    surface: "fleet",
+    homePath: "/fleet",
+    role: "agent_labor",
+    description: "Hire autonomous agent fleets for commerce ops",
+    audience: "operator",
+    publicUrl: "https://fleet.lvlltd.com",
+  },
+  {
     host: "drops.lvlltd.com",
     surface: "drops",
     homePath: "/drops",
@@ -236,6 +266,9 @@ export const BUYER_PATH_PREFIXES = [
   "/relay",
   "/bundles",
   "/radar",
+  "/labs",
+  "/exchange",
+  "/fleet",
 ] as const;
 
 export function isBuyerPath(pathname: string): boolean {
@@ -282,6 +315,9 @@ export const MARKETPLACE_URLS = {
   seller: "https://seller.lvlltd.com",
   admin: "https://admin.lvlltd.com",
   agents: "https://agents.lvlltd.com",
+  labs: "https://labs.lvlltd.com",
+  exchange: "https://exchange.lvlltd.com",
+  fleet: "https://fleet.lvlltd.com",
   drops: "https://drops.lvlltd.com",
   pulse: "https://pulse.lvlltd.com",
   studio: "https://studio.lvlltd.com",
@@ -298,6 +334,30 @@ export const MARKETPLACE_URLS = {
 
 /** Tools every marketplace surface should expose (nav + hub cards) */
 export const MARKETPLACE_TOOLS = [
+  {
+    id: "labs",
+    title: "Labs · live demos",
+    path: "/labs",
+    host: "labs.lvlltd.com",
+    blurb: "Play every product — interactive demos",
+    audience: "buyer" as const,
+  },
+  {
+    id: "exchange",
+    title: "LVL Exchange",
+    path: "/exchange",
+    host: "exchange.lvlltd.com",
+    blurb: "Secondary market · skills · licenses · rights",
+    audience: "buyer" as const,
+  },
+  {
+    id: "fleet",
+    title: "Agent Fleet",
+    path: "/fleet",
+    host: "fleet.lvlltd.com",
+    blurb: "Hire autonomous crews for commerce ops",
+    audience: "operator" as const,
+  },
   {
     id: "shop",
     title: "LVL Store",

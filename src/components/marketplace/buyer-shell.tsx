@@ -1,5 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Beaker,
+  ChartCandlestick,
   CreditCard,
   Layers,
   LayoutGrid,
@@ -9,6 +11,7 @@ import {
   Store,
   Timer,
   User,
+  Users,
 } from "lucide-react";
 import { BrandMark } from "@/components/brand/visual-hero";
 import { useLoyaltyStore } from "@/lib/edge/loyalty";
@@ -17,6 +20,9 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/marketplace" as const, label: "Hub", icon: LayoutGrid },
+  { to: "/labs" as const, label: "Labs", icon: Beaker },
+  { to: "/exchange" as const, label: "Exchange", icon: ChartCandlestick },
+  { to: "/fleet" as const, label: "Fleet", icon: Users },
   { to: "/shop" as const, label: "Shop", icon: Store },
   { to: "/drops" as const, label: "Drops", icon: Timer },
   { to: "/bundles" as const, label: "Stacks", icon: Layers },
@@ -35,7 +41,7 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
       <div className="border-b border-border bg-surface-2 px-4 py-2 text-center text-xs text-muted">
-        LVL edge · drops · stacks · pulse · multi-rail + Printify ·{" "}
+        LVL edge · labs · exchange · fleet · drops · multi-rail + Printify ·{" "}
         <span className="text-fg">lvlltd.com</span>
         {credits > 0 ? (
           <>
@@ -53,7 +59,7 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
               <p className="text-[11px] text-subtle">lvlltd.com network</p>
             </div>
           </Link>
-          <nav className="hidden items-center gap-1 lg:flex">
+          <nav className="hidden items-center gap-1 xl:flex">
             {NAV.map((item) => {
               const active =
                 item.to === "/marketplace"
@@ -84,12 +90,12 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
           </nav>
           <Link
             to="/checkout"
-            className="rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs text-fg lg:hidden"
+            className="rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs text-fg xl:hidden"
           >
             Cart {count > 0 ? `(${count})` : ""}
           </Link>
         </div>
-        <nav className="flex gap-1 overflow-x-auto border-t border-border px-2 py-2 lg:hidden">
+        <nav className="flex gap-1 overflow-x-auto border-t border-border px-2 py-2 xl:hidden">
           {NAV.map((item) => {
             const active =
               pathname === item.to || pathname.startsWith(`${item.to}/`);

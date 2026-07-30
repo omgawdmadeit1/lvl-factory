@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
+  Beaker,
   Bot,
+  ChartCandlestick,
   Package,
   Shield,
   Store,
   Truck,
+  Users,
   Wallet,
   Workflow,
 } from "lucide-react";
@@ -37,7 +40,7 @@ export const Route = createFileRoute("/marketplace")({
       {
         name: "description",
         content:
-          "LVL marketplace hub: merch store, multi-rail checkout, agent catalog, seller tools, and Printify POD on the lvlltd.com domain family.",
+          "LVL marketplace hub: Exchange, Labs demos, merch store, multi-rail checkout, agent fleets, seller tools on the lvlltd.com domain family.",
       },
     ],
   }),
@@ -58,32 +61,38 @@ function MarketplaceHubPage() {
       <VisualHero
         image={BRAND_ART.heroNetwork}
         eyebrow="lvlltd.com · marketplace hub"
-        title="Shop, settle, ship — one LVL network"
+        title="Shop, settle, trade — one LVL network"
         description={
           <>
-            Merch & art via Printify POD, multi-rail crypto/card pay for agents
-            and humans, seller pipeline, and operator factory — wired across{" "}
+            Live demos for every surface, secondary Exchange for digital goods,
+            agent fleets, Printify POD, multi-rail pay — wired across{" "}
             <span className="text-fg">lvlltd.com</span> subdomains.
           </>
         }
         actions={
           <>
             <Button asChild>
-              <Link to="/shop">
-                <Store className="size-4" />
-                Open store
+              <Link to="/labs">
+                <Beaker className="size-4" />
+                Open Labs demos
               </Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link to="/drops">Live drops</Link>
+              <Link to="/exchange">
+                <ChartCandlestick className="size-4" />
+                Exchange
+              </Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link to="/bundles">Stacks</Link>
+              <Link to="/fleet">
+                <Users className="size-4" />
+                Fleet
+              </Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link to="/agent/merch">
-                <Bot className="size-4" />
-                Agent shop
+              <Link to="/shop">
+                <Store className="size-4" />
+                Store
               </Link>
             </Button>
           </>
@@ -94,7 +103,55 @@ function MarketplaceHubPage() {
         <Badge variant="info">lvlltd.com</Badge>
         <Badge variant="default">{LVL_PAYMENT.label}</Badge>
         <Badge variant="warning">marketplace hub</Badge>
+        <Badge variant="success">live demos</Badge>
       </div>
+
+      <section className="grid gap-3 sm:grid-cols-3">
+        {[
+          {
+            icon: Beaker,
+            title: "Labs",
+            body: "Interactive demos for every product on the mesh",
+            img: BRAND_ART.heroNetwork,
+            to: "/labs" as const,
+          },
+          {
+            icon: ChartCandlestick,
+            title: "Exchange",
+            body: "Secondary market for skills, licenses & design rights",
+            img: BRAND_ART.heroFactory,
+            to: "/exchange" as const,
+          },
+          {
+            icon: Users,
+            title: "Fleet",
+            body: "Hire agent crews for drops, restock, support, MM",
+            img: BRAND_ART.collectionAgent,
+            to: "/fleet" as const,
+          },
+        ].map((f) => (
+          <Link key={f.title} to={f.to} className="block">
+            <Card className="h-full overflow-hidden border-border bg-surface shadow-soft transition-colors hover:bg-surface-2">
+              <div className="relative h-24 overflow-hidden bg-surface-2">
+                <img
+                  src={f.img}
+                  alt=""
+                  className="size-full object-cover opacity-80"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent" />
+              </div>
+              <CardHeader className="pb-2 pt-3">
+                <div className="mb-2 flex size-9 items-center justify-center rounded-lg border border-border bg-surface-2">
+                  <f.icon className="size-4" />
+                </div>
+                <CardTitle className="text-base">{f.title}</CardTitle>
+                <CardDescription>{f.body}</CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+        ))}
+      </section>
 
       <section className="grid gap-3 sm:grid-cols-3">
         {[
@@ -143,9 +200,9 @@ function MarketplaceHubPage() {
 
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-2">
-          <h2 className="text-lg font-semibold tracking-tight">Buy</h2>
-          <Link to="/shop" className="text-xs text-muted hover:text-fg">
-            Browse all <ArrowRight className="inline size-3" />
+          <h2 className="text-lg font-semibold tracking-tight">Buy · demo</h2>
+          <Link to="/labs" className="text-xs text-muted hover:text-fg">
+            All demos <ArrowRight className="inline size-3" />
           </Link>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

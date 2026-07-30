@@ -1,7 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Beaker,
   Bot,
   Boxes,
+  ChartCandlestick,
   CreditCard,
   Disc3,
   FlaskConical,
@@ -17,6 +19,7 @@ import {
   Store,
   Globe,
   Timer,
+  Users,
   Wand2,
   Webhook,
   Workflow,
@@ -32,6 +35,9 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/marketplace", label: "Marketplace hub", icon: LayoutGrid },
+  { to: "/labs", label: "Labs demos", icon: Beaker },
+  { to: "/exchange", label: "Exchange", icon: ChartCandlestick },
+  { to: "/fleet", label: "Agent fleet", icon: Users },
   { to: "/shop", label: "LVL Store", icon: Store },
   { to: "/drops", label: "Live drops", icon: Timer },
   { to: "/bundles", label: "Stack packs", icon: Layers },
@@ -123,9 +129,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   Edge hosts
                 </div>
                 <ul className="space-y-1.5 text-xs text-subtle">
+                  <li>labs · exchange · fleet</li>
                   <li>drops · pulse · studio</li>
                   <li>relay · bundles · radar</li>
-                  <li>shop · pay · checkout</li>
                   <li className="font-medium text-fg">factory.lvlltd.com</li>
                 </ul>
               </div>
@@ -152,16 +158,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <div className="hidden items-center gap-2 sm:flex">
               <Link
-                to="/marketplace"
+                to="/labs"
                 className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg"
               >
-                Hub
+                Labs
               </Link>
               <Link
-                to="/drops"
+                to="/exchange"
                 className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg"
               >
-                Drops
+                Exchange
               </Link>
               <Link
                 to="/shop"
@@ -176,7 +182,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </header>
 
           <nav className="flex gap-1 overflow-x-auto border-b border-border px-2 py-2 md:hidden">
-            {NAV.slice(0, 12).map((item) => {
+            {NAV.slice(0, 14).map((item) => {
               const active =
                 item.to === "/"
                   ? pathname === "/"
