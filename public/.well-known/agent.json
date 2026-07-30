@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "name": "LVL Agent Commerce",
+  "description": "Buy LVL merch and fulfill print-on-demand via Printify. Quote \u2192 order \u2192 pay \u2192 fulfill.",
+  "website": "https://lvlltd.com",
+  "documentation": "https://factory.lvlltd.com/llms.txt",
+  "openapi": "https://factory.lvlltd.com/api/openapi.json",
+  "protocol": "lvl-agent-order-v1",
+  "endpoints": {
+    "card": "https://factory.lvlltd.com/api/agent/card",
+    "catalog": "https://factory.lvlltd.com/api/store/catalog",
+    "quote": "https://factory.lvlltd.com/api/agent/quote",
+    "orders": "https://factory.lvlltd.com/api/agent/orders",
+    "pay_options": "https://factory.lvlltd.com/api/pay/options",
+    "human_shop": "https://factory.lvlltd.com/shop",
+    "agent_ui": "https://factory.lvlltd.com/agent/merch",
+    "dynamic_card": "https://factory.lvlltd.com/well-known/agent.json"
+  },
+  "pricing": {
+    "agent_fee_usd": 0.5,
+    "currency": "USD",
+    "default_rail": "base-usdc"
+  },
+  "capabilities": [
+    "merch-catalog",
+    "agent-quote",
+    "agent-order",
+    "payment-verify",
+    "printify-pod-fulfill",
+    "multi-rail-pay",
+    "demo-sandbox-settle"
+  ]
+}

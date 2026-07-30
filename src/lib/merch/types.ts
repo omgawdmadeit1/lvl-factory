@@ -101,6 +101,8 @@ export interface AgentMerchListing {
     mockup: string;
     printify_url: string | null;
     agent_buy: string;
+    agent_quote?: string;
+    agent_order?: string;
     settlement: SettlementBlock;
     tags: string[];
   }>;

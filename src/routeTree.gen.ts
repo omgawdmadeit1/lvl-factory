@@ -26,6 +26,7 @@ import { Route as GuildRouteImport } from './routes/guild'
 import { Route as LabsRouteImport } from './routes/labs'
 import { Route as LaunchRouteImport } from './routes/launch'
 import { Route as LedgerRouteImport } from './routes/ledger'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MerchRouteImport } from './routes/merch'
 import { Route as MirrorRouteImport } from './routes/mirror'
@@ -41,6 +42,7 @@ import { Route as QuestRouteImport } from './routes/quest'
 import { Route as QueueRouteImport } from './routes/queue'
 import { Route as RadarRouteImport } from './routes/radar'
 import { Route as RelayRouteImport } from './routes/relay'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SellerRouteImport } from './routes/seller'
 import { Route as ShopRouteRouteImport } from './routes/shop/route'
 import { Route as SignalRouteImport } from './routes/signal'
@@ -52,13 +54,17 @@ import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WebhooksRouteImport } from './routes/webhooks'
 import { Route as WhisperRouteImport } from './routes/whisper'
 import { Route as AgentMerchRouteImport } from './routes/agent.merch'
+import { Route as ApiOpenapiDotjsonRouteImport } from './routes/api/openapi[.]json'
 import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as ShopIndexRouteImport } from './routes/shop/index'
 import { Route as ShopSlugRouteImport } from './routes/shop/$slug'
 import { Route as ShopCartRouteImport } from './routes/shop/cart'
 import { Route as ShopSearchRouteImport } from './routes/shop/search'
 import { Route as ShopWishlistRouteImport } from './routes/shop/wishlist'
+import { Route as WellKnownAgentDotjsonRouteImport } from './routes/well-known/agent[.]json'
 import { Route as ApiAgentCardRouteImport } from './routes/api/agent/card'
+import { Route as ApiAgentOrdersRouteImport } from './routes/api/agent/orders'
+import { Route as ApiAgentQuoteRouteImport } from './routes/api/agent/quote'
 import { Route as ApiAwsStatusRouteImport } from './routes/api/aws/status'
 import { Route as ApiPayOptionsRouteImport } from './routes/api/pay/options'
 import { Route as ApiPrintifySubscriptionsRouteImport } from './routes/api/printify/subscriptions'
@@ -67,6 +73,8 @@ import { Route as ApiPrintifyWebhooksRouteImport } from './routes/api/printify/w
 import { Route as ApiStoreCatalogRouteImport } from './routes/api/store/catalog'
 import { Route as ApiStoreImageRouteImport } from './routes/api/store/image'
 import { Route as ShopCollectionsHandleRouteImport } from './routes/shop/collections.$handle'
+import { Route as ApiAgentOrdersIdRouteImport } from './routes/api/agent/orders.$id'
+import { Route as ApiAgentOrdersIdPayRouteImport } from './routes/api/agent/orders.$id.pay'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -153,6 +161,11 @@ const LedgerRoute = LedgerRouteImport.update({
   path: '/ledger',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarketplaceRoute = MarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
@@ -228,6 +241,11 @@ const RelayRoute = RelayRouteImport.update({
   path: '/relay',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SellerRoute = SellerRouteImport.update({
   id: '/seller',
   path: '/seller',
@@ -283,6 +301,11 @@ const AgentMerchRoute = AgentMerchRouteImport.update({
   path: '/agent/merch',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOpenapiDotjsonRoute = ApiOpenapiDotjsonRouteImport.update({
+  id: '/api/openapi.json',
+  path: '/api/openapi.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrdersIdRoute = OrdersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -313,9 +336,24 @@ const ShopWishlistRoute = ShopWishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => ShopRouteRoute,
 } as any)
+const WellKnownAgentDotjsonRoute = WellKnownAgentDotjsonRouteImport.update({
+  id: '/well-known/agent.json',
+  path: '/well-known/agent.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAgentCardRoute = ApiAgentCardRouteImport.update({
   id: '/api/agent/card',
   path: '/api/agent/card',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentOrdersRoute = ApiAgentOrdersRouteImport.update({
+  id: '/api/agent/orders',
+  path: '/api/agent/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentQuoteRoute = ApiAgentQuoteRouteImport.update({
+  id: '/api/agent/quote',
+  path: '/api/agent/quote',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAwsStatusRoute = ApiAwsStatusRouteImport.update({
@@ -359,6 +397,16 @@ const ShopCollectionsHandleRoute = ShopCollectionsHandleRouteImport.update({
   path: '/collections/$handle',
   getParentRoute: () => ShopRouteRoute,
 } as any)
+const ApiAgentOrdersIdRoute = ApiAgentOrdersIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAgentOrdersRoute,
+} as any)
+const ApiAgentOrdersIdPayRoute = ApiAgentOrdersIdPayRouteImport.update({
+  id: '/pay',
+  path: '/pay',
+  getParentRoute: () => ApiAgentOrdersIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -379,6 +427,7 @@ export interface FileRoutesByFullPath {
   '/labs': typeof LabsRoute
   '/launch': typeof LaunchRoute
   '/ledger': typeof LedgerRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/mirror': typeof MirrorRoute
@@ -394,6 +443,7 @@ export interface FileRoutesByFullPath {
   '/queue': typeof QueueRoute
   '/radar': typeof RadarRoute
   '/relay': typeof RelayRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/seller': typeof SellerRoute
   '/signal': typeof SignalRoute
   '/skills': typeof SkillsRoute
@@ -404,13 +454,17 @@ export interface FileRoutesByFullPath {
   '/webhooks': typeof WebhooksRoute
   '/whisper': typeof WhisperRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/orders/$id': typeof OrdersIdRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/cart': typeof ShopCartRoute
   '/shop/search': typeof ShopSearchRoute
   '/shop/wishlist': typeof ShopWishlistRoute
+  '/well-known/agent.json': typeof WellKnownAgentDotjsonRoute
   '/shop/': typeof ShopIndexRoute
   '/api/agent/card': typeof ApiAgentCardRoute
+  '/api/agent/orders': typeof ApiAgentOrdersRouteWithChildren
+  '/api/agent/quote': typeof ApiAgentQuoteRoute
   '/api/aws/status': typeof ApiAwsStatusRoute
   '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
@@ -419,6 +473,8 @@ export interface FileRoutesByFullPath {
   '/api/store/catalog': typeof ApiStoreCatalogRoute
   '/api/store/image': typeof ApiStoreImageRoute
   '/shop/collections/$handle': typeof ShopCollectionsHandleRoute
+  '/api/agent/orders/$id': typeof ApiAgentOrdersIdRouteWithChildren
+  '/api/agent/orders/$id/pay': typeof ApiAgentOrdersIdPayRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -438,6 +494,7 @@ export interface FileRoutesByTo {
   '/labs': typeof LabsRoute
   '/launch': typeof LaunchRoute
   '/ledger': typeof LedgerRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/mirror': typeof MirrorRoute
@@ -453,6 +510,7 @@ export interface FileRoutesByTo {
   '/queue': typeof QueueRoute
   '/radar': typeof RadarRoute
   '/relay': typeof RelayRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/seller': typeof SellerRoute
   '/signal': typeof SignalRoute
   '/skills': typeof SkillsRoute
@@ -463,13 +521,17 @@ export interface FileRoutesByTo {
   '/webhooks': typeof WebhooksRoute
   '/whisper': typeof WhisperRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/orders/$id': typeof OrdersIdRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/cart': typeof ShopCartRoute
   '/shop/search': typeof ShopSearchRoute
   '/shop/wishlist': typeof ShopWishlistRoute
+  '/well-known/agent.json': typeof WellKnownAgentDotjsonRoute
   '/shop': typeof ShopIndexRoute
   '/api/agent/card': typeof ApiAgentCardRoute
+  '/api/agent/orders': typeof ApiAgentOrdersRouteWithChildren
+  '/api/agent/quote': typeof ApiAgentQuoteRoute
   '/api/aws/status': typeof ApiAwsStatusRoute
   '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
@@ -478,6 +540,8 @@ export interface FileRoutesByTo {
   '/api/store/catalog': typeof ApiStoreCatalogRoute
   '/api/store/image': typeof ApiStoreImageRoute
   '/shop/collections/$handle': typeof ShopCollectionsHandleRoute
+  '/api/agent/orders/$id': typeof ApiAgentOrdersIdRouteWithChildren
+  '/api/agent/orders/$id/pay': typeof ApiAgentOrdersIdPayRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -499,6 +563,7 @@ export interface FileRoutesById {
   '/labs': typeof LabsRoute
   '/launch': typeof LaunchRoute
   '/ledger': typeof LedgerRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/mirror': typeof MirrorRoute
@@ -514,6 +579,7 @@ export interface FileRoutesById {
   '/queue': typeof QueueRoute
   '/radar': typeof RadarRoute
   '/relay': typeof RelayRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/seller': typeof SellerRoute
   '/signal': typeof SignalRoute
   '/skills': typeof SkillsRoute
@@ -524,13 +590,17 @@ export interface FileRoutesById {
   '/webhooks': typeof WebhooksRoute
   '/whisper': typeof WhisperRoute
   '/agent/merch': typeof AgentMerchRoute
+  '/api/openapi.json': typeof ApiOpenapiDotjsonRoute
   '/orders/$id': typeof OrdersIdRoute
   '/shop/$slug': typeof ShopSlugRoute
   '/shop/cart': typeof ShopCartRoute
   '/shop/search': typeof ShopSearchRoute
   '/shop/wishlist': typeof ShopWishlistRoute
+  '/well-known/agent.json': typeof WellKnownAgentDotjsonRoute
   '/shop/': typeof ShopIndexRoute
   '/api/agent/card': typeof ApiAgentCardRoute
+  '/api/agent/orders': typeof ApiAgentOrdersRouteWithChildren
+  '/api/agent/quote': typeof ApiAgentQuoteRoute
   '/api/aws/status': typeof ApiAwsStatusRoute
   '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
@@ -539,6 +609,8 @@ export interface FileRoutesById {
   '/api/store/catalog': typeof ApiStoreCatalogRoute
   '/api/store/image': typeof ApiStoreImageRoute
   '/shop/collections/$handle': typeof ShopCollectionsHandleRoute
+  '/api/agent/orders/$id': typeof ApiAgentOrdersIdRouteWithChildren
+  '/api/agent/orders/$id/pay': typeof ApiAgentOrdersIdPayRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -561,6 +633,7 @@ export interface FileRouteTypes {
     | '/labs'
     | '/launch'
     | '/ledger'
+    | '/llms.txt'
     | '/marketplace'
     | '/merch'
     | '/mirror'
@@ -576,6 +649,7 @@ export interface FileRouteTypes {
     | '/queue'
     | '/radar'
     | '/relay'
+    | '/robots.txt'
     | '/seller'
     | '/signal'
     | '/skills'
@@ -586,13 +660,17 @@ export interface FileRouteTypes {
     | '/webhooks'
     | '/whisper'
     | '/agent/merch'
+    | '/api/openapi.json'
     | '/orders/$id'
     | '/shop/$slug'
     | '/shop/cart'
     | '/shop/search'
     | '/shop/wishlist'
+    | '/well-known/agent.json'
     | '/shop/'
     | '/api/agent/card'
+    | '/api/agent/orders'
+    | '/api/agent/quote'
     | '/api/aws/status'
     | '/api/pay/options'
     | '/api/printify/subscriptions'
@@ -601,6 +679,8 @@ export interface FileRouteTypes {
     | '/api/store/catalog'
     | '/api/store/image'
     | '/shop/collections/$handle'
+    | '/api/agent/orders/$id'
+    | '/api/agent/orders/$id/pay'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -620,6 +700,7 @@ export interface FileRouteTypes {
     | '/labs'
     | '/launch'
     | '/ledger'
+    | '/llms.txt'
     | '/marketplace'
     | '/merch'
     | '/mirror'
@@ -635,6 +716,7 @@ export interface FileRouteTypes {
     | '/queue'
     | '/radar'
     | '/relay'
+    | '/robots.txt'
     | '/seller'
     | '/signal'
     | '/skills'
@@ -645,13 +727,17 @@ export interface FileRouteTypes {
     | '/webhooks'
     | '/whisper'
     | '/agent/merch'
+    | '/api/openapi.json'
     | '/orders/$id'
     | '/shop/$slug'
     | '/shop/cart'
     | '/shop/search'
     | '/shop/wishlist'
+    | '/well-known/agent.json'
     | '/shop'
     | '/api/agent/card'
+    | '/api/agent/orders'
+    | '/api/agent/quote'
     | '/api/aws/status'
     | '/api/pay/options'
     | '/api/printify/subscriptions'
@@ -660,6 +746,8 @@ export interface FileRouteTypes {
     | '/api/store/catalog'
     | '/api/store/image'
     | '/shop/collections/$handle'
+    | '/api/agent/orders/$id'
+    | '/api/agent/orders/$id/pay'
   id:
     | '__root__'
     | '/'
@@ -680,6 +768,7 @@ export interface FileRouteTypes {
     | '/labs'
     | '/launch'
     | '/ledger'
+    | '/llms.txt'
     | '/marketplace'
     | '/merch'
     | '/mirror'
@@ -695,6 +784,7 @@ export interface FileRouteTypes {
     | '/queue'
     | '/radar'
     | '/relay'
+    | '/robots.txt'
     | '/seller'
     | '/signal'
     | '/skills'
@@ -705,13 +795,17 @@ export interface FileRouteTypes {
     | '/webhooks'
     | '/whisper'
     | '/agent/merch'
+    | '/api/openapi.json'
     | '/orders/$id'
     | '/shop/$slug'
     | '/shop/cart'
     | '/shop/search'
     | '/shop/wishlist'
+    | '/well-known/agent.json'
     | '/shop/'
     | '/api/agent/card'
+    | '/api/agent/orders'
+    | '/api/agent/quote'
     | '/api/aws/status'
     | '/api/pay/options'
     | '/api/printify/subscriptions'
@@ -720,6 +814,8 @@ export interface FileRouteTypes {
     | '/api/store/catalog'
     | '/api/store/image'
     | '/shop/collections/$handle'
+    | '/api/agent/orders/$id'
+    | '/api/agent/orders/$id/pay'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -741,6 +837,7 @@ export interface RootRouteChildren {
   LabsRoute: typeof LabsRoute
   LaunchRoute: typeof LaunchRoute
   LedgerRoute: typeof LedgerRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MerchRoute: typeof MerchRoute
   MirrorRoute: typeof MirrorRoute
@@ -756,6 +853,7 @@ export interface RootRouteChildren {
   QueueRoute: typeof QueueRoute
   RadarRoute: typeof RadarRoute
   RelayRoute: typeof RelayRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   SellerRoute: typeof SellerRoute
   SignalRoute: typeof SignalRoute
   SkillsRoute: typeof SkillsRoute
@@ -766,7 +864,11 @@ export interface RootRouteChildren {
   WebhooksRoute: typeof WebhooksRoute
   WhisperRoute: typeof WhisperRoute
   AgentMerchRoute: typeof AgentMerchRoute
+  ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
+  WellKnownAgentDotjsonRoute: typeof WellKnownAgentDotjsonRoute
   ApiAgentCardRoute: typeof ApiAgentCardRoute
+  ApiAgentOrdersRoute: typeof ApiAgentOrdersRouteWithChildren
+  ApiAgentQuoteRoute: typeof ApiAgentQuoteRoute
   ApiAwsStatusRoute: typeof ApiAwsStatusRoute
   ApiPayOptionsRoute: typeof ApiPayOptionsRoute
   ApiPrintifySubscriptionsRoute: typeof ApiPrintifySubscriptionsRoute
@@ -897,6 +999,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LedgerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/marketplace': {
       id: '/marketplace'
       path: '/marketplace'
@@ -1002,6 +1111,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RelayRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/seller': {
       id: '/seller'
       path: '/seller'
@@ -1079,6 +1195,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentMerchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/openapi.json': {
+      id: '/api/openapi.json'
+      path: '/api/openapi.json'
+      fullPath: '/api/openapi.json'
+      preLoaderRoute: typeof ApiOpenapiDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/orders/$id': {
       id: '/orders/$id'
       path: '/$id'
@@ -1121,11 +1244,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopWishlistRouteImport
       parentRoute: typeof ShopRouteRoute
     }
+    '/well-known/agent.json': {
+      id: '/well-known/agent.json'
+      path: '/well-known/agent.json'
+      fullPath: '/well-known/agent.json'
+      preLoaderRoute: typeof WellKnownAgentDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/agent/card': {
       id: '/api/agent/card'
       path: '/api/agent/card'
       fullPath: '/api/agent/card'
       preLoaderRoute: typeof ApiAgentCardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent/orders': {
+      id: '/api/agent/orders'
+      path: '/api/agent/orders'
+      fullPath: '/api/agent/orders'
+      preLoaderRoute: typeof ApiAgentOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent/quote': {
+      id: '/api/agent/quote'
+      path: '/api/agent/quote'
+      fullPath: '/api/agent/quote'
+      preLoaderRoute: typeof ApiAgentQuoteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/aws/status': {
@@ -1184,6 +1328,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopCollectionsHandleRouteImport
       parentRoute: typeof ShopRouteRoute
     }
+    '/api/agent/orders/$id': {
+      id: '/api/agent/orders/$id'
+      path: '/$id'
+      fullPath: '/api/agent/orders/$id'
+      preLoaderRoute: typeof ApiAgentOrdersIdRouteImport
+      parentRoute: typeof ApiAgentOrdersRoute
+    }
+    '/api/agent/orders/$id/pay': {
+      id: '/api/agent/orders/$id/pay'
+      path: '/pay'
+      fullPath: '/api/agent/orders/$id/pay'
+      preLoaderRoute: typeof ApiAgentOrdersIdPayRouteImport
+      parentRoute: typeof ApiAgentOrdersIdRoute
+    }
   }
 }
 
@@ -1220,6 +1378,29 @@ const OrdersRouteChildren: OrdersRouteChildren = {
 const OrdersRouteWithChildren =
   OrdersRoute._addFileChildren(OrdersRouteChildren)
 
+interface ApiAgentOrdersIdRouteChildren {
+  ApiAgentOrdersIdPayRoute: typeof ApiAgentOrdersIdPayRoute
+}
+
+const ApiAgentOrdersIdRouteChildren: ApiAgentOrdersIdRouteChildren = {
+  ApiAgentOrdersIdPayRoute: ApiAgentOrdersIdPayRoute,
+}
+
+const ApiAgentOrdersIdRouteWithChildren =
+  ApiAgentOrdersIdRoute._addFileChildren(ApiAgentOrdersIdRouteChildren)
+
+interface ApiAgentOrdersRouteChildren {
+  ApiAgentOrdersIdRoute: typeof ApiAgentOrdersIdRouteWithChildren
+}
+
+const ApiAgentOrdersRouteChildren: ApiAgentOrdersRouteChildren = {
+  ApiAgentOrdersIdRoute: ApiAgentOrdersIdRouteWithChildren,
+}
+
+const ApiAgentOrdersRouteWithChildren = ApiAgentOrdersRoute._addFileChildren(
+  ApiAgentOrdersRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ShopRouteRoute: ShopRouteRouteWithChildren,
@@ -1239,6 +1420,7 @@ const rootRouteChildren: RootRouteChildren = {
   LabsRoute: LabsRoute,
   LaunchRoute: LaunchRoute,
   LedgerRoute: LedgerRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   MarketplaceRoute: MarketplaceRoute,
   MerchRoute: MerchRoute,
   MirrorRoute: MirrorRoute,
@@ -1254,6 +1436,7 @@ const rootRouteChildren: RootRouteChildren = {
   QueueRoute: QueueRoute,
   RadarRoute: RadarRoute,
   RelayRoute: RelayRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   SellerRoute: SellerRoute,
   SignalRoute: SignalRoute,
   SkillsRoute: SkillsRoute,
@@ -1264,7 +1447,11 @@ const rootRouteChildren: RootRouteChildren = {
   WebhooksRoute: WebhooksRoute,
   WhisperRoute: WhisperRoute,
   AgentMerchRoute: AgentMerchRoute,
+  ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,
+  WellKnownAgentDotjsonRoute: WellKnownAgentDotjsonRoute,
   ApiAgentCardRoute: ApiAgentCardRoute,
+  ApiAgentOrdersRoute: ApiAgentOrdersRouteWithChildren,
+  ApiAgentQuoteRoute: ApiAgentQuoteRoute,
   ApiAwsStatusRoute: ApiAwsStatusRoute,
   ApiPayOptionsRoute: ApiPayOptionsRoute,
   ApiPrintifySubscriptionsRoute: ApiPrintifySubscriptionsRoute,
