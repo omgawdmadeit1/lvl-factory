@@ -37,7 +37,7 @@
 | **https://anchor.lvlltd.com** | Subscription boxes / anchors | `/anchor` |
 | **https://monitor.lvlltd.com** | Real-time performance monitor | `/monitor` |
 | **https://music.lvlltd.com** | Music packs | `/music` |
-| **https://api.lvlltd.com** | Catalog API | `/api/store/catalog` |
+| **https://api.lvlltd.com** | Catalog + agent order APIs | `/api/store/catalog` |
 | **https://factory.lvlltd.com/shop** | Store path (same app) | `/shop` |
 | **https://factory.lvlltd.com/network** | Domain matrix UI | `/network` |
 | **https://lvlxltd.printify.me** | Printify Pop-Up (physical POD) | external |
@@ -46,6 +46,57 @@
 
 In-app model: `src/lib/marketplace/hosts.ts` + `LVL_NETWORK` / `CLOUDFLARE_MAP` in `src/lib/merch/printify.ts`.  
 Host rewrite: `HostRewrite` maps dedicated subdomain `/` → surface home.
+
+
+---
+
+## Agent commerce (lvl-agent-order-v1)
+
+LLM / shopping-agent shortcut: **discover → quote → order → pay → Printify POD fulfill**  
+(face merch + **$0.50 agent fee** — cheaper than standing up POD + design compute).
+
+### Discovery
+
+| URL | Purpose |
+|-----|---------|
+| `GET /llms.txt` | LLM discovery document |
+| `GET /robots.txt` | Crawl allowlist for agent paths |
+| `GET /.well-known/agent.json` | Static well-known agent card |
+| `GET /well-known/agent.json` | Dynamic well-known card |
+| `GET /api/openapi.json` | OpenAPI 3.1 |
+| `GET /api/agent/card` | Capability card + shopping steps |
+
+### Order API
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/api/agent/quote` | Quote SKU (face + fee + ship estimate) |
+| `POST` | `/api/agent/orders` | Create order + `ship_to` → `awaiting_payment` |
+| `GET` | `/api/agent/orders/{id}` | Status / Printify linkage |
+| `POST` | `/api/agent/orders/{id}/pay` | Verify payment → create Printify order |
+| `GET` | `/api/store/catalog` | Live merch catalog + agent block |
+| `GET` | `/api/pay/options` | Multi-rail settlement options |
+
+**Pay body**
+
+```json
+{ "method": "crypto", "rail": "base-usdc", "tx_hash": "0x…" }
+{ "method": "demo", "confirm": true }
+```
+
+- **crypto** + `PRINTIFY_API_TOKEN` + `PRINTIFY_SHOP_ID` → real Printify order (`submitted_to_printify`)
+- **demo** or missing creds → `simulated_fulfillment`
+- Catalog `printifyProductId` must be **Printify API hex ids** (not storefront numeric ids)
+- Shop ID for LvlxLtd storefront: **`20002621`**
+
+Modules: `src/lib/merch/agent-orders.server.ts`, `printify-orders.server.ts` · migration `0004_agent_orders.sql`
+
+```bash
+# Sync Printify secrets to Vercel (needs VERCEL_TOKEN)
+npm run vercel:env:sync
+```
+
+
 
 #
 ### Edge Suite hosts (new)
@@ -167,12 +218,19 @@ Optimizations: TTL memory cache, in-flight coalescing, HEAD-first, seed map `RES
 
 | Item | Value |
 |------|--------|
-| Protocol | `lvl-merch-v1` |
+| Protocol | `lvl-merch-v1` + **`lvl-agent-order-v1`** |
 | UI | `/agent/merch` |
-| API | `GET /api/store/catalog` |
-| Pay | `/pay?sku=SKU&amount=PRICE` |
+| Discovery | `/llms.txt`, `/.well-known/agent.json`, `/api/openapi.json`, `/api/agent/card` |
+| Catalog | `GET /api/store/catalog` |
+| Quote | `POST /api/agent/quote` |
+| Orders | `POST /api/agent/orders` · `GET /api/agent/orders/{id}` |
+| Pay + fulfill | `POST /api/agent/orders/{id}/pay` → Printify |
+| Human pay | `/pay?sku=SKU&amount=PRICE` |
 | Human store | `/shop` |
-| Module | `src/lib/merch/agent-commerce.ts` |
+| Modules | `agent-commerce.ts`, `agent-orders.server.ts`, `printify-orders.server.ts` |
+| Migration | `0004_agent_orders.sql` |
+
+See **Agent commerce (lvl-agent-order-v1)** near the top for the full loop and secrets.
 
 ---
 
