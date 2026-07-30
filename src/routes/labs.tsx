@@ -27,6 +27,9 @@ import {
   useExchangeStore,
 } from "@/lib/markets/exchange";
 import { FLEET_AGENTS, useFleetStore } from "@/lib/markets/fleet";
+import { SYNDICATE_DEALS, useSyndicateStore } from "@/lib/markets/syndicate";
+import { LAUNCH_PADS, useLaunchStore } from "@/lib/markets/launch";
+import { BOUNTY_CATALOG, useBountyStore } from "@/lib/markets/bounty";
 import {
   LAB_DEMOS,
   MARKET_THESES,
@@ -319,6 +322,110 @@ function StackBuildWidget() {
   );
 }
 
+
+function SyndicateJoinWidget() {
+  const deal = SYNDICATE_DEALS[0];
+  const join = useSyndicateStore((s) => s.join);
+  const progress = useSyndicateStore((s) => s.progress(deal.id));
+  const pool = useSyndicateStore((s) => s.pools[deal.id]);
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold">{deal.title}</p>
+        <Badge variant="info">${deal.stackUsd}</Badge>
+      </div>
+      <p className="text-xs text-muted">
+        {pool?.joined ?? 0}/{deal.threshold} crew · {progress}%
+      </p>
+      <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
+        <div
+          className="h-full bg-fg transition-all"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          const ok = join(deal.id, 1);
+          toast[ok ? "success" : "error"](ok ? "Joined syndicate" : "Pool locked");
+        }}
+      >
+        Join crew seat
+      </Button>
+    </div>
+  );
+}
+
+function LaunchPledgeWidget() {
+  const pad = LAUNCH_PADS.find((p) => p.phase === "live") ?? LAUNCH_PADS[0];
+  const pledge = useLaunchStore((s) => s.pledge);
+  const joinWaitlist = useLaunchStore((s) => s.joinWaitlist);
+  const count = useLaunchStore((s) => s.waitlistCount(pad));
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold">{pad.title}</p>
+        <Badge variant="success">{pad.phase}</Badge>
+      </div>
+      <p className="text-xs text-muted">
+        {count}/{pad.waitlistGoal} waitlist · ${pad.priceUsd}
+      </p>
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          className="flex-1"
+          onClick={() => {
+            joinWaitlist(pad.id);
+            toast.success("Waitlisted");
+          }}
+        >
+          Waitlist
+        </Button>
+        <Button
+          size="sm"
+          variant="secondary"
+          className="flex-1"
+          onClick={() => {
+            const ok = pledge(pad.id, 1);
+            toast[ok ? "success" : "message"](ok ? "Pledged" : "Tease only");
+          }}
+        >
+          Pledge
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function BountyClaimWidget() {
+  const b = BOUNTY_CATALOG[0];
+  const claim = useBountyStore((s) => s.claim);
+  const runtime = useBountyStore((s) => s.runtime[b.id]);
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold line-clamp-1">{b.title}</p>
+        <Badge variant="info">${b.rewardUsdc}</Badge>
+      </div>
+      <p className="text-xs text-muted">{b.blurb}</p>
+      <p className="font-mono text-[11px] text-subtle">
+        status {runtime?.status ?? "open"}
+      </p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          const ok = claim(b.id, "you");
+          toast[ok ? "success" : "error"](ok ? "Bounty claimed" : "Not open");
+        }}
+      >
+        Claim bounty
+      </Button>
+    </div>
+  );
+}
+
 function widgetFor(id: LabDemo["widget"]) {
   switch (id) {
     case "drop_claim":
@@ -333,6 +440,12 @@ function widgetFor(id: LabDemo["widget"]) {
       return <IntentSignWidget />;
     case "stack_build":
       return <StackBuildWidget />;
+    case "syndicate_join":
+      return <SyndicateJoinWidget />;
+    case "launch_pledge":
+      return <LaunchPledgeWidget />;
+    case "bounty_claim":
+      return <BountyClaimWidget />;
     default:
       return null;
   }
@@ -350,21 +463,24 @@ function LabsPage() {
         title="Try every LVL product — live"
         description={
           <>
-            No decks. Interactive demos for Exchange, Fleet, drops, pay rails,
-            agent relay, and the full{" "}
+            No decks. Interactive demos for Syndicate, Launch, Bounty, Exchange,
+            Fleet, drops, and the full{" "}
             <span className="text-fg">lvlltd.com</span> domain mesh.
           </>
         }
         actions={
           <>
             <Button asChild>
-              <Link to="/exchange">
+              <Link to="/syndicate">
                 <Beaker className="size-4" />
-                Open Exchange
+                Syndicate
               </Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link to="/fleet">Hire a fleet</Link>
+              <Link to="/launch">Launch pad</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link to="/bounty">Bounties</Link>
             </Button>
             <Button asChild variant="secondary">
               <Link to="/marketplace">Marketplace hub</Link>

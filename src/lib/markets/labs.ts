@@ -17,7 +17,10 @@ export type DemoKind =
   | "music"
   | "skills"
   | "checkout"
-  | "radar";
+  | "radar"
+  | "syndicate"
+  | "launch"
+  | "bounty";
 
 export type LabDemo = {
   id: string;
@@ -28,13 +31,62 @@ export type LabDemo = {
   host: string;
   market: string;
   /** Live interactive widget id rendered on Labs */
-  widget: "drop_claim" | "pay_rail" | "trade_tape" | "fleet_hire" | "intent_sign" | "stack_build" | "none";
+  widget:
+    | "drop_claim"
+    | "pay_rail"
+    | "trade_tape"
+    | "fleet_hire"
+    | "intent_sign"
+    | "stack_build"
+    | "syndicate_join"
+    | "launch_pledge"
+    | "bounty_claim"
+    | "none";
   badge: string;
   live: boolean;
   audience: "buyer" | "agent" | "operator" | "creator";
 };
 
 export const LAB_DEMOS: LabDemo[] = [
+  {
+    id: "lab-syndicate",
+    kind: "syndicate",
+    title: "Syndicate",
+    blurb: "Group buys — fill the crew, unlock stack prices on drops & packs.",
+    path: "/syndicate",
+    host: "syndicate.lvlltd.com",
+    market: "Social commerce",
+    widget: "syndicate_join",
+    badge: "Crew",
+    live: true,
+    audience: "buyer",
+  },
+  {
+    id: "lab-launch",
+    kind: "launch",
+    title: "Launch pad",
+    blurb: "Waitlists and live pledges for the next LVL products.",
+    path: "/launch",
+    host: "launch.lvlltd.com",
+    market: "GTM / launch",
+    widget: "launch_pledge",
+    badge: "Launch",
+    live: true,
+    audience: "buyer",
+  },
+  {
+    id: "lab-bounty",
+    kind: "bounty",
+    title: "Bounty board",
+    blurb: "Task escrow for agents & humans — claim, submit, settle USDC.",
+    path: "/bounty",
+    host: "bounty.lvlltd.com",
+    market: "Task marketplace",
+    widget: "bounty_claim",
+    badge: "Escrow",
+    live: true,
+    audience: "agent",
+  },
   {
     id: "lab-exchange",
     kind: "exchange",
@@ -220,6 +272,33 @@ export const LAB_DEMOS: LabDemo[] = [
 ];
 
 export const MARKET_THESES = [
+  {
+    id: "social-group-buy",
+    title: "Social group buys",
+    thesis:
+      "Crews unlock stack prices together — Syndicate turns drops into coordinated demand.",
+    host: "syndicate.lvlltd.com",
+    path: "/syndicate",
+    why: "Solo flash sales leave money on the table; co-purchase is the conversion lever.",
+  },
+  {
+    id: "launchpad-gtm",
+    title: "Always-on launchpad",
+    thesis:
+      "Every product gets waitlist → pledge → live — Launch is GTM infrastructure for the mesh.",
+    host: "launch.lvlltd.com",
+    path: "/launch",
+    why: "Shipping without distribution is noise; launchpad is the amplifier.",
+  },
+  {
+    id: "task-escrow",
+    title: "Task escrow marketplace",
+    thesis:
+      "Bounties price agent and human labor in USDC with claim → submit → pay.",
+    host: "bounty.lvlltd.com",
+    path: "/bounty",
+    why: "Fleet hires capacity; Bounty prices discrete outcomes.",
+  },
   {
     id: "secondary-digital",
     title: "Secondary digital goods",

@@ -5,6 +5,7 @@ import {
   Beaker,
   Bot,
   ChartCandlestick,
+  Crosshair,
   CreditCard,
   FlaskConical,
   Layers,
@@ -13,10 +14,12 @@ import {
   Package,
   Radio,
   Radar,
+  Rocket,
   Sparkles,
   Store,
   Timer,
   Users,
+  UsersRound,
   Wand2,
   Workflow,
   Zap,
@@ -33,6 +36,9 @@ const LINKS: Array<{
   { to: "/marketplace", label: "Marketplace hub", group: "Buy", icon: LayoutGrid },
   { to: "/labs", label: "Labs live demos", group: "Markets", icon: Beaker, keywords: "demo try" },
   { to: "/exchange", label: "LVL Exchange", group: "Markets", icon: ChartCandlestick, keywords: "trade secondary" },
+  { to: "/syndicate", label: "Syndicate group buys", group: "Markets", icon: UsersRound, keywords: "crew stack co-purchase" },
+  { to: "/launch", label: "Launch pad", group: "Markets", icon: Rocket, keywords: "waitlist pledge gtm" },
+  { to: "/bounty", label: "Bounty board", group: "Markets", icon: Crosshair, keywords: "escrow task claim" },
   { to: "/fleet", label: "Agent fleet", group: "Markets", icon: Users, keywords: "hire labor" },
   { to: "/shop", label: "LVL Store", group: "Buy", icon: Store, keywords: "merch" },
   { to: "/drops", label: "Live drops", group: "Buy", icon: Timer, keywords: "flash limited" },
@@ -98,7 +104,7 @@ export function CommandPalette() {
       >
         <div className="border-b border-border px-3">
           <Command.Input
-            placeholder="Jump to labs, exchange, fleet, drops, pay…"
+            placeholder="Jump to labs, syndicate, launch, bounty, exchange…"
             className="h-12 w-full bg-transparent text-sm text-fg outline-none placeholder:text-subtle"
             autoFocus
           />
@@ -107,7 +113,7 @@ export function CommandPalette() {
           <Command.Empty className="px-3 py-6 text-center text-sm text-muted">
             No matches
           </Command.Empty>
-          {["Markets", "Buy", "Agents", "Create", "Network", "Operator"].map(
+          {["Buy", "Markets", "Create", "Agents", "Network", "Operator"].map(
             (group) => {
               const items = LINKS.filter((l) => l.group === group);
               if (!items.length) return null;
@@ -125,9 +131,9 @@ export function CommandPalette() {
                         value={`${item.label} ${item.keywords ?? ""} ${item.to}`}
                         onSelect={() => {
                           setOpen(false);
-                          void navigate({ to: item.to });
+                          navigate({ to: item.to });
                         }}
-                        className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm text-muted data-[selected=true]:bg-surface-2 data-[selected=true]:text-fg"
+                        className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm text-muted aria-selected:bg-surface-2 aria-selected:text-fg"
                       >
                         <Icon className="size-4 shrink-0" />
                         {item.label}

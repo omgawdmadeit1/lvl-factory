@@ -2,16 +2,19 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Beaker,
   ChartCandlestick,
+  Crosshair,
   CreditCard,
   Layers,
   LayoutGrid,
   Package,
   Radio,
+  Rocket,
   ShoppingBag,
   Store,
   Timer,
   User,
   Users,
+  UsersRound,
 } from "lucide-react";
 import { BrandMark } from "@/components/brand/visual-hero";
 import { useLoyaltyStore } from "@/lib/edge/loyalty";
@@ -22,6 +25,9 @@ const NAV = [
   { to: "/marketplace" as const, label: "Hub", icon: LayoutGrid },
   { to: "/labs" as const, label: "Labs", icon: Beaker },
   { to: "/exchange" as const, label: "Exchange", icon: ChartCandlestick },
+  { to: "/syndicate" as const, label: "Syndicate", icon: UsersRound },
+  { to: "/launch" as const, label: "Launch", icon: Rocket },
+  { to: "/bounty" as const, label: "Bounty", icon: Crosshair },
   { to: "/fleet" as const, label: "Fleet", icon: Users },
   { to: "/shop" as const, label: "Shop", icon: Store },
   { to: "/drops" as const, label: "Drops", icon: Timer },
@@ -41,7 +47,7 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
       <div className="border-b border-border bg-surface-2 px-4 py-2 text-center text-xs text-muted">
-        LVL edge · labs · exchange · fleet · drops · multi-rail + Printify ·{" "}
+        LVL · labs · exchange · syndicate · launch · bounty · fleet ·{" "}
         <span className="text-fg">lvlltd.com</span>
         {credits > 0 ? (
           <>

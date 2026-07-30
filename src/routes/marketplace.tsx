@@ -2,13 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   Beaker,
-  Bot,
   ChartCandlestick,
+  Crosshair,
   Package,
+  Rocket,
   Shield,
   Store,
-  Truck,
-  Users,
+  UsersRound,
   Wallet,
   Workflow,
 } from "lucide-react";
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/marketplace")({
       {
         name: "description",
         content:
-          "LVL marketplace hub: Exchange, Labs demos, merch store, multi-rail checkout, agent fleets, seller tools on the lvlltd.com domain family.",
+          "LVL marketplace hub: Labs demos, Syndicate, Launch, Bounty, Exchange, Fleet, merch store, multi-rail pay on lvlltd.com.",
       },
     ],
   }),
@@ -64,8 +64,8 @@ function MarketplaceHubPage() {
         title="Shop, settle, trade — one LVL network"
         description={
           <>
-            Live demos for every surface, secondary Exchange for digital goods,
-            agent fleets, Printify POD, multi-rail pay — wired across{" "}
+            Syndicate group buys, Launch pad, Bounty escrow, Exchange, Fleet,
+            Labs demos, Printify POD, multi-rail pay — wired across{" "}
             <span className="text-fg">lvlltd.com</span> subdomains.
           </>
         }
@@ -78,15 +78,21 @@ function MarketplaceHubPage() {
               </Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link to="/exchange">
-                <ChartCandlestick className="size-4" />
-                Exchange
+              <Link to="/syndicate">
+                <UsersRound className="size-4" />
+                Syndicate
               </Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link to="/fleet">
-                <Users className="size-4" />
-                Fleet
+              <Link to="/launch">
+                <Rocket className="size-4" />
+                Launch
+              </Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link to="/bounty">
+                <Crosshair className="size-4" />
+                Bounty
               </Link>
             </Button>
             <Button asChild variant="secondary">
@@ -116,18 +122,18 @@ function MarketplaceHubPage() {
             to: "/labs" as const,
           },
           {
-            icon: ChartCandlestick,
-            title: "Exchange",
-            body: "Secondary market for skills, licenses & design rights",
-            img: BRAND_ART.heroFactory,
-            to: "/exchange" as const,
+            icon: UsersRound,
+            title: "Syndicate",
+            body: "Group buys — fill the crew, unlock stack prices",
+            img: BRAND_ART.collectionTees,
+            to: "/syndicate" as const,
           },
           {
-            icon: Users,
-            title: "Fleet",
-            body: "Hire agent crews for drops, restock, support, MM",
+            icon: Crosshair,
+            title: "Bounty",
+            body: "Task escrow for agents & humans · USDC settle",
             img: BRAND_ART.collectionAgent,
-            to: "/fleet" as const,
+            to: "/bounty" as const,
           },
         ].map((f) => (
           <Link key={f.title} to={f.to} className="block">
@@ -153,54 +159,9 @@ function MarketplaceHubPage() {
         ))}
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        {[
-          {
-            icon: Store,
-            title: "Catalog",
-            body: "LVL Store collections, search, wishlist, agent SKUs",
-            img: BRAND_ART.collectionTees,
-          },
-          {
-            icon: Wallet,
-            title: "Settlement",
-            body: `${LVL_PAYMENT.label} · multi-chain USDC/USDT · Stripe card`,
-            img: BRAND_ART.heroFactory,
-          },
-          {
-            icon: Truck,
-            title: "Fulfillment",
-            body: `${PRINTIFY_STORE.brand} POD · webhooks on factory`,
-            img: BRAND_ART.collectionArt,
-          },
-        ].map((f) => (
-          <Card
-            key={f.title}
-            className="overflow-hidden border-border bg-surface shadow-soft"
-          >
-            <div className="relative h-24 overflow-hidden bg-surface-2">
-              <img
-                src={f.img}
-                alt=""
-                className="size-full object-cover opacity-80"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent" />
-            </div>
-            <CardHeader className="pb-2 pt-3">
-              <div className="mb-2 flex size-9 items-center justify-center rounded-lg border border-border bg-surface-2">
-                <f.icon className="size-4" />
-              </div>
-              <CardTitle className="text-base">{f.title}</CardTitle>
-              <CardDescription>{f.body}</CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
-      </section>
-
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-2">
-          <h2 className="text-lg font-semibold tracking-tight">Buy · demo</h2>
+          <h2 className="text-lg font-semibold tracking-tight">Buy · markets</h2>
           <Link to="/labs" className="text-xs text-muted hover:text-fg">
             All demos <ArrowRight className="inline size-3" />
           </Link>
@@ -279,9 +240,8 @@ function MarketplaceHubPage() {
           </CardContent>
         </Card>
         <p className="text-xs text-subtle">
-          Point DNS CNAMEs at the factory origin (Cloudflare → Vercel). Host
-          rewrite sends <code className="text-muted">/</code> to each surface.
-          Full stack also lives on{" "}
+          Point DNS CNAMEs at the factory origin. Host rewrite sends{" "}
+          <code className="text-muted">/</code> to each surface. Full stack on{" "}
           <a
             className="text-fg underline-offset-2 hover:underline"
             href={MARKETPLACE_URLS.factory}
@@ -332,16 +292,32 @@ function MarketplaceHubPage() {
           <CardHeader className="-mt-6 relative z-[1]">
             <CardTitle className="flex items-center gap-2 text-base">
               <Package className="size-4" />
-              Your orders
+              Settlement
             </CardTitle>
             <CardDescription>
-              Checkout writes a local order ledger; Printify + pay rails
-              deep-link from each line.
+              Multi-rail {LVL_PAYMENT.label} · card · POD via{" "}
+              {PRINTIFY_STORE.brand}. Orders ledger on{" "}
+              <Link
+                to="/orders"
+                className="text-fg underline-offset-2 hover:underline"
+              >
+                /orders
+              </Link>
+              .
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-wrap gap-2">
             <Button asChild variant="secondary" size="sm">
-              <Link to="/orders">View orders</Link>
+              <Link
+                to="/pay"
+                search={{ skill: "merch", amount: 0.05, canceled: false }}
+              >
+                <Wallet className="size-3.5" />
+                Pay
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" size="sm">
+              <Link to="/orders">Orders</Link>
             </Button>
           </CardContent>
         </Card>

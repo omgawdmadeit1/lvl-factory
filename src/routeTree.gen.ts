@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as BountyRouteImport } from './routes/bounty'
 import { Route as BundlesRouteImport } from './routes/bundles'
 import { Route as CanaryRouteImport } from './routes/canary'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -18,6 +19,7 @@ import { Route as DropsRouteImport } from './routes/drops'
 import { Route as ExchangeRouteImport } from './routes/exchange'
 import { Route as FleetRouteImport } from './routes/fleet'
 import { Route as LabsRouteImport } from './routes/labs'
+import { Route as LaunchRouteImport } from './routes/launch'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MerchRouteImport } from './routes/merch'
 import { Route as MusicRouteImport } from './routes/music'
@@ -33,6 +35,7 @@ import { Route as SellerRouteImport } from './routes/seller'
 import { Route as ShopRouteRouteImport } from './routes/shop/route'
 import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as StudioRouteImport } from './routes/studio'
+import { Route as SyndicateRouteImport } from './routes/syndicate'
 import { Route as Tier1RouteImport } from './routes/tier1'
 import { Route as WebhooksRouteImport } from './routes/webhooks'
 import { Route as AgentMerchRouteImport } from './routes/agent.merch'
@@ -60,6 +63,11 @@ const IndexRoute = IndexRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BountyRoute = BountyRouteImport.update({
+  id: '/bounty',
+  path: '/bounty',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BundlesRoute = BundlesRouteImport.update({
@@ -95,6 +103,11 @@ const FleetRoute = FleetRouteImport.update({
 const LabsRoute = LabsRouteImport.update({
   id: '/labs',
   path: '/labs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LaunchRoute = LaunchRouteImport.update({
+  id: '/launch',
+  path: '/launch',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplaceRoute = MarketplaceRouteImport.update({
@@ -170,6 +183,11 @@ const SkillsRoute = SkillsRouteImport.update({
 const StudioRoute = StudioRouteImport.update({
   id: '/studio',
   path: '/studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SyndicateRoute = SyndicateRouteImport.update({
+  id: '/syndicate',
+  path: '/syndicate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Tier1Route = Tier1RouteImport.update({
@@ -268,6 +286,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/shop': typeof ShopRouteRouteWithChildren
   '/account': typeof AccountRoute
+  '/bounty': typeof BountyRoute
   '/bundles': typeof BundlesRoute
   '/canary': typeof CanaryRoute
   '/checkout': typeof CheckoutRoute
@@ -275,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/exchange': typeof ExchangeRoute
   '/fleet': typeof FleetRoute
   '/labs': typeof LabsRoute
+  '/launch': typeof LaunchRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
@@ -289,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/seller': typeof SellerRoute
   '/skills': typeof SkillsRoute
   '/studio': typeof StudioRoute
+  '/syndicate': typeof SyndicateRoute
   '/tier1': typeof Tier1Route
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
@@ -311,6 +332,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/bounty': typeof BountyRoute
   '/bundles': typeof BundlesRoute
   '/canary': typeof CanaryRoute
   '/checkout': typeof CheckoutRoute
@@ -318,6 +340,7 @@ export interface FileRoutesByTo {
   '/exchange': typeof ExchangeRoute
   '/fleet': typeof FleetRoute
   '/labs': typeof LabsRoute
+  '/launch': typeof LaunchRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
@@ -332,6 +355,7 @@ export interface FileRoutesByTo {
   '/seller': typeof SellerRoute
   '/skills': typeof SkillsRoute
   '/studio': typeof StudioRoute
+  '/syndicate': typeof SyndicateRoute
   '/tier1': typeof Tier1Route
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
@@ -356,6 +380,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/shop': typeof ShopRouteRouteWithChildren
   '/account': typeof AccountRoute
+  '/bounty': typeof BountyRoute
   '/bundles': typeof BundlesRoute
   '/canary': typeof CanaryRoute
   '/checkout': typeof CheckoutRoute
@@ -363,6 +388,7 @@ export interface FileRoutesById {
   '/exchange': typeof ExchangeRoute
   '/fleet': typeof FleetRoute
   '/labs': typeof LabsRoute
+  '/launch': typeof LaunchRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
@@ -377,6 +403,7 @@ export interface FileRoutesById {
   '/seller': typeof SellerRoute
   '/skills': typeof SkillsRoute
   '/studio': typeof StudioRoute
+  '/syndicate': typeof SyndicateRoute
   '/tier1': typeof Tier1Route
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
@@ -402,6 +429,7 @@ export interface FileRouteTypes {
     | '/'
     | '/shop'
     | '/account'
+    | '/bounty'
     | '/bundles'
     | '/canary'
     | '/checkout'
@@ -409,6 +437,7 @@ export interface FileRouteTypes {
     | '/exchange'
     | '/fleet'
     | '/labs'
+    | '/launch'
     | '/marketplace'
     | '/merch'
     | '/music'
@@ -423,6 +452,7 @@ export interface FileRouteTypes {
     | '/seller'
     | '/skills'
     | '/studio'
+    | '/syndicate'
     | '/tier1'
     | '/webhooks'
     | '/agent/merch'
@@ -445,6 +475,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/bounty'
     | '/bundles'
     | '/canary'
     | '/checkout'
@@ -452,6 +483,7 @@ export interface FileRouteTypes {
     | '/exchange'
     | '/fleet'
     | '/labs'
+    | '/launch'
     | '/marketplace'
     | '/merch'
     | '/music'
@@ -466,6 +498,7 @@ export interface FileRouteTypes {
     | '/seller'
     | '/skills'
     | '/studio'
+    | '/syndicate'
     | '/tier1'
     | '/webhooks'
     | '/agent/merch'
@@ -489,6 +522,7 @@ export interface FileRouteTypes {
     | '/'
     | '/shop'
     | '/account'
+    | '/bounty'
     | '/bundles'
     | '/canary'
     | '/checkout'
@@ -496,6 +530,7 @@ export interface FileRouteTypes {
     | '/exchange'
     | '/fleet'
     | '/labs'
+    | '/launch'
     | '/marketplace'
     | '/merch'
     | '/music'
@@ -510,6 +545,7 @@ export interface FileRouteTypes {
     | '/seller'
     | '/skills'
     | '/studio'
+    | '/syndicate'
     | '/tier1'
     | '/webhooks'
     | '/agent/merch'
@@ -534,6 +570,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ShopRouteRoute: typeof ShopRouteRouteWithChildren
   AccountRoute: typeof AccountRoute
+  BountyRoute: typeof BountyRoute
   BundlesRoute: typeof BundlesRoute
   CanaryRoute: typeof CanaryRoute
   CheckoutRoute: typeof CheckoutRoute
@@ -541,6 +578,7 @@ export interface RootRouteChildren {
   ExchangeRoute: typeof ExchangeRoute
   FleetRoute: typeof FleetRoute
   LabsRoute: typeof LabsRoute
+  LaunchRoute: typeof LaunchRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MerchRoute: typeof MerchRoute
   MusicRoute: typeof MusicRoute
@@ -555,6 +593,7 @@ export interface RootRouteChildren {
   SellerRoute: typeof SellerRoute
   SkillsRoute: typeof SkillsRoute
   StudioRoute: typeof StudioRoute
+  SyndicateRoute: typeof SyndicateRoute
   Tier1Route: typeof Tier1Route
   WebhooksRoute: typeof WebhooksRoute
   AgentMerchRoute: typeof AgentMerchRoute
@@ -582,6 +621,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bounty': {
+      id: '/bounty'
+      path: '/bounty'
+      fullPath: '/bounty'
+      preLoaderRoute: typeof BountyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bundles': {
@@ -631,6 +677,13 @@ declare module '@tanstack/react-router' {
       path: '/labs'
       fullPath: '/labs'
       preLoaderRoute: typeof LabsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/launch': {
+      id: '/launch'
+      path: '/launch'
+      fullPath: '/launch'
+      preLoaderRoute: typeof LaunchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/marketplace': {
@@ -736,6 +789,13 @@ declare module '@tanstack/react-router' {
       path: '/studio'
       fullPath: '/studio'
       preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/syndicate': {
+      id: '/syndicate'
+      path: '/syndicate'
+      fullPath: '/syndicate'
+      preLoaderRoute: typeof SyndicateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tier1': {
@@ -904,6 +964,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ShopRouteRoute: ShopRouteRouteWithChildren,
   AccountRoute: AccountRoute,
+  BountyRoute: BountyRoute,
   BundlesRoute: BundlesRoute,
   CanaryRoute: CanaryRoute,
   CheckoutRoute: CheckoutRoute,
@@ -911,6 +972,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExchangeRoute: ExchangeRoute,
   FleetRoute: FleetRoute,
   LabsRoute: LabsRoute,
+  LaunchRoute: LaunchRoute,
   MarketplaceRoute: MarketplaceRoute,
   MerchRoute: MerchRoute,
   MusicRoute: MusicRoute,
@@ -925,6 +987,7 @@ const rootRouteChildren: RootRouteChildren = {
   SellerRoute: SellerRoute,
   SkillsRoute: SkillsRoute,
   StudioRoute: StudioRoute,
+  SyndicateRoute: SyndicateRoute,
   Tier1Route: Tier1Route,
   WebhooksRoute: WebhooksRoute,
   AgentMerchRoute: AgentMerchRoute,

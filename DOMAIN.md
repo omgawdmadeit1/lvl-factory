@@ -20,6 +20,9 @@
 | **https://labs.lvlltd.com** | Live product demos showroom | `/labs` |
 | **https://exchange.lvlltd.com** | Secondary digital goods market | `/exchange` |
 | **https://fleet.lvlltd.com** | Agent labor marketplace | `/fleet` |
+| **https://syndicate.lvlltd.com** | Group buys / co-purchase | `/syndicate` |
+| **https://launch.lvlltd.com** | Product launchpad | `/launch` |
+| **https://bounty.lvlltd.com** | Task escrow bounties | `/bounty` |
 | **https://music.lvlltd.com** | Music packs | `/music` |
 | **https://api.lvlltd.com** | Catalog API | `/api/store/catalog` |
 | **https://factory.lvlltd.com/shop** | Store path (same app) | `/shop` |

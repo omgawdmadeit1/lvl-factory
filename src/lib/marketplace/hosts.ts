@@ -25,7 +25,10 @@ export type MarketplaceSurface =
   | "radar"
   | "labs"
   | "exchange"
-  | "fleet";
+  | "fleet"
+  | "syndicate"
+  | "launch"
+  | "bounty";
 
 export type HostEntry = {
   host: string;
@@ -223,6 +226,34 @@ export const MARKETPLACE_HOSTS: HostEntry[] = [
     audience: "buyer",
     publicUrl: "https://radar.lvlltd.com",
   },
+
+  {
+    host: "syndicate.lvlltd.com",
+    surface: "syndicate",
+    homePath: "/syndicate",
+    role: "group_buys",
+    description: "Social co-purchase pools · stack unlocks",
+    audience: "buyer",
+    publicUrl: "https://syndicate.lvlltd.com",
+  },
+  {
+    host: "launch.lvlltd.com",
+    surface: "launch",
+    homePath: "/launch",
+    role: "product_launchpad",
+    description: "Waitlists · pledges · product launches",
+    audience: "buyer",
+    publicUrl: "https://launch.lvlltd.com",
+  },
+  {
+    host: "bounty.lvlltd.com",
+    surface: "bounty",
+    homePath: "/bounty",
+    role: "task_escrow",
+    description: "Commerce task bounties · agent + human escrow",
+    audience: "agent",
+    publicUrl: "https://bounty.lvlltd.com",
+  },
   {
     host: "music.lvlltd.com",
     surface: "music",
@@ -269,6 +300,9 @@ export const BUYER_PATH_PREFIXES = [
   "/labs",
   "/exchange",
   "/fleet",
+  "/syndicate",
+  "/launch",
+  "/bounty",
 ] as const;
 
 export function isBuyerPath(pathname: string): boolean {
@@ -318,6 +352,9 @@ export const MARKETPLACE_URLS = {
   labs: "https://labs.lvlltd.com",
   exchange: "https://exchange.lvlltd.com",
   fleet: "https://fleet.lvlltd.com",
+  syndicate: "https://syndicate.lvlltd.com",
+  launch: "https://launch.lvlltd.com",
+  bounty: "https://bounty.lvlltd.com",
   drops: "https://drops.lvlltd.com",
   pulse: "https://pulse.lvlltd.com",
   studio: "https://studio.lvlltd.com",
@@ -357,6 +394,30 @@ export const MARKETPLACE_TOOLS = [
     host: "fleet.lvlltd.com",
     blurb: "Hire autonomous crews for commerce ops",
     audience: "operator" as const,
+  },
+  {
+    id: "syndicate",
+    title: "Syndicate",
+    path: "/syndicate",
+    host: "syndicate.lvlltd.com",
+    blurb: "Group buys · fill crew · stack price",
+    audience: "buyer" as const,
+  },
+  {
+    id: "launch",
+    title: "Launch pad",
+    path: "/launch",
+    host: "launch.lvlltd.com",
+    blurb: "Waitlists · pledges · go-to-market",
+    audience: "buyer" as const,
+  },
+  {
+    id: "bounty",
+    title: "Bounty board",
+    path: "/bounty",
+    host: "bounty.lvlltd.com",
+    blurb: "Task escrow for agents & humans",
+    audience: "agent" as const,
   },
   {
     id: "shop",

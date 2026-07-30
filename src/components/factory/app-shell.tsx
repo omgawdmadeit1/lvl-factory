@@ -4,6 +4,7 @@ import {
   Bot,
   Boxes,
   ChartCandlestick,
+  Crosshair,
   CreditCard,
   Disc3,
   FlaskConical,
@@ -14,12 +15,14 @@ import {
   Package,
   Radio,
   Radar,
+  Rocket,
   ShoppingBag,
   Sparkles,
   Store,
   Globe,
   Timer,
   Users,
+  UsersRound,
   Wand2,
   Webhook,
   Workflow,
@@ -37,6 +40,9 @@ const NAV = [
   { to: "/marketplace", label: "Marketplace hub", icon: LayoutGrid },
   { to: "/labs", label: "Labs demos", icon: Beaker },
   { to: "/exchange", label: "Exchange", icon: ChartCandlestick },
+  { to: "/syndicate", label: "Syndicate", icon: UsersRound },
+  { to: "/launch", label: "Launch pad", icon: Rocket },
+  { to: "/bounty", label: "Bounty board", icon: Crosshair },
   { to: "/fleet", label: "Agent fleet", icon: Users },
   { to: "/shop", label: "LVL Store", icon: Store },
   { to: "/drops", label: "Live drops", icon: Timer },
@@ -65,7 +71,6 @@ const NAV = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  // Storefront keeps its own Shopify-style shell
   if (pathname === "/shop" || pathname.startsWith("/shop/")) {
     return <>{children}</>;
   }
@@ -129,9 +134,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   Edge hosts
                 </div>
                 <ul className="space-y-1.5 text-xs text-subtle">
-                  <li>labs · exchange · fleet</li>
+                  <li>labs · exchange · syndicate</li>
+                  <li>launch · bounty · fleet</li>
                   <li>drops · pulse · studio</li>
-                  <li>relay · bundles · radar</li>
                   <li className="font-medium text-fg">factory.lvlltd.com</li>
                 </ul>
               </div>
@@ -147,14 +152,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <p className="text-xs font-medium uppercase tracking-wider text-subtle">
                   Operator console
                 </p>
-                <p className="text-sm text-muted">Marketplace · packs · rails</p>
+                <p className="text-sm text-muted">Markets · packs · rails</p>
               </div>
             </div>
             <div className="hidden md:block">
               <p className="text-xs font-medium uppercase tracking-wider text-subtle">
                 Operator console
               </p>
-              <p className="text-sm text-muted">Marketplace · packs · rails</p>
+              <p className="text-sm text-muted">Markets · packs · rails</p>
             </div>
             <div className="hidden items-center gap-2 sm:flex">
               <Link
@@ -164,10 +169,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 Labs
               </Link>
               <Link
-                to="/exchange"
+                to="/syndicate"
                 className="rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg"
               >
-                Exchange
+                Syndicate
               </Link>
               <Link
                 to="/shop"
