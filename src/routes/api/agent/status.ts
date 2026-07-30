@@ -69,11 +69,12 @@ export const Route = createFileRoute("/api/agent/status")({
             orders: `${origin}/api/agent/orders`,
             design: `${origin}/api/agent/design`,
             status: `${origin}/api/agent/status`,
+            agent_sdk: `${origin}/agent-sdk.mjs`,
           },
           shopping_loop: [
             "GET /api/agent/status",
             "GET /api/store/catalog",
-            "POST /api/agent/quote",
+            "POST /api/agent/quote  (single or { items: [] } batch)",
             "POST /api/agent/orders  → keep order.token",
             "POST /api/agent/orders/{id}/pay  { method, token }",
           ],

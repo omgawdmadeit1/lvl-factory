@@ -560,6 +560,7 @@ function publicOrder(
   const id_ = String(row.id);
   return {
     id: id_,
+    external_ref: row.external_ref ?? null,
     status: row.status,
     sku: row.sku,
     size: row.size,
@@ -594,6 +595,114 @@ function publicOrder(
 }
 
 
+
+async function findOrderByExternalRef(
+  externalRef: string,
+): Promise<MemOrder | null> {
+  const ref = externalRef.trim();
+  if (!ref) return null;
+  const store = await resolveSql();
+  if (store.mode === "memory") {
+    for (const row of memOrders().values()) {
+      if (String(row.external_ref || "") === ref) return row;
+    }
+    return null;
+  }
+  await ensureAgentTables(store.sql);
+  const rows = await store.sql.query<MemOrder>(
+    `select * from agent_orders where external_ref = $1 order by created_at desc limit 1`,
+    [ref],
+  );
+  return rows[0] ?? null;
+}
+
+/** List recent agent orders (memory instance or SQL). */
+export async function listAgentOrders(input: {
+  external_ref?: string;
+  buyer_ref?: string;
+  limit?: number;
+  origin?: string;
+}): Promise<Record<string, unknown>[]> {
+  const limit = Math.min(Math.max(input.limit ?? 20, 1), 100);
+  const store = await resolveSql();
+  let rows: MemOrder[] = [];
+  if (store.mode === "memory") {
+    rows = [...memOrders().values()];
+    if (input.external_ref) {
+      rows = rows.filter(
+        (r) => String(r.external_ref || "") === input.external_ref,
+      );
+    }
+    if (input.buyer_ref) {
+      rows = rows.filter((r) => String(r.buyer_ref || "") === input.buyer_ref);
+    }
+    rows.sort((a, b) =>
+      String(b.created_at || "").localeCompare(String(a.created_at || "")),
+    );
+    rows = rows.slice(0, limit);
+  } else {
+    await ensureAgentTables(store.sql);
+    const clauses: string[] = [];
+    const params: unknown[] = [];
+    if (input.external_ref) {
+      params.push(input.external_ref);
+      clauses.push(`external_ref = $${params.length}`);
+    }
+    if (input.buyer_ref) {
+      params.push(input.buyer_ref);
+      clauses.push(`buyer_ref = $${params.length}`);
+    }
+    const where = clauses.length ? `where ${clauses.join(" and ")}` : "";
+    params.push(limit);
+    rows = await store.sql.query<MemOrder>(
+      `select * from agent_orders ${where} order by created_at desc limit $${params.length}`,
+      params,
+    );
+  }
+  return rows.map((r) => publicOrder(normalizeRow(r), input.origin));
+}
+
+/** Single or multi-SKU quotes for agents. */
+export async function buildQuotes(input: {
+  items: Array<{ sku: string; quantity?: number; size?: string; country?: string }>;
+  origin?: string;
+}): Promise<
+  | { ok: true; quotes: Record<string, unknown>[]; total_usd: number }
+  | { ok: false; error: string; status?: number }
+> {
+  if (!input.items?.length) {
+    return { ok: false, error: "items_required", status: 400 };
+  }
+  if (input.items.length > 25) {
+    return { ok: false, error: "max_25_items", status: 400 };
+  }
+  const quotes: Record<string, unknown>[] = [];
+  let total = 0;
+  for (const item of input.items) {
+    const sku = String(item.sku || "").trim();
+    if (!sku) return { ok: false, error: "sku_required", status: 400 };
+    const product = await resolveCatalogSku(sku);
+    if (!product) {
+      return { ok: false, error: `sku_not_found:${sku}`, status: 404 };
+    }
+    const q = buildQuote({
+      product,
+      quantity: item.quantity ?? 1,
+      size: item.size,
+      country: item.country ?? "US",
+      origin: input.origin,
+    });
+    quotes.push(q);
+    total += Number(q.total_usd) || 0;
+  }
+  return {
+    ok: true,
+    quotes,
+    total_usd: Math.round(total * 100) / 100,
+  };
+}
+
+
 export async function createAgentOrder(input: {
   sku: string;
   quantity?: number;
@@ -605,9 +714,21 @@ export async function createAgentOrder(input: {
   rail?: string;
   origin?: string;
 }): Promise<
-  | { ok: true; order: Record<string, unknown> }
+  | { ok: true; order: Record<string, unknown>; idempotent?: boolean }
   | { ok: false; error: string; status?: number }
 > {
+  const originEarly = input.origin ?? String(CLOUDFLARE_MAP.factory);
+  if (input.external_ref?.trim()) {
+    const existing = await findOrderByExternalRef(input.external_ref.trim());
+    if (existing) {
+      return {
+        ok: true,
+        idempotent: true,
+        order: publicOrder(normalizeRow(existing), originEarly),
+      };
+    }
+  }
+
   const product = await resolveCatalogSku(input.sku);
   if (!product) {
     return { ok: false, error: "sku_not_found", status: 404 };
@@ -921,7 +1042,7 @@ export function agentOpenApiSpec(origin?: string) {
       },
       "/api/agent/orders": {
         post: {
-          summary: "Create agent order (awaiting payment)",
+          summary: "Create agent order (idempotent with external_ref)",
           operationId: "createOrder",
           requestBody: {
             required: true,

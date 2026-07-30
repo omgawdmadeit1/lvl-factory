@@ -237,6 +237,13 @@ const CATALOG = [
     required: false,
     comment: "Postgres/Neon URL (else PGLite)",
   },
+  {
+    key: "AGENT_ORDER_SECRET",
+    type: "sensitive",
+    scope: "DEPLOYED",
+    required: false,
+    comment: "HMAC secret for sealed agent order tokens (stable across deploys)",
+  },
   // —— AWS via Vercel OIDC (production; role trust is prod-only) ——
   {
     key: "AWS_ACCOUNT_ID",

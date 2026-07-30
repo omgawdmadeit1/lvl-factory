@@ -157,6 +157,36 @@ function AgentMerchPage() {
     }
   }
 
+  async function runBatchQuote() {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/agent/quote", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          items: catalog.products.slice(0, 3).map((p) => ({
+            sku: p.sku,
+            quantity: 1,
+            size: "M",
+          })),
+        }),
+      });
+      const d = (await res.json()) as {
+        ok?: boolean;
+        total_usd?: number;
+        count?: number;
+        error?: string;
+      };
+      if (!d.ok) throw new Error(d.error || "batch failed");
+      pushLog(`✓ batch quote ${d.count} skus · total $${d.total_usd}`);
+      toast.success(`Batch quote $${d.total_usd}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "batch failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function runDesignBrief() {
     setBusy(true);
     try {
@@ -301,6 +331,9 @@ function AgentMerchPage() {
               <Sparkles className="size-4" />
               Design brief
             </Button>
+            <Button variant="secondary" onClick={runBatchQuote} disabled={busy}>
+              Batch quote
+            </Button>
             <Button asChild variant="secondary">
               <Link to="/shop">Human shop</Link>
             </Button>
@@ -347,6 +380,11 @@ function AgentMerchPage() {
         <Button asChild variant="secondary">
           <a href="/llms.txt" target="_blank" rel="noreferrer">
             llms.txt
+          </a>
+        </Button>
+        <Button asChild variant="secondary">
+          <a href="/agent-sdk.mjs" target="_blank" rel="noreferrer">
+            Agent SDK
           </a>
         </Button>
       </div>

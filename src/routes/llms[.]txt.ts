@@ -18,6 +18,9 @@ const TEXT = `# LVL Ltd — lvlltd.com
 - Pay rails: ${CLOUDFLARE_MAP.factory}/api/pay/options
 - Status: ${CLOUDFLARE_MAP.factory}/api/agent/status
 - Design brief: POST ${CLOUDFLARE_MAP.factory}/api/agent/design
+- JS SDK: ${CLOUDFLARE_MAP.factory}/agent-sdk.mjs
+- Batch quote: POST /api/agent/quote { "items": [{ "sku", "quantity", "size" }] }
+- Idempotent orders: pass external_ref on POST /api/agent/orders
 
 ## Agent shopping loop
 1. GET /api/store/catalog — pick SKU

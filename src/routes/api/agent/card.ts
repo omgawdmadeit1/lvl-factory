@@ -38,6 +38,7 @@ export const Route = createFileRoute("/api/agent/card")({
             orderById: "/api/agent/orders/{id}",
             payAndFulfill: "/api/agent/orders/{id}/pay",
             design: "/api/agent/design",
+            agentSdk: "/agent-sdk.mjs",
             status: "/api/agent/status",
             payOptions: "/api/pay/options",
             imageProxy: "/api/store/image",
@@ -97,6 +98,9 @@ export const Route = createFileRoute("/api/agent/card")({
             "payment-verify",
             "printify-fulfill",
             "design-brief",
+            "batch-quote",
+            "idempotent-external-ref",
+            "agent-sdk-mjs",
           ],
           agent_shopping_steps: [
             "GET /api/agent/status",
