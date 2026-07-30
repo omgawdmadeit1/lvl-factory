@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Lock, Wallet } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
+import { useVisibleInterval } from "@/lib/ops/use-visible-interval";
 import { toast } from "sonner";
 import { VisualHero } from "@/components/brand/visual-hero";
 import { Badge } from "@/components/ui/badge";
@@ -145,10 +146,7 @@ function VaultPage() {
     };
   }, [holdings]);
 
-  useEffect(() => {
-    const t = window.setInterval(() => tick(), 2500);
-    return () => window.clearInterval(t);
-  }, [tick]);
+  useVisibleInterval(() => tick(), 2500);
 
   return (
     <div className="space-y-10">

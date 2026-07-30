@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Eye, Pin } from "lucide-react";
 import { useEffect } from "react";
+import { useVisibleInterval } from "@/lib/ops/use-visible-interval";
 import { toast } from "sonner";
 import { VisualHero } from "@/components/brand/visual-hero";
 import { Badge } from "@/components/ui/badge";
@@ -105,10 +106,9 @@ function OraclePage() {
   const tick = useOracleStore((s) => s.tickHeat);
   const pinned = useOracleStore((s) => s.pinned);
 
+  useVisibleInterval(() => tick(), 2800);
   useEffect(() => {
-    const t = window.setInterval(() => tick(), 2800);
     tick();
-    return () => window.clearInterval(t);
   }, [tick]);
 
   const list =

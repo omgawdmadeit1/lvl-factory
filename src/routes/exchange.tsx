@@ -5,7 +5,8 @@ import {
   ChartCandlestick,
   Wallet,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useVisibleInterval } from "@/lib/ops/use-visible-interval";
 import {
   Area,
   AreaChart,
@@ -67,10 +68,7 @@ function ExchangePage() {
   const book = books[listing.id];
   const pos = positions[listing.id] ?? 0;
 
-  useEffect(() => {
-    const t = window.setInterval(() => tickBots(), 2200);
-    return () => window.clearInterval(t);
-  }, [tickBots]);
+  useVisibleInterval(() => tickBots(), 2200);
 
   const spark = useMemo(() => {
     const series = tape

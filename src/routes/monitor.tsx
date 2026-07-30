@@ -1,16 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Activity, Gauge, Radio, Timer, Trash2 } from "lucide-react";
-import { useMemo } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { lazy, Suspense, useMemo } from "react";
 import { toast } from "sonner";
+import { IdlePrefetch } from "@/components/ops/idle-prefetch";
 import { VisualHero } from "@/components/brand/visual-hero";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,6 +43,23 @@ export const Route = createFileRoute("/monitor")({
 });
 
 const VITAL_ORDER: VitalName[] = ["LCP", "CLS", "INP", "FCP", "TTFB"];
+
+const FpsChart = lazy(() =>
+  import("@/components/ops/monitor-charts").then((m) => ({
+    default: m.FpsChart,
+  })),
+);
+const RouteTimingChart = lazy(() =>
+  import("@/components/ops/monitor-charts").then((m) => ({
+    default: m.RouteTimingChart,
+  })),
+);
+
+function ChartFallback() {
+  return (
+    <p className="text-sm text-muted">Loading charts…</p>
+  );
+}
 
 function ratingVariant(
   r: VitalRating,
@@ -173,6 +182,9 @@ function MonitorPage() {
 
   return (
     <div className="space-y-10">
+      <IdlePrefetch
+        paths={["/labs", "/marketplace", "/exchange", "/vault"]}
+      />
       <VisualHero
         image={BRAND_ART.heroFactory}
         eyebrow="monitor.lvlltd.com · real-time performance"
@@ -304,76 +316,28 @@ function MonitorPage() {
         <Card className="border-border bg-surface shadow-soft">
           <CardHeader>
             <CardTitle className="text-base">FPS stream</CardTitle>
-            <CardDescription>requestAnimationFrame · ~1s buckets</CardDescription>
+            <CardDescription>
+              requestAnimationFrame · ~1s buckets · recharts lazy-loaded
+            </CardDescription>
           </CardHeader>
           <CardContent className="h-56">
-            {fpsChart.length < 2 ? (
-              <p className="text-sm text-muted">
-                Collecting frames… navigate the mesh to warm the probe.
-              </p>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={fpsChart}>
-                  <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
-                  <XAxis dataKey="t" tick={{ fontSize: 10 }} stroke="hsl(var(--muted))" />
-                  <YAxis domain={[0, 70]} tick={{ fontSize: 10 }} stroke="hsl(var(--muted))" />
-                  <Tooltip
-                    contentStyle={{
-                      background: "hsl(var(--surface))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="fps"
-                    stroke="hsl(var(--info))"
-                    fill="hsl(var(--info) / 0.2)"
-                    strokeWidth={2}
-                    isAnimationActive={false}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
+            <Suspense fallback={<ChartFallback />}>
+              <FpsChart data={fpsChart} />
+            </Suspense>
           </CardContent>
         </Card>
 
         <Card className="border-border bg-surface shadow-soft">
           <CardHeader>
             <CardTitle className="text-base">Route timings</CardTitle>
-            <CardDescription>Soft navigations · ms between path changes</CardDescription>
+            <CardDescription>
+              Soft navigations · ms between path changes
+            </CardDescription>
           </CardHeader>
           <CardContent className="h-56">
-            {routeChart.length < 1 ? (
-              <p className="text-sm text-muted">
-                Visit Shop, Labs, Mirror… each hop records a sample.
-              </p>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={routeChart}>
-                  <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
-                  <XAxis dataKey="path" tick={{ fontSize: 10 }} stroke="hsl(var(--muted))" />
-                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted))" />
-                  <Tooltip
-                    contentStyle={{
-                      background: "hsl(var(--surface))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="ms"
-                    stroke="hsl(var(--warning))"
-                    fill="hsl(var(--warning) / 0.18)"
-                    strokeWidth={2}
-                    isAnimationActive={false}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
+            <Suspense fallback={<ChartFallback />}>
+              <RouteTimingChart data={routeChart} />
+            </Suspense>
           </CardContent>
         </Card>
       </div>

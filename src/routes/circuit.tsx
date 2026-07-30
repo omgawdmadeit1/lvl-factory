@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GitBranch, Play, RotateCcw } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useVisibleInterval } from "@/lib/ops/use-visible-interval";
 import { toast } from "sonner";
 import { VisualHero } from "@/components/brand/visual-hero";
 import { Badge } from "@/components/ui/badge";
@@ -79,11 +80,9 @@ function CircuitPage() {
   const pct = Math.round((step / Math.max(1, tpl.nodes.length)) * 100);
 
   useEffect(() => {
-    if (!running) return;
-    toasted.current = false;
-    const t = window.setInterval(() => tick(), 900);
-    return () => window.clearInterval(t);
-  }, [running, tick]);
+    if (running) toasted.current = false;
+  }, [running]);
+  useVisibleInterval(() => tick(), 900, running);
 
   useEffect(() => {
     if (

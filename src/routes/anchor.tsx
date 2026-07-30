@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Anchor, Pause, Play } from "lucide-react";
-import { useEffect } from "react";
+import { useVisibleInterval } from "@/lib/ops/use-visible-interval";
 import { toast } from "sonner";
 import { VisualHero } from "@/components/brand/visual-hero";
 import { Badge } from "@/components/ui/badge";
@@ -162,10 +162,7 @@ function AnchorPage() {
   }
   mrr = Math.round(mrr * 100) / 100;
 
-  useEffect(() => {
-    const t = window.setInterval(() => tick(), 4000);
-    return () => window.clearInterval(t);
-  }, [tick]);
+  useVisibleInterval(() => tick(), 4000);
 
   return (
     <div className="space-y-10">

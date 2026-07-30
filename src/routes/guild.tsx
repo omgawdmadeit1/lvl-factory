@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { UsersRound } from "lucide-react";
-import { useEffect } from "react";
+import { useVisibleInterval } from "@/lib/ops/use-visible-interval";
 import { toast } from "sonner";
 import { VisualHero } from "@/components/brand/visual-hero";
 import { Badge } from "@/components/ui/badge";
@@ -126,10 +126,7 @@ function GuildPage() {
   const crews = useGuildStore((s) => s.crewCount());
   const earned = useGuildStore((s) => s.totalEarned());
 
-  useEffect(() => {
-    const t = window.setInterval(() => tick(), 2500);
-    return () => window.clearInterval(t);
-  }, [tick]);
+  useVisibleInterval(() => tick(), 2500);
 
   return (
     <div className="space-y-10">

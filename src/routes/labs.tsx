@@ -50,6 +50,8 @@ import {
   type LabDemo,
 } from "@/lib/markets/labs";
 import { BRAND_ART } from "@/lib/store/images";
+import { InView } from "@/components/ops/in-view";
+import { useVisibleInterval } from "@/lib/ops/use-visible-interval";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/labs")({
@@ -175,10 +177,7 @@ function TradeTapeWidget() {
   const place = useExchangeStore((s) => s.place);
   const cash = useExchangeStore((s) => s.cashUsdc);
 
-  useEffect(() => {
-    const t = window.setInterval(() => tickBots(), 2800);
-    return () => window.clearInterval(t);
-  }, [tickBots]);
+  useVisibleInterval(() => tickBots(), 2800);
 
   return (
     <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
@@ -919,7 +918,9 @@ function LabsPage() {
                 <CardDescription>{d.blurb}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {widgetFor(d.widget)}
+                <InView minHeight={148} rootMargin="160px 0px">
+                  {widgetFor(d.widget)}
+                </InView>
                 <Button asChild variant="secondary" size="sm" className="w-full">
                   <Link to={d.path}>
                     Open full surface

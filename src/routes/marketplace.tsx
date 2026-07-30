@@ -29,6 +29,7 @@ import {
 } from "@/lib/marketplace/hosts";
 import { LVL_PAYMENT } from "@/lib/factory/payment";
 import { PRINTIFY_STORE } from "@/lib/merch/printify";
+import { IdlePrefetch } from "@/components/ops/idle-prefetch";
 import { BRAND_ART } from "@/lib/store/images";
 
 export const Route = createFileRoute("/marketplace")({
@@ -58,6 +59,7 @@ function MarketplaceHubPage() {
 
   return (
     <div className="space-y-10">
+      <IdlePrefetch />
       <VisualHero
         image={BRAND_ART.heroNetwork}
         eyebrow="lvlltd.com · marketplace hub"

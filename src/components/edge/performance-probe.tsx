@@ -1,6 +1,7 @@
 /**
  * Global real-time performance probe — mounts once in the root shell.
  * Collects Web Vitals, long tasks, FPS, and soft-navigation timings.
+ * FPS sampling pauses while the document is hidden.
  */
 import { useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
@@ -15,9 +16,6 @@ function readNavTiming(path: string) {
     const store = useMonitorStore.getState();
     if (nav.responseStart > 0) {
       store.pushVital("TTFB", nav.responseStart, path);
-    }
-    if (nav.domContentLoadedEventEnd > 0) {
-      // FCP often via paint; fallback from DCL if paint missing
     }
     const paints = performance.getEntriesByType("paint");
     for (const p of paints) {
@@ -62,7 +60,6 @@ export function PerformanceProbe() {
   const prevPath = useRef(pathname);
   const firstNav = useRef(true);
 
-  // Path changes → soft nav sample
   useEffect(() => {
     setPath(pathname);
     if (firstNav.current) {
@@ -86,14 +83,16 @@ export function PerformanceProbe() {
     navStart.current = performance.now();
   }, [pathname, setPath, pushRoute]);
 
-  // Observers + FPS loop
   useEffect(() => {
     if (!enabled || typeof window === "undefined") return;
     markProbeStart();
     const path = () => useMonitorStore.getState().path;
     const observers: PerformanceObserver[] = [];
 
-    const observe = (type: string, cb: (list: PerformanceObserverEntryList) => void) => {
+    const observe = (
+      type: string,
+      cb: (list: PerformanceObserverEntryList) => void,
+    ) => {
       try {
         const po = new PerformanceObserver(cb);
         po.observe({ type, buffered: true } as PerformanceObserverInit);
@@ -124,7 +123,6 @@ export function PerformanceProbe() {
     });
 
     observe("event", (list) => {
-      // Event Timing API → INP approximation (max interaction delay)
       let max = 0;
       for (const entry of list.getEntries()) {
         const e = entry as PerformanceEntry & {
@@ -168,11 +166,14 @@ export function PerformanceProbe() {
       }
     });
 
-    // FPS via rAF bucket every ~1s
+    // FPS via rAF — pause when tab hidden
     let frames = 0;
     let last = performance.now();
     let raf = 0;
+    let active = !document.hidden;
+
     const loop = (now: number) => {
+      if (!active) return;
       frames += 1;
       if (now - last >= 1000) {
         const fps = (frames * 1000) / (now - last);
@@ -182,9 +183,31 @@ export function PerformanceProbe() {
       }
       raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
 
-    // Initial paint/nav snapshot
+    const startFps = () => {
+      if (raf) return;
+      active = true;
+      frames = 0;
+      last = performance.now();
+      raf = requestAnimationFrame(loop);
+    };
+
+    const stopFps = () => {
+      active = false;
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const onVis = () => {
+      if (document.hidden) stopFps();
+      else startFps();
+    };
+
+    if (!document.hidden) startFps();
+    document.addEventListener("visibilitychange", onVis);
+
     readNavTiming(path());
 
     return () => {
@@ -195,7 +218,8 @@ export function PerformanceProbe() {
           /* ignore */
         }
       }
-      cancelAnimationFrame(raf);
+      stopFps();
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, [enabled, markProbeStart, pushFps, pushLongTask, pushVital]);
 

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Flame, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useVisibleInterval } from "@/lib/ops/use-visible-interval";
 import { toast } from "sonner";
 import { VisualHero } from "@/components/brand/visual-hero";
 import { Badge } from "@/components/ui/badge";
@@ -92,14 +93,13 @@ function ArenaPage() {
   const youClaims = useArenaStore((s) => s.youClaims);
   const [board, setBoard] = useState(() => leaderboard());
 
-  useEffect(() => {
-    const t = window.setInterval(() => {
-      tickBots();
-      setBoard(leaderboard());
-    }, 3000);
+  useVisibleInterval(() => {
+    tickBots();
     setBoard(leaderboard());
-    return () => window.clearInterval(t);
-  }, [tickBots, leaderboard]);
+  }, 3000);
+  useEffect(() => {
+    setBoard(leaderboard());
+  }, [leaderboard]);
 
   // refresh board after your score changes
   useEffect(() => {
