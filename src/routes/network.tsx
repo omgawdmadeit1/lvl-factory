@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Bot,
   ExternalLink,
   Globe,
   LayoutGrid,
   ShoppingBag,
-  Workflow,
   Wallet,
+  Workflow,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,8 +16,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CLOUDFLARE_MAP, LVL_NETWORK, PRINTIFY_STORE } from "@/lib/merch/printify";
-import { MARKETPLACE_TOOLS } from "@/lib/marketplace/hosts";
+import {
+  MARKETPLACE_HOSTS,
+  MARKETPLACE_TOOLS,
+} from "@/lib/marketplace/hosts";
+import { LVL_NETWORK, PRINTIFY_STORE } from "@/lib/merch/printify";
 
 export const Route = createFileRoute("/network")({
   component: NetworkPage,
@@ -28,134 +30,157 @@ export const Route = createFileRoute("/network")({
       {
         name: "description",
         content:
-          "Domain map for LVL marketplace: shop, pay, account, seller, agents, factory, Printify.",
+          "Full domain map for LVL marketplace: shop, markets, agents, factory, Printify.",
       },
     ],
   }),
 });
 
 function NetworkPage() {
+  const publicHosts = MARKETPLACE_HOSTS.filter(
+    (h) => h.audience !== "external",
+  );
+
   return (
     <div className="space-y-8">
       <header className="space-y-3">
         <div className="flex flex-wrap gap-2">
           <Badge variant="info">lvlltd.com</Badge>
           <Badge variant="default">marketplace</Badge>
-          <Badge variant="success">multi-rail</Badge>
+          <Badge variant="success">{publicHosts.length} hosts</Badge>
         </div>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           LVL marketplace network
         </h1>
         <p className="max-w-2xl text-sm text-muted">
-          How {LVL_NETWORK.brand} surfaces connect: brand hub, shop, checkout,
-          pay rails, seller tools, agent catalog, and Printify fulfillment.
+          Every surface on the mesh — markets, edge tools, commerce rails, and
+          factory ops. Same app; host rewrite lands you on the right home path.
         </p>
-        <Button asChild size="sm" variant="secondary">
-          <Link to="/marketplace">
-            <LayoutGrid className="size-4" />
-            Open marketplace hub
-          </Link>
-        </Button>
-      </header>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {LVL_NETWORK.domains.map((d) => (
-          <Card key={d.host} className="border-border bg-surface">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Globe className="size-4 text-muted" />
-                {d.host}
-              </CardTitle>
-              <CardDescription>{d.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 text-xs text-subtle">
-              <p className="font-mono text-muted">{d.role}</p>
-              {"surface" in d && d.surface ? (
-                <p>
-                  surface <span className="text-fg">{d.surface}</span> · home{" "}
-                  <span className="font-mono text-fg">{d.homePath}</span>
-                </p>
-              ) : null}
-              {"paths" in d && d.paths
-                ? Object.entries(d.paths).map(([k, v]) => (
-                    <p key={k}>
-                      <span className="text-subtle">{k}</span>{" "}
-                      <span className="font-mono text-fg">{v}</span>
-                    </p>
-                  ))
-                : null}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Card className="border-border bg-surface">
-        <CardHeader>
-          <CardTitle className="text-base">Marketplace tools</CardTitle>
-          <CardDescription>
-            Path on factory · dedicated subdomain when DNS is live
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-2 sm:grid-cols-2">
-          {MARKETPLACE_TOOLS.map((t) => (
-            <Link
-              key={t.id}
-              to={t.path}
-              className="rounded-lg border border-border px-3 py-2 text-xs transition-colors hover:bg-surface-2"
-            >
-              <span className="font-medium text-fg">{t.title}</span>
-              <span className="mt-0.5 block font-mono text-subtle">{t.host}</span>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm">
+            <Link to="/marketplace">
+              <LayoutGrid className="size-4" />
+              Marketplace hub
             </Link>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card className="border-border bg-surface">
-        <CardHeader>
-          <CardTitle className="text-base">Quick links</CardTitle>
-          <CardDescription>Live paths on this origin</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <Button asChild>
+          </Button>
+          <Button asChild size="sm" variant="secondary">
+            <Link to="/labs">Labs demos</Link>
+          </Button>
+          <Button asChild size="sm" variant="secondary">
             <Link to="/shop">
               <ShoppingBag className="size-4" />
               Store
             </Link>
           </Button>
-          <Button variant="secondary" asChild>
-            <Link to="/checkout">Checkout</Link>
-          </Button>
-          <Button variant="secondary" asChild>
-            <Link to="/agent/merch">
-              <Bot className="size-4" />
-              Agent catalog
-            </Link>
-          </Button>
-          <Button variant="secondary" asChild>
-            <Link
-              to="/pay"
-              search={{ skill: "merch", amount: 0.05, canceled: false }}
-            >
-              <Wallet className="size-4" />
-              Multi-rail pay
-            </Link>
-          </Button>
-          <Button variant="secondary" asChild>
-            <Link to="/pipeline">
-              <Workflow className="size-4" />
-              Pipeline
-            </Link>
-          </Button>
-          <Button variant="secondary" asChild>
-            <a href={CLOUDFLARE_MAP.printify} target="_blank" rel="noreferrer">
-              <ExternalLink className="size-4" />
-              {PRINTIFY_STORE.slug}
-            </a>
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </header>
 
-      <p className="text-xs text-subtle">{CLOUDFLARE_MAP.note}</p>
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold tracking-tight">Live hosts</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {publicHosts.map((h) => (
+            <Card key={h.host} className="border-border bg-surface shadow-soft">
+              <CardHeader className="pb-2">
+                <div className="flex flex-wrap gap-1.5">
+                  <Badge variant="default">{h.audience}</Badge>
+                  <Badge variant="info">{h.surface}</Badge>
+                </div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Globe className="size-4 shrink-0 text-muted" />
+                  <span className="min-w-0 truncate font-mono text-sm">
+                    {h.host}
+                  </span>
+                </CardTitle>
+                <CardDescription>{h.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="font-mono text-subtle">{h.homePath}</span>
+                <Button size="sm" variant="secondary" asChild>
+                  <a href={h.homePath}>Open path</a>
+                </Button>
+                <a
+                  href={h.publicUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-muted hover:text-fg"
+                >
+                  <ExternalLink className="size-3" />
+                  host
+                </a>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold tracking-tight">Tool matrix</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {MARKETPLACE_TOOLS.map((t) => (
+            <Card key={t.id} className="border-border bg-surface shadow-soft">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">{t.title}</CardTitle>
+                <CardDescription>{t.blurb}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-2 text-xs text-muted">
+                <span className="font-mono">{t.host}</span>
+                <Button size="sm" variant="secondary" asChild>
+                  <a href={t.path}>Open</a>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <Workflow className="size-4 text-muted" />
+          Brand + Printify
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Card className="border-border bg-surface shadow-soft">
+            <CardHeader>
+              <CardTitle className="text-base">{LVL_NETWORK.brand}</CardTitle>
+              <CardDescription>
+                Apex domains and factory mesh reference
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-1 text-xs text-muted">
+              {LVL_NETWORK.domains.slice(0, 8).map((d) => (
+                <p key={d.host} className="font-mono">
+                  {d.host}
+                </p>
+              ))}
+            </CardContent>
+          </Card>
+          <Card className="border-border bg-surface shadow-soft">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Wallet className="size-4" />
+                Printify POD
+              </CardTitle>
+              <CardDescription>External physical fulfillment</CardDescription>
+            </CardHeader>
+            <CardContent className="text-xs text-muted">
+              <p className="font-mono text-fg">{PRINTIFY_STORE.storefrontUrl}</p>
+              <p className="mt-2">
+                Physical checkout runs on Printify Pop-Up; digital rails settle
+                on factory pay.
+              </p>
+              <Button size="sm" variant="secondary" className="mt-3" asChild>
+                <a
+                  href={PRINTIFY_STORE.storefrontUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open Printify
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 }

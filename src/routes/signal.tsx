@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Activity, Radio } from "lucide-react";
+import { useMemo } from "react";
 import { toast } from "sonner";
 import { VisualHero } from "@/components/brand/visual-hero";
 import { Badge } from "@/components/ui/badge";
@@ -101,8 +102,12 @@ function SignalCard({ listing }: { listing: SignalListing }) {
 
 function SignalPage() {
   const budget = useSignalStore((s) => s.budgetUsdc);
-  const spent = useSignalStore((s) => s.spent());
   const purchases = useSignalStore((s) => s.purchases);
+  const spent = useMemo(
+    () => purchases.reduce((s, p) => s + p.paidUsdc, 0),
+    [purchases],
+  );
+  const recent = purchases.slice(0, 8);
 
   return (
     <div className="space-y-10">
@@ -163,14 +168,14 @@ function SignalPage() {
         </div>
       </section>
 
-      {purchases.length > 0 ? (
+      {recent.length > 0 ? (
         <Card className="border-border bg-surface shadow-soft">
           <CardHeader>
             <CardTitle className="text-base">Recent purchases</CardTitle>
             <CardDescription>Demo ledger · this browser</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
-            {purchases.slice(0, 8).map((p) => {
+            {recent.map((p) => {
               const l = SIGNAL_CATALOG.find((x) => x.id === p.listingId);
               return (
                 <div

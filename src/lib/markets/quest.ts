@@ -12,7 +12,10 @@ export type QuestId =
   | "q-forge-draft"
   | "q-whisper"
   | "q-arena"
-  | "q-syndicate";
+  | "q-syndicate"
+  | "q-mirror"
+  | "q-circuit"
+  | "q-anchor";
 
 export type QuestDef = {
   id: QuestId;
@@ -96,6 +99,33 @@ export const QUEST_CATALOG: QuestDef[] = [
     target: 1,
     path: "/syndicate",
     badge: "Crew",
+  },
+  {
+    id: "q-mirror",
+    title: "Clone a fit",
+    blurb: "Mirror any social stack into your closet.",
+    xp: 110,
+    target: 1,
+    path: "/mirror",
+    badge: "Mirror",
+  },
+  {
+    id: "q-circuit",
+    title: "Run a circuit",
+    blurb: "Complete one agent workflow template.",
+    xp: 140,
+    target: 1,
+    path: "/circuit",
+    badge: "Circuit",
+  },
+  {
+    id: "q-anchor",
+    title: "Anchor a box",
+    blurb: "Subscribe to any recurring plan.",
+    xp: 130,
+    target: 1,
+    path: "/anchor",
+    badge: "Anchor",
   },
 ];
 

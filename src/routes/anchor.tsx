@@ -17,6 +17,7 @@ import {
   useAnchorStore,
   type AnchorPlan,
 } from "@/lib/markets/anchor";
+import { pingQuest } from "@/lib/markets/quest";
 import { BRAND_ART } from "@/lib/store/images";
 
 export const Route = createFileRoute("/anchor")({
@@ -84,6 +85,7 @@ function PlanCard({ plan }: { plan: AnchorPlan }) {
               size="sm"
               onClick={() => {
                 const ok = subscribe(plan.id);
+                if (ok) pingQuest("q-anchor");
                 toast[ok ? "success" : "error"](
                   ok
                     ? `Subscribed · $${plan.priceUsdc}`

@@ -19,6 +19,7 @@ import {
   useCircuitStore,
   type CircuitTemplate,
 } from "@/lib/markets/circuit";
+import { pingQuest } from "@/lib/markets/quest";
 import { BRAND_ART } from "@/lib/store/images";
 import { cn } from "@/lib/utils";
 
@@ -92,6 +93,7 @@ function CircuitPage() {
       !toasted.current
     ) {
       toasted.current = true;
+      pingQuest("q-circuit");
       toast.success(`Circuit complete · ${tpl.name}`);
     }
   }, [running, step, tpl.name, tpl.nodes.length]);

@@ -444,7 +444,8 @@ function VaultMintWidget() {
   const asset = VAULT_CATALOG[0];
   const mint = useVaultStore((s) => s.mint);
   const holding = useVaultStore((s) => s.holdings[asset.id]);
-  const unclaimed = useVaultStore((s) => s.unclaimed());
+  const holdings = useVaultStore((s) => s.holdings);
+  const unclaimed = Object.values(holdings).reduce((n, h) => n + h.accruedUsdc, 0);
   return (
     <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
       <div className="flex items-center justify-between gap-2">

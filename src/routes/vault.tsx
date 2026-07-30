@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Lock, Wallet } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { VisualHero } from "@/components/brand/visual-hero";
 import { Badge } from "@/components/ui/badge";
@@ -126,10 +126,24 @@ function AssetCard({ asset }: { asset: VaultAsset }) {
 function VaultPage() {
   const tick = useVaultStore((s) => s.tickAccrue);
   const wallet = useVaultStore((s) => s.walletUsdc);
-  const portfolio = useVaultStore((s) => s.portfolioValue());
-  const unclaimed = useVaultStore((s) => s.unclaimed());
   const holdings = useVaultStore((s) => s.holdings);
-  const seats = Object.values(holdings).reduce((n, h) => n + h.qty, 0);
+
+  const { portfolio, unclaimed, seats } = useMemo(() => {
+    let portfolio = 0;
+    let unclaimed = 0;
+    let seats = 0;
+    for (const h of Object.values(holdings)) {
+      const a = VAULT_CATALOG.find((x) => x.id === h.assetId);
+      if (a) portfolio += a.valueUsdc * h.qty + h.accruedUsdc;
+      unclaimed += h.accruedUsdc;
+      seats += h.qty;
+    }
+    return {
+      portfolio: Math.round(portfolio * 100) / 100,
+      unclaimed: Math.round(unclaimed * 100) / 100,
+      seats,
+    };
+  }, [holdings]);
 
   useEffect(() => {
     const t = window.setInterval(() => tick(), 2500);

@@ -17,6 +17,7 @@ import {
   useMirrorStore,
   type MirrorFit,
 } from "@/lib/markets/mirror";
+import { pingQuest } from "@/lib/markets/quest";
 import { BRAND_ART, LOCAL_MOCKUPS } from "@/lib/store/images";
 
 export const Route = createFileRoute("/mirror")({
@@ -84,6 +85,7 @@ function FitCard({ fit }: { fit: MirrorFit }) {
             className="flex-1"
             onClick={() => {
               const c = clone(fit.id);
+              if (c) pingQuest("q-mirror");
               toast[c ? "success" : "error"](
                 c
                   ? `Cloned · ${c.itemCount} items · $${c.totalUsdc}`
