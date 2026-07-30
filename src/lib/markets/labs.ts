@@ -20,7 +20,10 @@ export type DemoKind =
   | "radar"
   | "syndicate"
   | "launch"
-  | "bounty";
+  | "bounty"
+  | "vault"
+  | "signal"
+  | "arena";
 
 export type LabDemo = {
   id: string;
@@ -41,6 +44,9 @@ export type LabDemo = {
     | "syndicate_join"
     | "launch_pledge"
     | "bounty_claim"
+    | "vault_mint"
+    | "signal_buy"
+    | "arena_claim"
     | "none";
   badge: string;
   live: boolean;
@@ -48,6 +54,45 @@ export type LabDemo = {
 };
 
 export const LAB_DEMOS: LabDemo[] = [
+  {
+    id: "lab-vault",
+    kind: "vault",
+    title: "IP Vault",
+    blurb: "Mint seats, accrue royalties, claim USDC for skills & rights.",
+    path: "/vault",
+    host: "vault.lvlltd.com",
+    market: "Digital IP ownership",
+    widget: "vault_mint",
+    badge: "Vault",
+    live: true,
+    audience: "buyer",
+  },
+  {
+    id: "lab-signal",
+    kind: "signal",
+    title: "Signal market",
+    blurb: "Buy restock intent, drop heat, agent traffic packs.",
+    path: "/signal",
+    host: "signal.lvlltd.com",
+    market: "Attention economy",
+    widget: "signal_buy",
+    badge: "Signal",
+    live: true,
+    audience: "buyer",
+  },
+  {
+    id: "lab-arena",
+    kind: "arena",
+    title: "Arena races",
+    blurb: "Competitive drop claims with streaks and leaderboard.",
+    path: "/arena",
+    host: "arena.lvlltd.com",
+    market: "Gamified commerce",
+    widget: "arena_claim",
+    badge: "Arena",
+    live: true,
+    audience: "buyer",
+  },
   {
     id: "lab-syndicate",
     kind: "syndicate",
@@ -272,6 +317,33 @@ export const LAB_DEMOS: LabDemo[] = [
 ];
 
 export const MARKET_THESES = [
+  {
+    id: "ip-vault",
+    title: "IP ownership vault",
+    thesis:
+      "Licenses and design rights should yield — Vault accrues royalties and pairs with Exchange liquidity.",
+    host: "vault.lvlltd.com",
+    path: "/vault",
+    why: "Primary mint is not the endgame; ownership streams are.",
+  },
+  {
+    id: "attention-market",
+    title: "Demand signal market",
+    thesis:
+      "Brands buy intent packs from radar, drops, agents, and waitlists — Signal prices attention.",
+    host: "signal.lvlltd.com",
+    path: "/signal",
+    why: "Every mesh surface emits demand; package and sell it.",
+  },
+  {
+    id: "gamified-drops",
+    title: "Competitive drop races",
+    thesis:
+      "Arena turns flash inventory into sport — streaks, heat, leaderboards drive claim velocity.",
+    host: "arena.lvlltd.com",
+    path: "/arena",
+    why: "Commerce is more sticky when it feels like a game.",
+  },
   {
     id: "social-group-buy",
     title: "Social group buys",

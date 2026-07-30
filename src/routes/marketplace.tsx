@@ -64,7 +64,7 @@ function MarketplaceHubPage() {
         title="Shop, settle, trade — one LVL network"
         description={
           <>
-            Syndicate group buys, Launch pad, Bounty escrow, Exchange, Fleet,
+            Vault, Signal, Arena, Syndicate, Launch, Bounty, Exchange, Fleet,
             Labs demos, Printify POD, multi-rail pay — wired across{" "}
             <span className="text-fg">lvlltd.com</span> subdomains.
           </>
@@ -94,6 +94,12 @@ function MarketplaceHubPage() {
                 <Crosshair className="size-4" />
                 Bounty
               </Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link to="/vault">Vault</Link>
+            </Button>
+            <Button asChild variant="secondary">
+              <Link to="/arena">Arena</Link>
             </Button>
             <Button asChild variant="secondary">
               <Link to="/shop">

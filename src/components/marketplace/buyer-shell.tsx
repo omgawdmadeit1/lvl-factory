@@ -4,6 +4,9 @@ import {
   ChartCandlestick,
   Crosshair,
   CreditCard,
+  Flame,
+  Lock,
+  Activity,
   Layers,
   LayoutGrid,
   Package,
@@ -28,6 +31,9 @@ const NAV = [
   { to: "/syndicate" as const, label: "Syndicate", icon: UsersRound },
   { to: "/launch" as const, label: "Launch", icon: Rocket },
   { to: "/bounty" as const, label: "Bounty", icon: Crosshair },
+  { to: "/vault" as const, label: "Vault", icon: Lock },
+  { to: "/signal" as const, label: "Signal", icon: Activity },
+  { to: "/arena" as const, label: "Arena", icon: Flame },
   { to: "/fleet" as const, label: "Fleet", icon: Users },
   { to: "/shop" as const, label: "Shop", icon: Store },
   { to: "/drops" as const, label: "Drops", icon: Timer },
@@ -47,7 +53,7 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
       <div className="border-b border-border bg-surface-2 px-4 py-2 text-center text-xs text-muted">
-        LVL · labs · exchange · syndicate · launch · bounty · fleet ·{" "}
+        LVL · vault · signal · arena · syndicate · launch · markets ·{" "}
         <span className="text-fg">lvlltd.com</span>
         {credits > 0 ? (
           <>

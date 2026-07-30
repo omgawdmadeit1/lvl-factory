@@ -30,6 +30,9 @@ import { FLEET_AGENTS, useFleetStore } from "@/lib/markets/fleet";
 import { SYNDICATE_DEALS, useSyndicateStore } from "@/lib/markets/syndicate";
 import { LAUNCH_PADS, useLaunchStore } from "@/lib/markets/launch";
 import { BOUNTY_CATALOG, useBountyStore } from "@/lib/markets/bounty";
+import { VAULT_CATALOG, useVaultStore } from "@/lib/markets/vault";
+import { SIGNAL_CATALOG, useSignalStore } from "@/lib/markets/signal";
+import { ARENA_RACES, useArenaStore } from "@/lib/markets/arena";
 import {
   LAB_DEMOS,
   MARKET_THESES,
@@ -426,6 +429,90 @@ function BountyClaimWidget() {
   );
 }
 
+
+function VaultMintWidget() {
+  const asset = VAULT_CATALOG[0];
+  const mint = useVaultStore((s) => s.mint);
+  const holding = useVaultStore((s) => s.holdings[asset.id]);
+  const unclaimed = useVaultStore((s) => s.unclaimed());
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold">{asset.symbol}</p>
+        <Badge variant="info">${asset.valueUsdc}</Badge>
+      </div>
+      <p className="text-xs text-muted">
+        Held {holding?.qty ?? 0} · unclaimed ${unclaimed.toFixed(3)}
+      </p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          const ok = mint(asset.id);
+          toast[ok ? "success" : "error"](ok ? "Minted to vault" : "Mint failed");
+        }}
+      >
+        Mint seat
+      </Button>
+    </div>
+  );
+}
+
+function SignalBuyWidget() {
+  const listing = SIGNAL_CATALOG[0];
+  const buy = useSignalStore((s) => s.buy);
+  const left = useSignalStore((s) => s.remainingOf(listing));
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold line-clamp-1">{listing.title}</p>
+        <Badge variant="warning">heat {listing.heat}</Badge>
+      </div>
+      <p className="text-xs text-muted">
+        ${listing.priceUsdc}/pack · {left} left
+      </p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          const ok = buy(listing.id, 1);
+          toast[ok ? "success" : "error"](ok ? "Signal pack bought" : "Buy failed");
+        }}
+      >
+        Buy pack
+      </Button>
+    </div>
+  );
+}
+
+function ArenaClaimWidget() {
+  const race = ARENA_RACES[0];
+  const claim = useArenaStore((s) => s.claim);
+  const score = useArenaStore((s) => s.youScore);
+  const streak = useArenaStore((s) => s.youStreak);
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm font-semibold">{race.title}</p>
+        <Badge variant="warning">+{race.points}</Badge>
+      </div>
+      <p className="text-xs text-muted">
+        Score {score} · streak {streak}
+      </p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          const r = claim(race.id);
+          toast[r.ok ? "success" : "error"](r.message);
+        }}
+      >
+        Claim race unit
+      </Button>
+    </div>
+  );
+}
+
 function widgetFor(id: LabDemo["widget"]) {
   switch (id) {
     case "drop_claim":
@@ -446,6 +533,12 @@ function widgetFor(id: LabDemo["widget"]) {
       return <LaunchPledgeWidget />;
     case "bounty_claim":
       return <BountyClaimWidget />;
+    case "vault_mint":
+      return <VaultMintWidget />;
+    case "signal_buy":
+      return <SignalBuyWidget />;
+    case "arena_claim":
+      return <ArenaClaimWidget />;
     default:
       return null;
   }
@@ -463,24 +556,24 @@ function LabsPage() {
         title="Try every LVL product — live"
         description={
           <>
-            No decks. Interactive demos for Syndicate, Launch, Bounty, Exchange,
-            Fleet, drops, and the full{" "}
+            No decks. Interactive demos for Vault, Signal, Arena, Syndicate, Launch,
+            Bounty, Exchange, and the full{" "}
             <span className="text-fg">lvlltd.com</span> domain mesh.
           </>
         }
         actions={
           <>
             <Button asChild>
-              <Link to="/syndicate">
+              <Link to="/vault">
                 <Beaker className="size-4" />
-                Syndicate
+                Vault
               </Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link to="/launch">Launch pad</Link>
+              <Link to="/signal">Signal</Link>
             </Button>
             <Button asChild variant="secondary">
-              <Link to="/bounty">Bounties</Link>
+              <Link to="/arena">Arena</Link>
             </Button>
             <Button asChild variant="secondary">
               <Link to="/marketplace">Marketplace hub</Link>

@@ -28,7 +28,10 @@ export type MarketplaceSurface =
   | "fleet"
   | "syndicate"
   | "launch"
-  | "bounty";
+  | "bounty"
+  | "vault"
+  | "signal"
+  | "arena";
 
 export type HostEntry = {
   host: string;
@@ -254,6 +257,34 @@ export const MARKETPLACE_HOSTS: HostEntry[] = [
     audience: "agent",
     publicUrl: "https://bounty.lvlltd.com",
   },
+
+  {
+    host: "vault.lvlltd.com",
+    surface: "vault",
+    homePath: "/vault",
+    role: "ip_vault",
+    description: "Digital IP vault · royalties · seats",
+    audience: "buyer",
+    publicUrl: "https://vault.lvlltd.com",
+  },
+  {
+    host: "signal.lvlltd.com",
+    surface: "signal",
+    homePath: "/signal",
+    role: "demand_signals",
+    description: "Attention / intent packs for brands",
+    audience: "buyer",
+    publicUrl: "https://signal.lvlltd.com",
+  },
+  {
+    host: "arena.lvlltd.com",
+    surface: "arena",
+    homePath: "/arena",
+    role: "drop_races",
+    description: "Competitive drop claim races + leaderboard",
+    audience: "buyer",
+    publicUrl: "https://arena.lvlltd.com",
+  },
   {
     host: "music.lvlltd.com",
     surface: "music",
@@ -303,6 +334,9 @@ export const BUYER_PATH_PREFIXES = [
   "/syndicate",
   "/launch",
   "/bounty",
+  "/vault",
+  "/signal",
+  "/arena",
 ] as const;
 
 export function isBuyerPath(pathname: string): boolean {
@@ -355,6 +389,9 @@ export const MARKETPLACE_URLS = {
   syndicate: "https://syndicate.lvlltd.com",
   launch: "https://launch.lvlltd.com",
   bounty: "https://bounty.lvlltd.com",
+  vault: "https://vault.lvlltd.com",
+  signal: "https://signal.lvlltd.com",
+  arena: "https://arena.lvlltd.com",
   drops: "https://drops.lvlltd.com",
   pulse: "https://pulse.lvlltd.com",
   studio: "https://studio.lvlltd.com",
@@ -419,6 +456,31 @@ export const MARKETPLACE_TOOLS = [
     blurb: "Task escrow for agents & humans",
     audience: "agent" as const,
   },
+  {
+    id: "vault",
+    title: "IP Vault",
+    path: "/vault",
+    host: "vault.lvlltd.com",
+    blurb: "Hold rights · accrue royalties · claim USDC",
+    audience: "buyer" as const,
+  },
+  {
+    id: "signal",
+    title: "Signal market",
+    path: "/signal",
+    host: "signal.lvlltd.com",
+    blurb: "Buy demand & attention packs",
+    audience: "buyer" as const,
+  },
+  {
+    id: "arena",
+    title: "Arena races",
+    path: "/arena",
+    host: "arena.lvlltd.com",
+    blurb: "Competitive drop claims · leaderboard",
+    audience: "buyer" as const,
+  },
+
   {
     id: "shop",
     title: "LVL Store",

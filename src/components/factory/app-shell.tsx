@@ -5,6 +5,10 @@ import {
   Boxes,
   ChartCandlestick,
   Crosshair,
+  Trophy,
+  Flame,
+  Activity,
+  Lock,
   CreditCard,
   Disc3,
   FlaskConical,
@@ -43,6 +47,9 @@ const NAV = [
   { to: "/syndicate", label: "Syndicate", icon: UsersRound },
   { to: "/launch", label: "Launch pad", icon: Rocket },
   { to: "/bounty", label: "Bounty board", icon: Crosshair },
+  { to: "/vault", label: "IP Vault", icon: Lock },
+  { to: "/signal", label: "Signal market", icon: Activity },
+  { to: "/arena", label: "Arena races", icon: Flame },
   { to: "/fleet", label: "Agent fleet", icon: Users },
   { to: "/shop", label: "LVL Store", icon: Store },
   { to: "/drops", label: "Live drops", icon: Timer },
@@ -134,8 +141,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   Edge hosts
                 </div>
                 <ul className="space-y-1.5 text-xs text-subtle">
-                  <li>labs · exchange · syndicate</li>
-                  <li>launch · bounty · fleet</li>
+                  <li>vault · signal · arena</li>
+                  <li>syndicate · launch · bounty</li>
                   <li>drops · pulse · studio</li>
                   <li className="font-medium text-fg">factory.lvlltd.com</li>
                 </ul>

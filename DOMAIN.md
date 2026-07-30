@@ -23,6 +23,9 @@
 | **https://syndicate.lvlltd.com** | Group buys / co-purchase | `/syndicate` |
 | **https://launch.lvlltd.com** | Product launchpad | `/launch` |
 | **https://bounty.lvlltd.com** | Task escrow bounties | `/bounty` |
+| **https://vault.lvlltd.com** | IP vault / royalties | `/vault` |
+| **https://signal.lvlltd.com** | Demand signal market | `/signal` |
+| **https://arena.lvlltd.com** | Competitive drop races | `/arena` |
 | **https://music.lvlltd.com** | Music packs | `/music` |
 | **https://api.lvlltd.com** | Catalog API | `/api/store/catalog` |
 | **https://factory.lvlltd.com/shop** | Store path (same app) | `/shop` |

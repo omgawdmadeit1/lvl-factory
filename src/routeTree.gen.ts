@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AccountRouteImport } from './routes/account'
+import { Route as ArenaRouteImport } from './routes/arena'
 import { Route as BountyRouteImport } from './routes/bounty'
 import { Route as BundlesRouteImport } from './routes/bundles'
 import { Route as CanaryRouteImport } from './routes/canary'
@@ -33,10 +34,12 @@ import { Route as RadarRouteImport } from './routes/radar'
 import { Route as RelayRouteImport } from './routes/relay'
 import { Route as SellerRouteImport } from './routes/seller'
 import { Route as ShopRouteRouteImport } from './routes/shop/route'
+import { Route as SignalRouteImport } from './routes/signal'
 import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as SyndicateRouteImport } from './routes/syndicate'
 import { Route as Tier1RouteImport } from './routes/tier1'
+import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WebhooksRouteImport } from './routes/webhooks'
 import { Route as AgentMerchRouteImport } from './routes/agent.merch'
 import { Route as OrdersIdRouteImport } from './routes/orders.$id'
@@ -63,6 +66,11 @@ const IndexRoute = IndexRouteImport.update({
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArenaRoute = ArenaRouteImport.update({
+  id: '/arena',
+  path: '/arena',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BountyRoute = BountyRouteImport.update({
@@ -175,6 +183,11 @@ const ShopRouteRoute = ShopRouteRouteImport.update({
   path: '/shop',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SignalRoute = SignalRouteImport.update({
+  id: '/signal',
+  path: '/signal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SkillsRoute = SkillsRouteImport.update({
   id: '/skills',
   path: '/skills',
@@ -193,6 +206,11 @@ const SyndicateRoute = SyndicateRouteImport.update({
 const Tier1Route = Tier1RouteImport.update({
   id: '/tier1',
   path: '/tier1',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VaultRoute = VaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WebhooksRoute = WebhooksRouteImport.update({
@@ -286,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/shop': typeof ShopRouteRouteWithChildren
   '/account': typeof AccountRoute
+  '/arena': typeof ArenaRoute
   '/bounty': typeof BountyRoute
   '/bundles': typeof BundlesRoute
   '/canary': typeof CanaryRoute
@@ -307,10 +326,12 @@ export interface FileRoutesByFullPath {
   '/radar': typeof RadarRoute
   '/relay': typeof RelayRoute
   '/seller': typeof SellerRoute
+  '/signal': typeof SignalRoute
   '/skills': typeof SkillsRoute
   '/studio': typeof StudioRoute
   '/syndicate': typeof SyndicateRoute
   '/tier1': typeof Tier1Route
+  '/vault': typeof VaultRoute
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -332,6 +353,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/arena': typeof ArenaRoute
   '/bounty': typeof BountyRoute
   '/bundles': typeof BundlesRoute
   '/canary': typeof CanaryRoute
@@ -353,10 +375,12 @@ export interface FileRoutesByTo {
   '/radar': typeof RadarRoute
   '/relay': typeof RelayRoute
   '/seller': typeof SellerRoute
+  '/signal': typeof SignalRoute
   '/skills': typeof SkillsRoute
   '/studio': typeof StudioRoute
   '/syndicate': typeof SyndicateRoute
   '/tier1': typeof Tier1Route
+  '/vault': typeof VaultRoute
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -380,6 +404,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/shop': typeof ShopRouteRouteWithChildren
   '/account': typeof AccountRoute
+  '/arena': typeof ArenaRoute
   '/bounty': typeof BountyRoute
   '/bundles': typeof BundlesRoute
   '/canary': typeof CanaryRoute
@@ -401,10 +426,12 @@ export interface FileRoutesById {
   '/radar': typeof RadarRoute
   '/relay': typeof RelayRoute
   '/seller': typeof SellerRoute
+  '/signal': typeof SignalRoute
   '/skills': typeof SkillsRoute
   '/studio': typeof StudioRoute
   '/syndicate': typeof SyndicateRoute
   '/tier1': typeof Tier1Route
+  '/vault': typeof VaultRoute
   '/webhooks': typeof WebhooksRoute
   '/agent/merch': typeof AgentMerchRoute
   '/orders/$id': typeof OrdersIdRoute
@@ -429,6 +456,7 @@ export interface FileRouteTypes {
     | '/'
     | '/shop'
     | '/account'
+    | '/arena'
     | '/bounty'
     | '/bundles'
     | '/canary'
@@ -450,10 +478,12 @@ export interface FileRouteTypes {
     | '/radar'
     | '/relay'
     | '/seller'
+    | '/signal'
     | '/skills'
     | '/studio'
     | '/syndicate'
     | '/tier1'
+    | '/vault'
     | '/webhooks'
     | '/agent/merch'
     | '/orders/$id'
@@ -475,6 +505,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/arena'
     | '/bounty'
     | '/bundles'
     | '/canary'
@@ -496,10 +527,12 @@ export interface FileRouteTypes {
     | '/radar'
     | '/relay'
     | '/seller'
+    | '/signal'
     | '/skills'
     | '/studio'
     | '/syndicate'
     | '/tier1'
+    | '/vault'
     | '/webhooks'
     | '/agent/merch'
     | '/orders/$id'
@@ -522,6 +555,7 @@ export interface FileRouteTypes {
     | '/'
     | '/shop'
     | '/account'
+    | '/arena'
     | '/bounty'
     | '/bundles'
     | '/canary'
@@ -543,10 +577,12 @@ export interface FileRouteTypes {
     | '/radar'
     | '/relay'
     | '/seller'
+    | '/signal'
     | '/skills'
     | '/studio'
     | '/syndicate'
     | '/tier1'
+    | '/vault'
     | '/webhooks'
     | '/agent/merch'
     | '/orders/$id'
@@ -570,6 +606,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ShopRouteRoute: typeof ShopRouteRouteWithChildren
   AccountRoute: typeof AccountRoute
+  ArenaRoute: typeof ArenaRoute
   BountyRoute: typeof BountyRoute
   BundlesRoute: typeof BundlesRoute
   CanaryRoute: typeof CanaryRoute
@@ -591,10 +628,12 @@ export interface RootRouteChildren {
   RadarRoute: typeof RadarRoute
   RelayRoute: typeof RelayRoute
   SellerRoute: typeof SellerRoute
+  SignalRoute: typeof SignalRoute
   SkillsRoute: typeof SkillsRoute
   StudioRoute: typeof StudioRoute
   SyndicateRoute: typeof SyndicateRoute
   Tier1Route: typeof Tier1Route
+  VaultRoute: typeof VaultRoute
   WebhooksRoute: typeof WebhooksRoute
   AgentMerchRoute: typeof AgentMerchRoute
   ApiAgentCardRoute: typeof ApiAgentCardRoute
@@ -621,6 +660,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/account'
       preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/arena': {
+      id: '/arena'
+      path: '/arena'
+      fullPath: '/arena'
+      preLoaderRoute: typeof ArenaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bounty': {
@@ -777,6 +823,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShopRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/signal': {
+      id: '/signal'
+      path: '/signal'
+      fullPath: '/signal'
+      preLoaderRoute: typeof SignalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/skills': {
       id: '/skills'
       path: '/skills'
@@ -803,6 +856,13 @@ declare module '@tanstack/react-router' {
       path: '/tier1'
       fullPath: '/tier1'
       preLoaderRoute: typeof Tier1RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vault': {
+      id: '/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof VaultRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/webhooks': {
@@ -964,6 +1024,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ShopRouteRoute: ShopRouteRouteWithChildren,
   AccountRoute: AccountRoute,
+  ArenaRoute: ArenaRoute,
   BountyRoute: BountyRoute,
   BundlesRoute: BundlesRoute,
   CanaryRoute: CanaryRoute,
@@ -985,10 +1046,12 @@ const rootRouteChildren: RootRouteChildren = {
   RadarRoute: RadarRoute,
   RelayRoute: RelayRoute,
   SellerRoute: SellerRoute,
+  SignalRoute: SignalRoute,
   SkillsRoute: SkillsRoute,
   StudioRoute: StudioRoute,
   SyndicateRoute: SyndicateRoute,
   Tier1Route: Tier1Route,
+  VaultRoute: VaultRoute,
   WebhooksRoute: WebhooksRoute,
   AgentMerchRoute: AgentMerchRoute,
   ApiAgentCardRoute: ApiAgentCardRoute,
