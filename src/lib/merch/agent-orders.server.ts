@@ -964,6 +964,20 @@ export function agentOpenApiSpec(origin?: string) {
           responses: { "200": { description: "Paid + fulfillment result" } },
         },
       },
+      "/api/agent/status": {
+        get: {
+          summary: "Agent health + Printify readiness",
+          operationId: "agentStatus",
+          responses: { "200": { description: "Status" } },
+        },
+      },
+      "/api/agent/design": {
+        post: {
+          summary: "Create design brief ticket (creative workflow)",
+          operationId: "agentDesign",
+          responses: { "201": { description: "Design package" } },
+        },
+      },
       "/api/pay/options": {
         get: {
           summary: "Multi-rail settlement options",

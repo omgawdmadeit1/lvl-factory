@@ -16,6 +16,8 @@ const TEXT = `# LVL Ltd — lvlltd.com
 - Create order: POST ${CLOUDFLARE_MAP.factory}/api/agent/orders
 - Pay + fulfill: POST ${CLOUDFLARE_MAP.factory}/api/agent/orders/{id}/pay
 - Pay rails: ${CLOUDFLARE_MAP.factory}/api/pay/options
+- Status: ${CLOUDFLARE_MAP.factory}/api/agent/status
+- Design brief: POST ${CLOUDFLARE_MAP.factory}/api/agent/design
 
 ## Agent shopping loop
 1. GET /api/store/catalog — pick SKU

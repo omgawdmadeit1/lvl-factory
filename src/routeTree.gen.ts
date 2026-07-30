@@ -63,8 +63,10 @@ import { Route as ShopSearchRouteImport } from './routes/shop/search'
 import { Route as ShopWishlistRouteImport } from './routes/shop/wishlist'
 import { Route as WellKnownAgentDotjsonRouteImport } from './routes/well-known/agent[.]json'
 import { Route as ApiAgentCardRouteImport } from './routes/api/agent/card'
+import { Route as ApiAgentDesignRouteImport } from './routes/api/agent/design'
 import { Route as ApiAgentOrdersRouteImport } from './routes/api/agent/orders'
 import { Route as ApiAgentQuoteRouteImport } from './routes/api/agent/quote'
+import { Route as ApiAgentStatusRouteImport } from './routes/api/agent/status'
 import { Route as ApiAwsStatusRouteImport } from './routes/api/aws/status'
 import { Route as ApiPayOptionsRouteImport } from './routes/api/pay/options'
 import { Route as ApiPrintifySubscriptionsRouteImport } from './routes/api/printify/subscriptions'
@@ -346,6 +348,11 @@ const ApiAgentCardRoute = ApiAgentCardRouteImport.update({
   path: '/api/agent/card',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAgentDesignRoute = ApiAgentDesignRouteImport.update({
+  id: '/api/agent/design',
+  path: '/api/agent/design',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAgentOrdersRoute = ApiAgentOrdersRouteImport.update({
   id: '/api/agent/orders',
   path: '/api/agent/orders',
@@ -354,6 +361,11 @@ const ApiAgentOrdersRoute = ApiAgentOrdersRouteImport.update({
 const ApiAgentQuoteRoute = ApiAgentQuoteRouteImport.update({
   id: '/api/agent/quote',
   path: '/api/agent/quote',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAgentStatusRoute = ApiAgentStatusRouteImport.update({
+  id: '/api/agent/status',
+  path: '/api/agent/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAwsStatusRoute = ApiAwsStatusRouteImport.update({
@@ -463,8 +475,10 @@ export interface FileRoutesByFullPath {
   '/well-known/agent.json': typeof WellKnownAgentDotjsonRoute
   '/shop/': typeof ShopIndexRoute
   '/api/agent/card': typeof ApiAgentCardRoute
+  '/api/agent/design': typeof ApiAgentDesignRoute
   '/api/agent/orders': typeof ApiAgentOrdersRouteWithChildren
   '/api/agent/quote': typeof ApiAgentQuoteRoute
+  '/api/agent/status': typeof ApiAgentStatusRoute
   '/api/aws/status': typeof ApiAwsStatusRoute
   '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
@@ -530,8 +544,10 @@ export interface FileRoutesByTo {
   '/well-known/agent.json': typeof WellKnownAgentDotjsonRoute
   '/shop': typeof ShopIndexRoute
   '/api/agent/card': typeof ApiAgentCardRoute
+  '/api/agent/design': typeof ApiAgentDesignRoute
   '/api/agent/orders': typeof ApiAgentOrdersRouteWithChildren
   '/api/agent/quote': typeof ApiAgentQuoteRoute
+  '/api/agent/status': typeof ApiAgentStatusRoute
   '/api/aws/status': typeof ApiAwsStatusRoute
   '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
@@ -599,8 +615,10 @@ export interface FileRoutesById {
   '/well-known/agent.json': typeof WellKnownAgentDotjsonRoute
   '/shop/': typeof ShopIndexRoute
   '/api/agent/card': typeof ApiAgentCardRoute
+  '/api/agent/design': typeof ApiAgentDesignRoute
   '/api/agent/orders': typeof ApiAgentOrdersRouteWithChildren
   '/api/agent/quote': typeof ApiAgentQuoteRoute
+  '/api/agent/status': typeof ApiAgentStatusRoute
   '/api/aws/status': typeof ApiAwsStatusRoute
   '/api/pay/options': typeof ApiPayOptionsRoute
   '/api/printify/subscriptions': typeof ApiPrintifySubscriptionsRoute
@@ -669,8 +687,10 @@ export interface FileRouteTypes {
     | '/well-known/agent.json'
     | '/shop/'
     | '/api/agent/card'
+    | '/api/agent/design'
     | '/api/agent/orders'
     | '/api/agent/quote'
+    | '/api/agent/status'
     | '/api/aws/status'
     | '/api/pay/options'
     | '/api/printify/subscriptions'
@@ -736,8 +756,10 @@ export interface FileRouteTypes {
     | '/well-known/agent.json'
     | '/shop'
     | '/api/agent/card'
+    | '/api/agent/design'
     | '/api/agent/orders'
     | '/api/agent/quote'
+    | '/api/agent/status'
     | '/api/aws/status'
     | '/api/pay/options'
     | '/api/printify/subscriptions'
@@ -804,8 +826,10 @@ export interface FileRouteTypes {
     | '/well-known/agent.json'
     | '/shop/'
     | '/api/agent/card'
+    | '/api/agent/design'
     | '/api/agent/orders'
     | '/api/agent/quote'
+    | '/api/agent/status'
     | '/api/aws/status'
     | '/api/pay/options'
     | '/api/printify/subscriptions'
@@ -867,8 +891,10 @@ export interface RootRouteChildren {
   ApiOpenapiDotjsonRoute: typeof ApiOpenapiDotjsonRoute
   WellKnownAgentDotjsonRoute: typeof WellKnownAgentDotjsonRoute
   ApiAgentCardRoute: typeof ApiAgentCardRoute
+  ApiAgentDesignRoute: typeof ApiAgentDesignRoute
   ApiAgentOrdersRoute: typeof ApiAgentOrdersRouteWithChildren
   ApiAgentQuoteRoute: typeof ApiAgentQuoteRoute
+  ApiAgentStatusRoute: typeof ApiAgentStatusRoute
   ApiAwsStatusRoute: typeof ApiAwsStatusRoute
   ApiPayOptionsRoute: typeof ApiPayOptionsRoute
   ApiPrintifySubscriptionsRoute: typeof ApiPrintifySubscriptionsRoute
@@ -1258,6 +1284,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAgentCardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/agent/design': {
+      id: '/api/agent/design'
+      path: '/api/agent/design'
+      fullPath: '/api/agent/design'
+      preLoaderRoute: typeof ApiAgentDesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/agent/orders': {
       id: '/api/agent/orders'
       path: '/api/agent/orders'
@@ -1270,6 +1303,13 @@ declare module '@tanstack/react-router' {
       path: '/api/agent/quote'
       fullPath: '/api/agent/quote'
       preLoaderRoute: typeof ApiAgentQuoteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/agent/status': {
+      id: '/api/agent/status'
+      path: '/api/agent/status'
+      fullPath: '/api/agent/status'
+      preLoaderRoute: typeof ApiAgentStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/aws/status': {
@@ -1450,8 +1490,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOpenapiDotjsonRoute: ApiOpenapiDotjsonRoute,
   WellKnownAgentDotjsonRoute: WellKnownAgentDotjsonRoute,
   ApiAgentCardRoute: ApiAgentCardRoute,
+  ApiAgentDesignRoute: ApiAgentDesignRoute,
   ApiAgentOrdersRoute: ApiAgentOrdersRouteWithChildren,
   ApiAgentQuoteRoute: ApiAgentQuoteRoute,
+  ApiAgentStatusRoute: ApiAgentStatusRoute,
   ApiAwsStatusRoute: ApiAwsStatusRoute,
   ApiPayOptionsRoute: ApiPayOptionsRoute,
   ApiPrintifySubscriptionsRoute: ApiPrintifySubscriptionsRoute,
