@@ -195,6 +195,41 @@ function validateShipTo(
   };
 }
 
+
+/** In-memory order store for serverless when PGLite/Neon is unavailable. */
+type MemOrder = Record<string, unknown>;
+const g = globalThis as typeof globalThis & {
+  __lvlAgentOrders__?: Map<string, MemOrder>;
+  __lvlAgentOrderEvents__?: Array<Record<string, unknown>>;
+  __lvlAgentSqlMode__?: "sql" | "memory" | "pending";
+};
+
+function memOrders(): Map<string, MemOrder> {
+  g.__lvlAgentOrders__ ??= new Map();
+  return g.__lvlAgentOrders__;
+}
+
+function memEvents(): Array<Record<string, unknown>> {
+  g.__lvlAgentOrderEvents__ ??= [];
+  return g.__lvlAgentOrderEvents__;
+}
+
+async function resolveSql(): Promise<
+  | { mode: "sql"; sql: Awaited<ReturnType<typeof getSql>> }
+  | { mode: "memory" }
+> {
+  if (g.__lvlAgentSqlMode__ === "memory") return { mode: "memory" };
+  try {
+    const sql = await getSql();
+    await sql.query(`select 1 as ok`);
+    g.__lvlAgentSqlMode__ = "sql";
+    return { mode: "sql", sql };
+  } catch {
+    g.__lvlAgentSqlMode__ = "memory";
+    return { mode: "memory" };
+  }
+}
+
 async function ensureAgentTables(sql: Awaited<ReturnType<typeof getSql>>) {
   await sql.query(`
     create table if not exists agent_orders (
@@ -242,16 +277,128 @@ async function ensureAgentTables(sql: Awaited<ReturnType<typeof getSql>>) {
 }
 
 async function logEvent(
-  sql: Awaited<ReturnType<typeof getSql>>,
+  store:
+    | { mode: "sql"; sql: Awaited<ReturnType<typeof getSql>> }
+    | { mode: "memory" },
   orderId: string,
   kind: string,
   detail: Record<string, unknown> = {},
 ) {
-  await sql.query(
+  if (store.mode === "memory") {
+    memEvents().push({
+      id: id("aev"),
+      order_id: orderId,
+      kind,
+      detail,
+      created_at: new Date().toISOString(),
+    });
+    return;
+  }
+  await store.sql.query(
     `insert into agent_order_events (id, order_id, kind, detail) values ($1, $2, $3, $4::jsonb)`,
     [id("aev"), orderId, kind, JSON.stringify(detail)],
   );
 }
+
+async function insertOrder(
+  store:
+    | { mode: "sql"; sql: Awaited<ReturnType<typeof getSql>> }
+    | { mode: "memory" },
+  row: MemOrder,
+) {
+  if (store.mode === "memory") {
+    memOrders().set(String(row.id), { ...row });
+    return;
+  }
+  await ensureAgentTables(store.sql);
+  await store.sql.query(
+    `insert into agent_orders (
+      id, external_ref, status, sku, product_id, printify_product_id, variant_id,
+      size, quantity, face_usd, agent_fee_usd, shipping_estimate_usd, total_usd,
+      ship_to, buyer_email, buyer_ref, rail, quote
+    ) values (
+      $1,$2,$3,$4,$5,$6,$7,
+      $8,$9,$10,$11,$12,$13,
+      $14::jsonb,$15,$16,$17,$18::jsonb
+    )`,
+    [
+      row.id,
+      row.external_ref ?? null,
+      row.status,
+      row.sku,
+      row.product_id,
+      row.printify_product_id,
+      row.variant_id,
+      row.size,
+      row.quantity,
+      row.face_usd,
+      row.agent_fee_usd,
+      row.shipping_estimate_usd,
+      row.total_usd,
+      JSON.stringify(row.ship_to),
+      row.buyer_email,
+      row.buyer_ref ?? null,
+      row.rail,
+      JSON.stringify(row.quote),
+    ],
+  );
+}
+
+async function loadOrderRaw(orderId: string): Promise<MemOrder | null> {
+  const store = await resolveSql();
+  if (store.mode === "memory") {
+    return memOrders().get(orderId) ?? null;
+  }
+  await ensureAgentTables(store.sql);
+  const rows = await store.sql.query<MemOrder>(
+    `select * from agent_orders where id = $1 limit 1`,
+    [orderId],
+  );
+  return rows[0] ?? null;
+}
+
+async function updateOrderFields(
+  orderId: string,
+  patch: MemOrder,
+): Promise<void> {
+  const store = await resolveSql();
+  if (store.mode === "memory") {
+    const cur = memOrders().get(orderId);
+    if (!cur) return;
+    memOrders().set(orderId, {
+      ...cur,
+      ...patch,
+      updated_at: new Date().toISOString(),
+    });
+    return;
+  }
+  const keys = Object.keys(patch);
+  if (!keys.length) return;
+  const sets: string[] = [];
+  const vals: unknown[] = [];
+  let i = 1;
+  for (const k of keys) {
+    const jsonb = [
+      "ship_to",
+      "payment_proof",
+      "fulfill_payload",
+      "quote",
+    ].includes(k);
+    sets.push(`${k} = $${i}${jsonb ? "::jsonb" : ""}`);
+    const v = patch[k];
+    vals.push(
+      jsonb && v != null && typeof v !== "string" ? JSON.stringify(v) : v,
+    );
+    i += 1;
+  }
+  sets.push(`updated_at = now()`);
+  vals.push(orderId);
+  await store.sql.query(
+    `update agent_orders set ${sets.join(", ")} where id = $${i}`,
+    vals,
+  );
+}
+
 
 function num(v: unknown): number {
   const n = typeof v === "number" ? v : Number(v);
@@ -337,6 +484,7 @@ function publicOrder(
   };
 }
 
+
 export async function createAgentOrder(input: {
   sku: string;
   quantity?: number;
@@ -381,61 +529,59 @@ export async function createAgentOrder(input: {
 
   const orderId = id("aord");
   const origin = input.origin ?? String(CLOUDFLARE_MAP.factory);
-  const sql = await getSql();
-  await ensureAgentTables(sql);
+  const now = new Date().toISOString();
+  const store = await resolveSql();
 
-  await sql.query(
-    `insert into agent_orders (
-      id, external_ref, status, sku, product_id, printify_product_id, variant_id,
-      size, quantity, face_usd, agent_fee_usd, shipping_estimate_usd, total_usd,
-      ship_to, buyer_email, buyer_ref, rail, quote
-    ) values (
-      $1,$2,$3,$4,$5,$6,$7,
-      $8,$9,$10,$11,$12,$13,
-      $14::jsonb,$15,$16,$17,$18::jsonb
-    )`,
-    [
-      orderId,
-      input.external_ref ?? null,
-      "awaiting_payment",
-      product.sku,
-      product.sku,
-      product.printify_product_id,
-      variantId,
-      input.size ?? quote.size,
-      quote.quantity,
-      quote.face_usd,
-      quote.agent_fee_usd,
-      quote.shipping_estimate_usd,
-      quote.total_usd,
-      JSON.stringify(ship.value),
-      ship.value.email,
-      input.buyer_ref ?? null,
-      input.rail ?? "base-usdc",
-      JSON.stringify(quote),
-    ],
-  );
-  await logEvent(sql, orderId, "created", {
+  const row: MemOrder = {
+    id: orderId,
+    external_ref: input.external_ref ?? null,
+    status: "awaiting_payment",
+    sku: product.sku,
+    product_id: product.sku,
+    printify_product_id: product.printify_product_id,
+    variant_id: variantId,
+    size: input.size ?? quote.size,
+    quantity: quote.quantity,
+    face_usd: quote.face_usd,
+    agent_fee_usd: quote.agent_fee_usd,
+    shipping_estimate_usd: quote.shipping_estimate_usd,
+    total_usd: quote.total_usd,
+    currency: "USD",
+    ship_to: ship.value,
+    buyer_email: ship.value.email,
+    buyer_ref: input.buyer_ref ?? null,
+    rail: input.rail ?? "base-usdc",
+    tx_hash: null,
+    payment_proof: {},
+    paid_at: null,
+    printify_order_id: null,
+    printify_status: null,
+    fulfill_mode: null,
+    fulfill_error: null,
+    fulfill_payload: {},
+    quote,
+    created_at: now,
+    updated_at: now,
+  };
+
+  await insertOrder(store, row);
+  await logEvent(store, orderId, "created", {
     sku: product.sku,
     total_usd: quote.total_usd,
+    storage: store.mode,
   });
 
-  const order = await getAgentOrder(orderId, origin);
-  return { ok: true, order: order! };
+  return { ok: true, order: publicOrder(row, origin) };
 }
+
 
 export async function getAgentOrder(
   orderId: string,
   origin?: string,
 ): Promise<Record<string, unknown> | null> {
-  const sql = await getSql();
-  await ensureAgentTables(sql);
-  const rows = await sql.query<Record<string, unknown>>(
-    `select * from agent_orders where id = $1 limit 1`,
-    [orderId],
-  );
-  if (!rows[0]) return null;
-  return publicOrder(normalizeRow(rows[0]), origin);
+  const raw = await loadOrderRaw(orderId);
+  if (!raw) return null;
+  return publicOrder(normalizeRow(raw), origin);
 }
 
 export type PayInput = {
@@ -446,6 +592,7 @@ export type PayInput = {
   stripe_session_id?: string;
   force_simulate_printify?: boolean;
 };
+
 
 export async function payAndFulfillAgentOrder(
   orderId: string,
@@ -460,13 +607,8 @@ export async function payAndFulfillAgentOrder(
       order?: Record<string, unknown>;
     }
 > {
-  const sql = await getSql();
-  await ensureAgentTables(sql);
-  const rows = await sql.query<Record<string, unknown>>(
-    `select * from agent_orders where id = $1 limit 1`,
-    [orderId],
-  );
-  const raw = rows[0];
+  const store = await resolveSql();
+  const raw = await loadOrderRaw(orderId);
   if (!raw) return { ok: false, error: "order_not_found", status: 404 };
   const row = normalizeRow(raw);
 
@@ -525,24 +667,18 @@ export async function payAndFulfillAgentOrder(
       : method === "demo"
         ? `demo:${orderId}`
         : null;
+  const paidAt = new Date().toISOString();
 
-  await sql.query(
-    `update agent_orders set
-      status = 'paid',
-      rail = $2,
-      tx_hash = $3,
-      payment_proof = $4::jsonb,
-      paid_at = now(),
-      updated_at = now()
-     where id = $1`,
-    [orderId, rail, txHash, JSON.stringify(proof)],
-  );
-  await logEvent(sql, orderId, "paid", proof);
+  await updateOrderFields(orderId, {
+    status: "paid",
+    rail,
+    tx_hash: txHash,
+    payment_proof: proof,
+    paid_at: paidAt,
+  });
+  await logEvent(store, orderId, "paid", proof);
 
-  await sql.query(
-    `update agent_orders set status = 'fulfilling', updated_at = now() where id = $1`,
-    [orderId],
-  );
+  await updateOrderFields(orderId, { status: "fulfilling" });
 
   const shipTo = row.ship_to as ShipTo;
   const productId = String(row.printify_product_id || "unknown");
@@ -571,16 +707,12 @@ export async function payAndFulfillAgentOrder(
   );
 
   if (!fulfill.ok) {
-    await sql.query(
-      `update agent_orders set
-        status = 'failed',
-        fulfill_mode = 'error',
-        fulfill_error = $2,
-        updated_at = now()
-       where id = $1`,
-      [orderId, fulfill.error],
-    );
-    await logEvent(sql, orderId, "fulfill_failed", { error: fulfill.error });
+    await updateOrderFields(orderId, {
+      status: "failed",
+      fulfill_mode: "error",
+      fulfill_error: fulfill.error,
+    });
+    await logEvent(store, orderId, "fulfill_failed", { error: fulfill.error });
     const failed = await getAgentOrder(orderId, origin);
     return {
       ok: false,
@@ -595,26 +727,15 @@ export async function payAndFulfillAgentOrder(
       ? "submitted_to_printify"
       : "simulated_fulfillment";
 
-  await sql.query(
-    `update agent_orders set
-      status = $2,
-      printify_order_id = $3,
-      printify_status = $4,
-      fulfill_mode = $5,
-      fulfill_payload = $6::jsonb,
-      fulfill_error = null,
-      updated_at = now()
-     where id = $1`,
-    [
-      orderId,
-      status,
-      fulfill.printifyOrderId,
-      fulfill.status,
-      fulfill.mode,
-      JSON.stringify(fulfill),
-    ],
-  );
-  await logEvent(sql, orderId, "fulfilled", {
+  await updateOrderFields(orderId, {
+    status,
+    printify_order_id: fulfill.printifyOrderId,
+    printify_status: fulfill.status,
+    fulfill_mode: fulfill.mode,
+    fulfill_payload: fulfill,
+    fulfill_error: null,
+  });
+  await logEvent(store, orderId, "fulfilled", {
     mode: fulfill.mode,
     printify_order_id: fulfill.printifyOrderId,
   });
