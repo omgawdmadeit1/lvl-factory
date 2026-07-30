@@ -23,7 +23,13 @@ export type DemoKind =
   | "bounty"
   | "vault"
   | "signal"
-  | "arena";
+  | "arena"
+  | "forge"
+  | "guild"
+  | "whisper"
+  | "quest"
+  | "ledger"
+  | "oracle";
 
 export type LabDemo = {
   id: string;
@@ -47,6 +53,12 @@ export type LabDemo = {
     | "vault_mint"
     | "signal_buy"
     | "arena_claim"
+    | "forge_run"
+    | "guild_join"
+    | "whisper_unlock"
+    | "quest_claim"
+    | "ledger_sim"
+    | "oracle_pin"
     | "none";
   badge: string;
   live: boolean;
@@ -54,6 +66,84 @@ export type LabDemo = {
 };
 
 export const LAB_DEMOS: LabDemo[] = [
+  {
+    id: "lab-forge",
+    kind: "forge",
+    title: "Product Forge",
+    blurb: "Prompt → scored merch drafts for Launch / Printify.",
+    path: "/forge",
+    host: "forge.lvlltd.com",
+    market: "Generative commerce",
+    widget: "forge_run",
+    badge: "Forge",
+    live: true,
+    audience: "creator",
+  },
+  {
+    id: "lab-guild",
+    kind: "guild",
+    title: "Creator Guilds",
+    blurb: "Join collectives · shared revenue pools.",
+    path: "/guild",
+    host: "guild.lvlltd.com",
+    market: "Creator economy",
+    widget: "guild_join",
+    badge: "Guild",
+    live: true,
+    audience: "creator",
+  },
+  {
+    id: "lab-whisper",
+    kind: "whisper",
+    title: "Whisper doors",
+    blurb: "Invite codes for private drops & seats.",
+    path: "/whisper",
+    host: "whisper.lvlltd.com",
+    market: "Access economy",
+    widget: "whisper_unlock",
+    badge: "Whisper",
+    live: true,
+    audience: "buyer",
+  },
+  {
+    id: "lab-quest",
+    kind: "quest",
+    title: "Mesh Quests",
+    blurb: "XP across the whole LVL network.",
+    path: "/quest",
+    host: "quest.lvlltd.com",
+    market: "Engagement layer",
+    widget: "quest_claim",
+    badge: "Quest",
+    live: true,
+    audience: "buyer",
+  },
+  {
+    id: "lab-ledger",
+    kind: "ledger",
+    title: "Settlement Ledger",
+    blurb: "Multi-rail proof tape for operators & agents.",
+    path: "/ledger",
+    host: "ledger.lvlltd.com",
+    market: "Payments transparency",
+    widget: "ledger_sim",
+    badge: "Ledger",
+    live: true,
+    audience: "operator",
+  },
+  {
+    id: "lab-oracle",
+    kind: "oracle",
+    title: "Demand Oracle",
+    blurb: "Forecast heat · pin SKUs · restock intel.",
+    path: "/oracle",
+    host: "oracle.lvlltd.com",
+    market: "Predictive commerce",
+    widget: "oracle_pin",
+    badge: "Oracle",
+    live: true,
+    audience: "operator",
+  },
   {
     id: "lab-vault",
     kind: "vault",
@@ -317,6 +407,54 @@ export const LAB_DEMOS: LabDemo[] = [
 ];
 
 export const MARKET_THESES = [
+  {
+    id: "generative-forge",
+    title: "Generative product forge",
+    thesis: "Prompts become scored drafts that feed Launch and Printify — creation is the new inventory.",
+    host: "forge.lvlltd.com",
+    path: "/forge",
+    why: "Merch velocity starts at the idea, not the catalog.",
+  },
+  {
+    id: "guild-splits",
+    title: "Collective revenue guilds",
+    thesis: "Creators pool drops and royalties — Guild makes splits a first-class surface.",
+    host: "guild.lvlltd.com",
+    path: "/guild",
+    why: "Solo creators lose to coordinated crews.",
+  },
+  {
+    id: "access-whisper",
+    title: "Access via whisper codes",
+    thesis: "Private doors monetize scarcity without public sellouts.",
+    host: "whisper.lvlltd.com",
+    path: "/whisper",
+    why: "Invite graph is the new waitlist.",
+  },
+  {
+    id: "quest-xp",
+    title: "Mesh-wide quest XP",
+    thesis: "Every market action levels the player — Quest unifies engagement.",
+    host: "quest.lvlltd.com",
+    path: "/quest",
+    why: "Fragmented demos need a progress spine.",
+  },
+  {
+    id: "ledger-proofs",
+    title: "Multi-rail ledger",
+    thesis: "Agents and operators need one proof tape across USDC, card, and POD.",
+    host: "ledger.lvlltd.com",
+    path: "/ledger",
+    why: "Settlement opacity kills trust.",
+  },
+  {
+    id: "oracle-forecast",
+    title: "Demand oracle",
+    thesis: "Fuse radar, drops, and signal into actionable forecasts.",
+    host: "oracle.lvlltd.com",
+    path: "/oracle",
+    why: "Restock is a prediction problem.",
+  },
   {
     id: "ip-vault",
     title: "IP ownership vault",

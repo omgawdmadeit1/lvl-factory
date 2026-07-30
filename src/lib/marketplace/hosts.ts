@@ -31,7 +31,13 @@ export type MarketplaceSurface =
   | "bounty"
   | "vault"
   | "signal"
-  | "arena";
+  | "arena"
+  | "forge"
+  | "guild"
+  | "whisper"
+  | "quest"
+  | "ledger"
+  | "oracle";
 
 export type HostEntry = {
   host: string;
@@ -286,6 +292,60 @@ export const MARKETPLACE_HOSTS: HostEntry[] = [
     publicUrl: "https://arena.lvlltd.com",
   },
   {
+    host: "forge.lvlltd.com",
+    surface: "forge",
+    homePath: "/forge",
+    role: "product_forge",
+    description: "Prompt → product drafts",
+    audience: "buyer",
+    publicUrl: "https://forge.lvlltd.com",
+  },
+  {
+    host: "guild.lvlltd.com",
+    surface: "guild",
+    homePath: "/guild",
+    role: "creator_guilds",
+    description: "Creator collectives · revenue splits",
+    audience: "buyer",
+    publicUrl: "https://guild.lvlltd.com",
+  },
+  {
+    host: "whisper.lvlltd.com",
+    surface: "whisper",
+    homePath: "/whisper",
+    role: "private_doors",
+    description: "Invite codes · exclusive inventory",
+    audience: "buyer",
+    publicUrl: "https://whisper.lvlltd.com",
+  },
+  {
+    host: "quest.lvlltd.com",
+    surface: "quest",
+    homePath: "/quest",
+    role: "mesh_quests",
+    description: "Commerce quests · XP layer",
+    audience: "buyer",
+    publicUrl: "https://quest.lvlltd.com",
+  },
+  {
+    host: "ledger.lvlltd.com",
+    surface: "ledger",
+    homePath: "/ledger",
+    role: "settlement_ledger",
+    description: "Multi-rail settlement proofs",
+    audience: "buyer",
+    publicUrl: "https://ledger.lvlltd.com",
+  },
+  {
+    host: "oracle.lvlltd.com",
+    surface: "oracle",
+    homePath: "/oracle",
+    role: "demand_oracle",
+    description: "Demand forecasts · restock intel",
+    audience: "buyer",
+    publicUrl: "https://oracle.lvlltd.com",
+  },
+  {
     host: "music.lvlltd.com",
     surface: "music",
     homePath: "/music",
@@ -337,6 +397,12 @@ export const BUYER_PATH_PREFIXES = [
   "/vault",
   "/signal",
   "/arena",
+  "/forge",
+  "/guild",
+  "/whisper",
+  "/quest",
+  "/ledger",
+  "/oracle",
 ] as const;
 
 export function isBuyerPath(pathname: string): boolean {
@@ -392,6 +458,12 @@ export const MARKETPLACE_URLS = {
   vault: "https://vault.lvlltd.com",
   signal: "https://signal.lvlltd.com",
   arena: "https://arena.lvlltd.com",
+  forge: "https://forge.lvlltd.com",
+  guild: "https://guild.lvlltd.com",
+  whisper: "https://whisper.lvlltd.com",
+  quest: "https://quest.lvlltd.com",
+  ledger: "https://ledger.lvlltd.com",
+  oracle: "https://oracle.lvlltd.com",
   drops: "https://drops.lvlltd.com",
   pulse: "https://pulse.lvlltd.com",
   studio: "https://studio.lvlltd.com",
@@ -480,6 +552,55 @@ export const MARKETPLACE_TOOLS = [
     blurb: "Competitive drop claims · leaderboard",
     audience: "buyer" as const,
   },
+  {
+    id: "forge",
+    title: "Product Forge",
+    path: "/forge",
+    host: "forge.lvlltd.com",
+    blurb: "Prompt → scored product drafts",
+    audience: "buyer" as const,
+  },
+  {
+    id: "guild",
+    title: "Creator Guilds",
+    path: "/guild",
+    host: "guild.lvlltd.com",
+    blurb: "Collectives · shared revenue pools",
+    audience: "buyer" as const,
+  },
+  {
+    id: "whisper",
+    title: "Whisper doors",
+    path: "/whisper",
+    host: "whisper.lvlltd.com",
+    blurb: "Private invite codes",
+    audience: "buyer" as const,
+  },
+  {
+    id: "quest",
+    title: "Mesh Quests",
+    path: "/quest",
+    host: "quest.lvlltd.com",
+    blurb: "XP across the network",
+    audience: "buyer" as const,
+  },
+  {
+    id: "ledger",
+    title: "Settlement Ledger",
+    path: "/ledger",
+    host: "ledger.lvlltd.com",
+    blurb: "Multi-rail proof tape",
+    audience: "buyer" as const,
+  },
+  {
+    id: "oracle",
+    title: "Demand Oracle",
+    path: "/oracle",
+    host: "oracle.lvlltd.com",
+    blurb: "Forecasts · restock intel",
+    audience: "buyer" as const,
+  },
+
 
   {
     id: "shop",

@@ -41,6 +41,12 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/launch", label: "Launch" },
       { to: "/bounty", label: "Bounty" },
       { to: "/fleet", label: "Fleet" },
+      { to: "/forge", label: "Forge" },
+      { to: "/guild", label: "Guild" },
+      { to: "/whisper", label: "Whisper" },
+      { to: "/quest", label: "Quest" },
+      { to: "/ledger", label: "Ledger" },
+      { to: "/oracle", label: "Oracle" },
     ],
   },
   {
@@ -94,6 +100,8 @@ export const BUYER_PRIMARY_NAV: NavLink[] = [
   { to: "/drops", label: "Drops" },
   { to: "/checkout", label: "Checkout" },
   { to: "/account", label: "Account" },
+  { to: "/forge", label: "Forge" },
+  { to: "/quest", label: "Quest" },
 ];
 
 /** Secondary chips under buyer header (scroll row) */
@@ -114,6 +122,12 @@ export const BUYER_SECONDARY_NAV: NavLink[] = [
   { to: "/music", label: "Music" },
   { to: "/agent/merch", label: "Agents" },
   { to: "/seller", label: "Seller" },
+  { to: "/forge", label: "Forge" },
+  { to: "/guild", label: "Guild" },
+  { to: "/whisper", label: "Whisper" },
+  { to: "/quest", label: "Quest" },
+  { to: "/ledger", label: "Ledger" },
+  { to: "/oracle", label: "Oracle" },
 ];
 
 /** Compact operator mobile strip (full list lives in NetworkMenu) */
@@ -139,6 +153,8 @@ export const STORE_NETWORK_NAV: NavLink[] = [
   { to: "/exchange", label: "Exchange" },
   { to: "/pay", label: "Pay" },
   { to: "/account", label: "Account" },
+  { to: "/forge", label: "Forge" },
+  { to: "/quest", label: "Quest" },
 ];
 
 export function isNavActive(pathname: string, to: string): boolean {

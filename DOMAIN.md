@@ -26,6 +26,12 @@
 | **https://vault.lvlltd.com** | IP vault / royalties | `/vault` |
 | **https://signal.lvlltd.com** | Demand signal market | `/signal` |
 | **https://arena.lvlltd.com** | Competitive drop races | `/arena` |
+| **https://forge.lvlltd.com** | Prompt → product drafts | `/forge` |
+| **https://guild.lvlltd.com** | Creator collectives · revenue splits | `/guild` |
+| **https://whisper.lvlltd.com** | Invite codes · exclusive inventory | `/whisper` |
+| **https://quest.lvlltd.com** | Commerce quests · XP layer | `/quest` |
+| **https://ledger.lvlltd.com** | Multi-rail settlement proofs | `/ledger` |
+| **https://oracle.lvlltd.com** | Demand forecasts · restock intel | `/oracle` |
 | **https://music.lvlltd.com** | Music packs | `/music` |
 | **https://api.lvlltd.com** | Catalog API | `/api/store/catalog` |
 | **https://factory.lvlltd.com/shop** | Store path (same app) | `/shop` |

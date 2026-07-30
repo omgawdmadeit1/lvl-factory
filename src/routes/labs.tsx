@@ -33,6 +33,13 @@ import { BOUNTY_CATALOG, useBountyStore } from "@/lib/markets/bounty";
 import { VAULT_CATALOG, useVaultStore } from "@/lib/markets/vault";
 import { SIGNAL_CATALOG, useSignalStore } from "@/lib/markets/signal";
 import { ARENA_RACES, useArenaStore } from "@/lib/markets/arena";
+import { useForgeStore } from "@/lib/markets/forge";
+import { GUILD_CATALOG, useGuildStore } from "@/lib/markets/guild";
+import { useWhisperStore } from "@/lib/markets/whisper";
+import { QUEST_CATALOG, useQuestStore } from "@/lib/markets/quest";
+import { useLedgerStore } from "@/lib/markets/ledger";
+import { ORACLE_FORECASTS, useOracleStore } from "@/lib/markets/oracle";
+
 import {
   LAB_DEMOS,
   MARKET_THESES,
@@ -513,6 +520,153 @@ function ArenaClaimWidget() {
   );
 }
 
+
+function ForgeRunWidget() {
+  const forge = useForgeStore((s) => s.forge);
+  const n = useForgeStore((s) => s.drafts.length);
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-sm font-semibold">Prompt forge</p>
+      <p className="text-xs text-muted">{n} drafts in rack</p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          const d = forge("midnight operator mesh", "tee", "night_ops");
+          toast[d ? "success" : "error"](d ? `Forged ${d.title}` : "Forge failed");
+        }}
+      >
+        Forge sample
+      </Button>
+    </div>
+  );
+}
+
+function GuildJoinWidget() {
+  const crew = GUILD_CATALOG[0];
+  const join = useGuildStore((s) => s.join);
+  const joined = useGuildStore((s) => !!s.joined[crew.id]);
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-sm font-semibold line-clamp-1">{crew.name}</p>
+      <p className="text-xs text-muted">
+        {(crew.joinShareBps / 100).toFixed(1)}% share · ${crew.poolUsdc} pool
+      </p>
+      <Button
+        size="sm"
+        className="w-full"
+        disabled={joined}
+        onClick={() => {
+          const ok = join(crew.id);
+          toast[ok ? "success" : "error"](ok ? "Joined guild" : "Already in");
+        }}
+      >
+        {joined ? "Joined" : "Join guild"}
+      </Button>
+    </div>
+  );
+}
+
+function WhisperUnlockWidget() {
+  const unlock = useWhisperStore((s) => s.unlock);
+  const n = useWhisperStore((s) => s.unlocked.length);
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-sm font-semibold">Whisper code</p>
+      <p className="text-xs text-muted">{n} doors open · try MIDNIGHT</p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          const r = unlock("MIDNIGHT");
+          toast[r.ok ? "success" : "error"](r.message);
+        }}
+      >
+        Unlock MIDNIGHT
+      </Button>
+    </div>
+  );
+}
+
+function QuestClaimWidget() {
+  const q = QUEST_CATALOG[0];
+  const advance = useQuestStore((s) => s.advance);
+  const claim = useQuestStore((s) => s.claim);
+  const xp = useQuestStore((s) => s.xp);
+  const prog = useQuestStore((s) => s.progress[q.id] ?? 0);
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-sm font-semibold">{q.title}</p>
+      <p className="text-xs text-muted">
+        {prog}/{q.target} · total XP {xp}
+      </p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          advance(q.id);
+          const got = claim(q.id);
+          toast[got ? "success" : "message"](
+            got ? `+${got} XP` : "Progressed — claim when ready",
+          );
+        }}
+      >
+        Advance / claim
+      </Button>
+    </div>
+  );
+}
+
+function LedgerSimWidget() {
+  const record = useLedgerStore((s) => s.record);
+  const total = useLedgerStore((s) => s.settledTotal());
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-sm font-semibold">Settlement tape</p>
+      <p className="text-xs text-muted">Settled ${total.toFixed(0)}</p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          const e = record({
+            rail: "usdc",
+            label: "labs demo",
+            amountUsdc: 24,
+            surface: "labs",
+          });
+          toast.success(`Proof ${e.ref}`);
+        }}
+      >
+        Simulate settle
+      </Button>
+    </div>
+  );
+}
+
+function OraclePinWidget() {
+  const f = ORACLE_FORECASTS[0];
+  const toggle = useOracleStore((s) => s.togglePin);
+  const pinned = useOracleStore((s) => s.pinned.includes(f.id));
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-sm font-semibold line-clamp-1">{f.title}</p>
+      <p className="text-xs text-muted">
+        {f.demandUnits} units · conf {f.confidence}%
+      </p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          toggle(f.id);
+          toast.message(pinned ? "Unpinned" : "Pinned forecast");
+        }}
+      >
+        {pinned ? "Unpin" : "Pin SKU"}
+      </Button>
+    </div>
+  );
+}
+
 function widgetFor(id: LabDemo["widget"]) {
   switch (id) {
     case "drop_claim":
@@ -539,6 +693,18 @@ function widgetFor(id: LabDemo["widget"]) {
       return <SignalBuyWidget />;
     case "arena_claim":
       return <ArenaClaimWidget />;
+    case "forge_run":
+      return <ForgeRunWidget />;
+    case "guild_join":
+      return <GuildJoinWidget />;
+    case "whisper_unlock":
+      return <WhisperUnlockWidget />;
+    case "quest_claim":
+      return <QuestClaimWidget />;
+    case "ledger_sim":
+      return <LedgerSimWidget />;
+    case "oracle_pin":
+      return <OraclePinWidget />;
     default:
       return null;
   }

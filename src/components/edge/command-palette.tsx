@@ -2,21 +2,21 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Command } from "cmdk";
 import {
+  Activity,
   Beaker,
   Bot,
   ChartCandlestick,
+  CreditCard,
   Crosshair,
   Flame,
-  Activity,
-  Lock,
-  CreditCard,
   FlaskConical,
   Layers,
   LayoutDashboard,
   LayoutGrid,
+  Lock,
   Package,
-  Radio,
   Radar,
+  Radio,
   Rocket,
   Sparkles,
   Store,
@@ -45,6 +45,12 @@ const LINKS: Array<{
   { to: "/vault", label: "IP Vault", group: "Markets", icon: Lock, keywords: "royalty rights license" },
   { to: "/signal", label: "Signal market", group: "Markets", icon: Activity, keywords: "demand attention heat" },
   { to: "/arena", label: "Arena races", group: "Markets", icon: Flame, keywords: "leaderboard drop claim" },
+  { to: "/forge", label: "Product Forge", group: "Markets", icon: Beaker, keywords: "prompt draft generate" },
+  { to: "/guild", label: "Creator Guilds", group: "Markets", icon: Users, keywords: "collective split crew" },
+  { to: "/whisper", label: "Whisper doors", group: "Markets", icon: Lock, keywords: "invite code private" },
+  { to: "/quest", label: "Mesh Quests", group: "Markets", icon: Flame, keywords: "xp progress quest" },
+  { to: "/ledger", label: "Settlement Ledger", group: "Markets", icon: CreditCard, keywords: "proof rail settle" },
+  { to: "/oracle", label: "Demand Oracle", group: "Markets", icon: Activity, keywords: "forecast restock heat" },
   { to: "/fleet", label: "Agent fleet", group: "Markets", icon: Users, keywords: "hire labor" },
   { to: "/shop", label: "LVL Store", group: "Buy", icon: Store, keywords: "merch" },
   { to: "/drops", label: "Live drops", group: "Buy", icon: Timer, keywords: "flash limited" },
@@ -80,24 +86,12 @@ export function CommandPalette() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  if (!open) {
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 z-50 hidden items-center gap-2 rounded-full border border-border bg-surface/95 px-3 py-2 text-xs text-muted shadow-lift backdrop-blur-sm hover:text-fg sm:inline-flex"
-        aria-label="Open command palette"
-      >
-        <span className="font-medium text-fg">Command</span>
-        <kbd className="rounded border border-border bg-surface-2 px-1.5 py-0.5 font-mono text-[10px]">
-          ⌘K
-        </kbd>
-      </button>
-    );
-  }
+  if (!open) return null;
+
+  const groups = Array.from(new Set(LINKS.map((l) => l.group)));
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-bg/70 p-4 pt-[12vh] backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-start justify-center bg-bg/70 px-4 pt-[12vh] backdrop-blur-sm">
       <button
         type="button"
         className="absolute inset-0 cursor-default"
@@ -105,52 +99,49 @@ export function CommandPalette() {
         onClick={() => setOpen(false)}
       />
       <Command
-        className="relative z-[1] w-full max-w-lg overflow-hidden rounded-xl border border-border bg-surface shadow-lift"
-        label="LVL command palette"
+        className="relative z-[1] w-full max-w-lg overflow-hidden rounded-xl border border-border bg-surface shadow-soft"
+        label="Command palette"
       >
-        <div className="border-b border-border px-3">
-          <Command.Input
-            placeholder="Jump to labs, syndicate, launch, bounty, exchange…"
-            className="h-12 w-full bg-transparent text-sm text-fg outline-none placeholder:text-subtle"
-            autoFocus
-          />
-        </div>
+        <Command.Input
+          placeholder="Jump to any LVL surface…"
+          className="w-full border-b border-border bg-transparent px-4 py-3 text-sm text-fg outline-none placeholder:text-subtle"
+        />
         <Command.List className="max-h-80 overflow-y-auto p-2">
           <Command.Empty className="px-3 py-6 text-center text-sm text-muted">
             No matches
           </Command.Empty>
-          {["Buy", "Markets", "Create", "Agents", "Network", "Operator"].map(
-            (group) => {
-              const items = LINKS.filter((l) => l.group === group);
-              if (!items.length) return null;
-              return (
-                <Command.Group
-                  key={group}
-                  heading={group}
-                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-subtle"
-                >
-                  {items.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Command.Item
-                        key={item.to}
-                        value={`${item.label} ${item.keywords ?? ""} ${item.to}`}
-                        onSelect={() => {
-                          setOpen(false);
-                          navigate({ to: item.to });
-                        }}
-                        className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm text-muted aria-selected:bg-surface-2 aria-selected:text-fg"
-                      >
-                        <Icon className="size-4 shrink-0" />
-                        {item.label}
-                      </Command.Item>
-                    );
-                  })}
-                </Command.Group>
-              );
-            },
-          )}
+          {groups.map((group) => (
+            <Command.Group
+              key={group}
+              heading={group}
+              className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-subtle"
+            >
+              {LINKS.filter((l) => l.group === group).map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Command.Item
+                    key={link.to}
+                    value={`${link.label} ${link.keywords ?? ""} ${link.to}`}
+                    onSelect={() => {
+                      navigate({ to: link.to });
+                      setOpen(false);
+                    }}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 text-sm text-muted data-[selected=true]:bg-surface-2 data-[selected=true]:text-fg"
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    <span className="truncate">{link.label}</span>
+                    <span className="ml-auto truncate font-mono text-[11px] text-subtle">
+                      {link.to}
+                    </span>
+                  </Command.Item>
+                );
+              })}
+            </Command.Group>
+          ))}
         </Command.List>
+        <div className="border-t border-border px-3 py-2 text-[11px] text-subtle">
+          ⌘K to toggle · Esc to close
+        </div>
       </Command>
     </div>
   );

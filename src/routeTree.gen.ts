@@ -19,16 +19,21 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as DropsRouteImport } from './routes/drops'
 import { Route as ExchangeRouteImport } from './routes/exchange'
 import { Route as FleetRouteImport } from './routes/fleet'
+import { Route as ForgeRouteImport } from './routes/forge'
+import { Route as GuildRouteImport } from './routes/guild'
 import { Route as LabsRouteImport } from './routes/labs'
 import { Route as LaunchRouteImport } from './routes/launch'
+import { Route as LedgerRouteImport } from './routes/ledger'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MerchRouteImport } from './routes/merch'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as NetworkRouteImport } from './routes/network'
+import { Route as OracleRouteImport } from './routes/oracle'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as PayRouteImport } from './routes/pay'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as PulseRouteImport } from './routes/pulse'
+import { Route as QuestRouteImport } from './routes/quest'
 import { Route as QueueRouteImport } from './routes/queue'
 import { Route as RadarRouteImport } from './routes/radar'
 import { Route as RelayRouteImport } from './routes/relay'
@@ -41,6 +46,7 @@ import { Route as SyndicateRouteImport } from './routes/syndicate'
 import { Route as Tier1RouteImport } from './routes/tier1'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WebhooksRouteImport } from './routes/webhooks'
+import { Route as WhisperRouteImport } from './routes/whisper'
 import { Route as AgentMerchRouteImport } from './routes/agent.merch'
 import { Route as OrdersIdRouteImport } from './routes/orders.$id'
 import { Route as ShopIndexRouteImport } from './routes/shop/index'
@@ -108,6 +114,16 @@ const FleetRoute = FleetRouteImport.update({
   path: '/fleet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgeRoute = ForgeRouteImport.update({
+  id: '/forge',
+  path: '/forge',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuildRoute = GuildRouteImport.update({
+  id: '/guild',
+  path: '/guild',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LabsRoute = LabsRouteImport.update({
   id: '/labs',
   path: '/labs',
@@ -116,6 +132,11 @@ const LabsRoute = LabsRouteImport.update({
 const LaunchRoute = LaunchRouteImport.update({
   id: '/launch',
   path: '/launch',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LedgerRoute = LedgerRouteImport.update({
+  id: '/ledger',
+  path: '/ledger',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketplaceRoute = MarketplaceRouteImport.update({
@@ -138,6 +159,11 @@ const NetworkRoute = NetworkRouteImport.update({
   path: '/network',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OracleRoute = OracleRouteImport.update({
+  id: '/oracle',
+  path: '/oracle',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrdersRoute = OrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -156,6 +182,11 @@ const PipelineRoute = PipelineRouteImport.update({
 const PulseRoute = PulseRouteImport.update({
   id: '/pulse',
   path: '/pulse',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestRoute = QuestRouteImport.update({
+  id: '/quest',
+  path: '/quest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QueueRoute = QueueRouteImport.update({
@@ -216,6 +247,11 @@ const VaultRoute = VaultRouteImport.update({
 const WebhooksRoute = WebhooksRouteImport.update({
   id: '/webhooks',
   path: '/webhooks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WhisperRoute = WhisperRouteImport.update({
+  id: '/whisper',
+  path: '/whisper',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgentMerchRoute = AgentMerchRouteImport.update({
@@ -312,16 +348,21 @@ export interface FileRoutesByFullPath {
   '/drops': typeof DropsRoute
   '/exchange': typeof ExchangeRoute
   '/fleet': typeof FleetRoute
+  '/forge': typeof ForgeRoute
+  '/guild': typeof GuildRoute
   '/labs': typeof LabsRoute
   '/launch': typeof LaunchRoute
+  '/ledger': typeof LedgerRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
+  '/oracle': typeof OracleRoute
   '/orders': typeof OrdersRouteWithChildren
   '/pay': typeof PayRoute
   '/pipeline': typeof PipelineRoute
   '/pulse': typeof PulseRoute
+  '/quest': typeof QuestRoute
   '/queue': typeof QueueRoute
   '/radar': typeof RadarRoute
   '/relay': typeof RelayRoute
@@ -333,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/tier1': typeof Tier1Route
   '/vault': typeof VaultRoute
   '/webhooks': typeof WebhooksRoute
+  '/whisper': typeof WhisperRoute
   '/agent/merch': typeof AgentMerchRoute
   '/orders/$id': typeof OrdersIdRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -361,16 +403,21 @@ export interface FileRoutesByTo {
   '/drops': typeof DropsRoute
   '/exchange': typeof ExchangeRoute
   '/fleet': typeof FleetRoute
+  '/forge': typeof ForgeRoute
+  '/guild': typeof GuildRoute
   '/labs': typeof LabsRoute
   '/launch': typeof LaunchRoute
+  '/ledger': typeof LedgerRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
+  '/oracle': typeof OracleRoute
   '/orders': typeof OrdersRouteWithChildren
   '/pay': typeof PayRoute
   '/pipeline': typeof PipelineRoute
   '/pulse': typeof PulseRoute
+  '/quest': typeof QuestRoute
   '/queue': typeof QueueRoute
   '/radar': typeof RadarRoute
   '/relay': typeof RelayRoute
@@ -382,6 +429,7 @@ export interface FileRoutesByTo {
   '/tier1': typeof Tier1Route
   '/vault': typeof VaultRoute
   '/webhooks': typeof WebhooksRoute
+  '/whisper': typeof WhisperRoute
   '/agent/merch': typeof AgentMerchRoute
   '/orders/$id': typeof OrdersIdRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -412,16 +460,21 @@ export interface FileRoutesById {
   '/drops': typeof DropsRoute
   '/exchange': typeof ExchangeRoute
   '/fleet': typeof FleetRoute
+  '/forge': typeof ForgeRoute
+  '/guild': typeof GuildRoute
   '/labs': typeof LabsRoute
   '/launch': typeof LaunchRoute
+  '/ledger': typeof LedgerRoute
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
+  '/oracle': typeof OracleRoute
   '/orders': typeof OrdersRouteWithChildren
   '/pay': typeof PayRoute
   '/pipeline': typeof PipelineRoute
   '/pulse': typeof PulseRoute
+  '/quest': typeof QuestRoute
   '/queue': typeof QueueRoute
   '/radar': typeof RadarRoute
   '/relay': typeof RelayRoute
@@ -433,6 +486,7 @@ export interface FileRoutesById {
   '/tier1': typeof Tier1Route
   '/vault': typeof VaultRoute
   '/webhooks': typeof WebhooksRoute
+  '/whisper': typeof WhisperRoute
   '/agent/merch': typeof AgentMerchRoute
   '/orders/$id': typeof OrdersIdRoute
   '/shop/$slug': typeof ShopSlugRoute
@@ -464,16 +518,21 @@ export interface FileRouteTypes {
     | '/drops'
     | '/exchange'
     | '/fleet'
+    | '/forge'
+    | '/guild'
     | '/labs'
     | '/launch'
+    | '/ledger'
     | '/marketplace'
     | '/merch'
     | '/music'
     | '/network'
+    | '/oracle'
     | '/orders'
     | '/pay'
     | '/pipeline'
     | '/pulse'
+    | '/quest'
     | '/queue'
     | '/radar'
     | '/relay'
@@ -485,6 +544,7 @@ export interface FileRouteTypes {
     | '/tier1'
     | '/vault'
     | '/webhooks'
+    | '/whisper'
     | '/agent/merch'
     | '/orders/$id'
     | '/shop/$slug'
@@ -513,16 +573,21 @@ export interface FileRouteTypes {
     | '/drops'
     | '/exchange'
     | '/fleet'
+    | '/forge'
+    | '/guild'
     | '/labs'
     | '/launch'
+    | '/ledger'
     | '/marketplace'
     | '/merch'
     | '/music'
     | '/network'
+    | '/oracle'
     | '/orders'
     | '/pay'
     | '/pipeline'
     | '/pulse'
+    | '/quest'
     | '/queue'
     | '/radar'
     | '/relay'
@@ -534,6 +599,7 @@ export interface FileRouteTypes {
     | '/tier1'
     | '/vault'
     | '/webhooks'
+    | '/whisper'
     | '/agent/merch'
     | '/orders/$id'
     | '/shop/$slug'
@@ -563,16 +629,21 @@ export interface FileRouteTypes {
     | '/drops'
     | '/exchange'
     | '/fleet'
+    | '/forge'
+    | '/guild'
     | '/labs'
     | '/launch'
+    | '/ledger'
     | '/marketplace'
     | '/merch'
     | '/music'
     | '/network'
+    | '/oracle'
     | '/orders'
     | '/pay'
     | '/pipeline'
     | '/pulse'
+    | '/quest'
     | '/queue'
     | '/radar'
     | '/relay'
@@ -584,6 +655,7 @@ export interface FileRouteTypes {
     | '/tier1'
     | '/vault'
     | '/webhooks'
+    | '/whisper'
     | '/agent/merch'
     | '/orders/$id'
     | '/shop/$slug'
@@ -614,16 +686,21 @@ export interface RootRouteChildren {
   DropsRoute: typeof DropsRoute
   ExchangeRoute: typeof ExchangeRoute
   FleetRoute: typeof FleetRoute
+  ForgeRoute: typeof ForgeRoute
+  GuildRoute: typeof GuildRoute
   LabsRoute: typeof LabsRoute
   LaunchRoute: typeof LaunchRoute
+  LedgerRoute: typeof LedgerRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MerchRoute: typeof MerchRoute
   MusicRoute: typeof MusicRoute
   NetworkRoute: typeof NetworkRoute
+  OracleRoute: typeof OracleRoute
   OrdersRoute: typeof OrdersRouteWithChildren
   PayRoute: typeof PayRoute
   PipelineRoute: typeof PipelineRoute
   PulseRoute: typeof PulseRoute
+  QuestRoute: typeof QuestRoute
   QueueRoute: typeof QueueRoute
   RadarRoute: typeof RadarRoute
   RelayRoute: typeof RelayRoute
@@ -635,6 +712,7 @@ export interface RootRouteChildren {
   Tier1Route: typeof Tier1Route
   VaultRoute: typeof VaultRoute
   WebhooksRoute: typeof WebhooksRoute
+  WhisperRoute: typeof WhisperRoute
   AgentMerchRoute: typeof AgentMerchRoute
   ApiAgentCardRoute: typeof ApiAgentCardRoute
   ApiAwsStatusRoute: typeof ApiAwsStatusRoute
@@ -718,6 +796,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FleetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forge': {
+      id: '/forge'
+      path: '/forge'
+      fullPath: '/forge'
+      preLoaderRoute: typeof ForgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guild': {
+      id: '/guild'
+      path: '/guild'
+      fullPath: '/guild'
+      preLoaderRoute: typeof GuildRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/labs': {
       id: '/labs'
       path: '/labs'
@@ -730,6 +822,13 @@ declare module '@tanstack/react-router' {
       path: '/launch'
       fullPath: '/launch'
       preLoaderRoute: typeof LaunchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ledger': {
+      id: '/ledger'
+      path: '/ledger'
+      fullPath: '/ledger'
+      preLoaderRoute: typeof LedgerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/marketplace': {
@@ -760,6 +859,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NetworkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/oracle': {
+      id: '/oracle'
+      path: '/oracle'
+      fullPath: '/oracle'
+      preLoaderRoute: typeof OracleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/orders': {
       id: '/orders'
       path: '/orders'
@@ -786,6 +892,13 @@ declare module '@tanstack/react-router' {
       path: '/pulse'
       fullPath: '/pulse'
       preLoaderRoute: typeof PulseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quest': {
+      id: '/quest'
+      path: '/quest'
+      fullPath: '/quest'
+      preLoaderRoute: typeof QuestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/queue': {
@@ -870,6 +983,13 @@ declare module '@tanstack/react-router' {
       path: '/webhooks'
       fullPath: '/webhooks'
       preLoaderRoute: typeof WebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/whisper': {
+      id: '/whisper'
+      path: '/whisper'
+      fullPath: '/whisper'
+      preLoaderRoute: typeof WhisperRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agent/merch': {
@@ -1032,16 +1152,21 @@ const rootRouteChildren: RootRouteChildren = {
   DropsRoute: DropsRoute,
   ExchangeRoute: ExchangeRoute,
   FleetRoute: FleetRoute,
+  ForgeRoute: ForgeRoute,
+  GuildRoute: GuildRoute,
   LabsRoute: LabsRoute,
   LaunchRoute: LaunchRoute,
+  LedgerRoute: LedgerRoute,
   MarketplaceRoute: MarketplaceRoute,
   MerchRoute: MerchRoute,
   MusicRoute: MusicRoute,
   NetworkRoute: NetworkRoute,
+  OracleRoute: OracleRoute,
   OrdersRoute: OrdersRouteWithChildren,
   PayRoute: PayRoute,
   PipelineRoute: PipelineRoute,
   PulseRoute: PulseRoute,
+  QuestRoute: QuestRoute,
   QueueRoute: QueueRoute,
   RadarRoute: RadarRoute,
   RelayRoute: RelayRoute,
@@ -1053,6 +1178,7 @@ const rootRouteChildren: RootRouteChildren = {
   Tier1Route: Tier1Route,
   VaultRoute: VaultRoute,
   WebhooksRoute: WebhooksRoute,
+  WhisperRoute: WhisperRoute,
   AgentMerchRoute: AgentMerchRoute,
   ApiAgentCardRoute: ApiAgentCardRoute,
   ApiAwsStatusRoute: ApiAwsStatusRoute,
