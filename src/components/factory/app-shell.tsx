@@ -1,79 +1,82 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Activity,
   Beaker,
   Bot,
   Boxes,
   ChartCandlestick,
   Crosshair,
-  Trophy,
-  Flame,
-  Activity,
-  Lock,
   CreditCard,
   Disc3,
+  Flame,
   FlaskConical,
+  Globe,
   Layers,
   LayoutDashboard,
   LayoutGrid,
   ListOrdered,
+  Lock,
   Package,
-  Radio,
   Radar,
+  Radio,
   Rocket,
   ShoppingBag,
+  ShoppingCart,
   Sparkles,
   Store,
-  Globe,
   Timer,
+  User,
   Users,
   UsersRound,
   Wand2,
   Webhook,
   Workflow,
-  User,
-  ShoppingCart,
   Zap,
 } from "lucide-react";
 import { BrandMark } from "@/components/brand/visual-hero";
 import { BuyerShell } from "@/components/marketplace/buyer-shell";
-import { NetworkMenu } from "@/components/marketplace/network-menu";
+import {
+  NavChipRow,
+  NetworkMenu,
+} from "@/components/marketplace/network-menu";
 import { isBuyerPath } from "@/lib/marketplace/hosts";
+import { OPERATOR_MOBILE_NAV } from "@/lib/marketplace/nav";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/marketplace", label: "Marketplace hub", icon: LayoutGrid },
-  { to: "/labs", label: "Labs demos", icon: Beaker },
+  { to: "/marketplace", label: "Hub", icon: LayoutGrid },
+  { to: "/labs", label: "Labs", icon: Beaker },
   { to: "/exchange", label: "Exchange", icon: ChartCandlestick },
   { to: "/syndicate", label: "Syndicate", icon: UsersRound },
-  { to: "/launch", label: "Launch pad", icon: Rocket },
-  { to: "/bounty", label: "Bounty board", icon: Crosshair },
-  { to: "/vault", label: "IP Vault", icon: Lock },
-  { to: "/signal", label: "Signal market", icon: Activity },
-  { to: "/arena", label: "Arena races", icon: Flame },
-  { to: "/fleet", label: "Agent fleet", icon: Users },
-  { to: "/shop", label: "LVL Store", icon: Store },
-  { to: "/drops", label: "Live drops", icon: Timer },
-  { to: "/bundles", label: "Stack packs", icon: Layers },
-  { to: "/radar", label: "Restock radar", icon: Radar },
-  { to: "/pulse", label: "Network pulse", icon: Radio },
-  { to: "/studio", label: "Design studio", icon: Wand2 },
-  { to: "/relay", label: "Agent relay", icon: Zap },
+  { to: "/launch", label: "Launch", icon: Rocket },
+  { to: "/bounty", label: "Bounty", icon: Crosshair },
+  { to: "/vault", label: "Vault", icon: Lock },
+  { to: "/signal", label: "Signal", icon: Activity },
+  { to: "/arena", label: "Arena", icon: Flame },
+  { to: "/fleet", label: "Fleet", icon: Users },
+  { to: "/shop", label: "Store", icon: Store },
+  { to: "/drops", label: "Drops", icon: Timer },
+  { to: "/bundles", label: "Stacks", icon: Layers },
+  { to: "/radar", label: "Radar", icon: Radar },
+  { to: "/pulse", label: "Pulse", icon: Radio },
+  { to: "/studio", label: "Studio", icon: Wand2 },
+  { to: "/relay", label: "Relay", icon: Zap },
   { to: "/checkout", label: "Checkout", icon: ShoppingCart },
   { to: "/account", label: "Account", icon: User },
   { to: "/orders", label: "Orders", icon: Package },
-  { to: "/seller", label: "Seller portal", icon: Workflow },
-  { to: "/network", label: "Network map", icon: Globe },
-  { to: "/merch", label: "Merch (legacy)", icon: ShoppingBag },
-  { to: "/pipeline", label: "Merch pipeline", icon: Workflow },
-  { to: "/webhooks", label: "Printify hooks", icon: Webhook },
-  { to: "/agent/merch", label: "Agent shop", icon: Bot },
+  { to: "/seller", label: "Seller", icon: Workflow },
+  { to: "/network", label: "Network", icon: Globe },
+  { to: "/pipeline", label: "Pipeline", icon: Workflow },
+  { to: "/webhooks", label: "Webhooks", icon: Webhook },
+  { to: "/agent/merch", label: "Agents", icon: Bot },
   { to: "/pay", label: "Pay", icon: CreditCard },
-  { to: "/tier1", label: "Tier 1 Plan", icon: Sparkles },
-  { to: "/music", label: "Music packs", icon: Disc3 },
-  { to: "/skills", label: "Skill packs", icon: Boxes },
+  { to: "/tier1", label: "Tier 1", icon: Sparkles },
+  { to: "/music", label: "Music", icon: Disc3 },
+  { to: "/skills", label: "Skills", icon: Boxes },
   { to: "/queue", label: "Queue", icon: ListOrdered },
   { to: "/canary", label: "Canary", icon: FlaskConical },
+  { to: "/merch", label: "Merch", icon: ShoppingBag },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -94,18 +97,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="border-b border-border px-4 py-5">
             <div className="mb-3 flex items-center gap-2.5">
               <BrandMark size="sm" />
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs font-medium uppercase tracking-wider text-subtle">
                   LVL Marketplace
                 </p>
-                <p className="text-sm font-semibold tracking-tight">
+                <p className="truncate text-sm font-semibold tracking-tight">
                   Factory + store
                 </p>
               </div>
             </div>
             <p className="text-xs text-muted">lvlltd.com operator</p>
           </div>
-          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+          <nav className="flex flex-1 flex-col gap-1 overflow-y-auto overscroll-contain p-3">
             {NAV.map((item) => {
               const active =
                 item.to === "/"
@@ -117,14 +120,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
+                    "flex min-w-0 items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors",
                     active
                       ? "bg-surface-2 text-fg"
                       : "text-muted hover:bg-surface hover:text-fg",
                   )}
                 >
                   <Icon className="size-4 shrink-0" />
-                  {item.label}
+                  <span className="truncate">{item.label}</span>
                 </Link>
               );
             })}
@@ -153,23 +156,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
-          <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 md:px-6">
-            <div className="flex items-center gap-2.5 md:hidden">
+          <header className="flex min-w-0 items-center justify-between gap-2 border-b border-border px-3 py-3 sm:px-4 md:px-6">
+            <div className="flex min-w-0 items-center gap-2.5 md:hidden">
               <BrandMark size="sm" />
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-subtle">
-                  Operator console
+              <div className="min-w-0">
+                <p className="truncate text-xs font-medium uppercase tracking-wider text-subtle">
+                  Operator
                 </p>
-                <p className="text-sm text-muted">Markets · packs · rails</p>
+                <p className="truncate text-sm text-muted">Markets · rails</p>
               </div>
             </div>
-            <div className="hidden md:block">
+            <div className="hidden min-w-0 md:block">
               <p className="text-xs font-medium uppercase tracking-wider text-subtle">
                 Operator console
               </p>
               <p className="text-sm text-muted">Markets · packs · rails</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <Link
                 to="/labs"
                 className="hidden rounded-full border border-border bg-surface-2 px-3 py-1 text-xs text-muted hover:text-fg sm:inline"
@@ -189,30 +192,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </header>
 
-          <nav className="flex gap-1 overflow-x-auto border-b border-border px-2 py-2 md:hidden">
-            {NAV.map((item) => {
-              const active =
-                item.to === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.to);
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "shrink-0 rounded-full px-3 py-1.5 text-xs",
-                    active
-                      ? "bg-surface-2 text-fg"
-                      : "text-muted hover:bg-surface",
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+          {/* Compact chips only — full map is in Menu (no 33-item overflow row) */}
+          <div className="min-w-0 border-b border-border md:hidden">
+            <NavChipRow links={OPERATOR_MOBILE_NAV} />
+          </div>
 
-          <main className="flex-1 overflow-x-hidden p-4 md:p-6">{children}</main>
+          <main className="min-w-0 flex-1 overflow-x-hidden p-4 md:p-6">
+            {children}
+          </main>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 /**
  * Single source of truth for cross-surface navigation.
  * Used by BuyerShell, StoreShell, AppShell, and NetworkMenu.
+ * Labels stay short so mobile menus don't overflow cells.
  */
 
 export type NavLink = {
@@ -22,10 +23,10 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "hub",
     label: "Hub",
     links: [
-      { to: "/marketplace", label: "Marketplace hub" },
-      { to: "/labs", label: "Labs demos" },
-      { to: "/network", label: "Network map" },
-      { to: "/shop", label: "LVL Store" },
+      { to: "/marketplace", label: "Hub" },
+      { to: "/labs", label: "Labs" },
+      { to: "/network", label: "Network" },
+      { to: "/shop", label: "Store" },
     ],
   },
   {
@@ -33,25 +34,25 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Markets",
     links: [
       { to: "/exchange", label: "Exchange" },
-      { to: "/vault", label: "IP Vault" },
+      { to: "/vault", label: "Vault" },
       { to: "/signal", label: "Signal" },
       { to: "/arena", label: "Arena" },
       { to: "/syndicate", label: "Syndicate" },
-      { to: "/launch", label: "Launch pad" },
+      { to: "/launch", label: "Launch" },
       { to: "/bounty", label: "Bounty" },
-      { to: "/fleet", label: "Agent fleet" },
+      { to: "/fleet", label: "Fleet" },
     ],
   },
   {
     id: "edge",
     label: "Edge",
     links: [
-      { to: "/drops", label: "Live drops" },
-      { to: "/bundles", label: "Stack packs" },
-      { to: "/radar", label: "Restock radar" },
-      { to: "/pulse", label: "Network pulse" },
-      { to: "/studio", label: "Design studio" },
-      { to: "/relay", label: "Agent relay" },
+      { to: "/drops", label: "Drops" },
+      { to: "/bundles", label: "Stacks" },
+      { to: "/radar", label: "Radar" },
+      { to: "/pulse", label: "Pulse" },
+      { to: "/studio", label: "Studio" },
+      { to: "/relay", label: "Relay" },
     ],
   },
   {
@@ -59,11 +60,11 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Commerce",
     links: [
       { to: "/checkout", label: "Checkout" },
-      { to: "/pay", label: "Pay rails" },
+      { to: "/pay", label: "Pay" },
       { to: "/orders", label: "Orders" },
       { to: "/account", label: "Account" },
-      { to: "/seller", label: "Seller portal" },
-      { to: "/agent/merch", label: "Agent shop" },
+      { to: "/seller", label: "Seller" },
+      { to: "/agent/merch", label: "Agents" },
     ],
   },
   {
@@ -71,13 +72,12 @@ export const NAV_GROUPS: NavGroup[] = [
     label: "Factory",
     links: [
       { to: "/", label: "Dashboard" },
-      { to: "/merch", label: "Merch (legacy)" },
-      { to: "/pipeline", label: "Merch pipeline" },
-      { to: "/webhooks", label: "Printify hooks" },
-      { to: "/music", label: "Music packs" },
-      { to: "/skills", label: "Skill packs" },
+      { to: "/pipeline", label: "Pipeline" },
+      { to: "/webhooks", label: "Webhooks" },
+      { to: "/music", label: "Music" },
+      { to: "/skills", label: "Skills" },
       { to: "/queue", label: "Queue" },
-      { to: "/tier1", label: "Tier 1 plan" },
+      { to: "/tier1", label: "Tier 1" },
       { to: "/canary", label: "Canary" },
     ],
   },
@@ -114,6 +114,18 @@ export const BUYER_SECONDARY_NAV: NavLink[] = [
   { to: "/music", label: "Music" },
   { to: "/agent/merch", label: "Agents" },
   { to: "/seller", label: "Seller" },
+];
+
+/** Compact operator mobile strip (full list lives in NetworkMenu) */
+export const OPERATOR_MOBILE_NAV: NavLink[] = [
+  { to: "/", label: "Home" },
+  { to: "/marketplace", label: "Hub" },
+  { to: "/labs", label: "Labs" },
+  { to: "/shop", label: "Shop" },
+  { to: "/vault", label: "Vault" },
+  { to: "/exchange", label: "Exchange" },
+  { to: "/pipeline", label: "Pipeline" },
+  { to: "/pay", label: "Pay" },
 ];
 
 /** Store top strip extras beyond collections */

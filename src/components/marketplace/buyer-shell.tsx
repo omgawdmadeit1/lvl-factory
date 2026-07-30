@@ -62,22 +62,29 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
-      <div className="border-b border-border bg-surface-2 px-4 py-2 text-center text-xs text-muted">
-        LVL · vault · signal · arena · markets ·{" "}
-        <span className="text-fg">lvlltd.com</span>
-        {credits > 0 ? (
-          <>
-            {" · "}
-            <span className="tabular text-fg">{credits} cr</span>
-          </>
-        ) : null}
+      <div className="border-b border-border bg-surface-2 px-3 py-2 text-center text-xs text-muted sm:px-4">
+        <span className="line-clamp-1">
+          LVL · vault · signal · arena · markets ·{" "}
+          <span className="text-fg">lvlltd.com</span>
+          {credits > 0 ? (
+            <>
+              {" · "}
+              <span className="tabular text-fg">{credits} cr</span>
+            </>
+          ) : null}
+        </span>
       </div>
       <header className="sticky top-0 z-30 border-b border-border bg-bg/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link to="/marketplace" className="flex min-w-0 items-center gap-2.5">
+        <div className="mx-auto flex max-w-6xl min-w-0 items-center justify-between gap-2 px-3 py-3 sm:gap-3 sm:px-6">
+          <Link
+            to="/marketplace"
+            className="flex min-w-0 flex-1 items-center gap-2 sm:flex-initial sm:gap-2.5"
+          >
             <BrandMark size="sm" />
             <div className="min-w-0">
-              <p className="text-sm font-semibold tracking-tight">LVL Market</p>
+              <p className="truncate text-sm font-semibold tracking-tight">
+                LVL Market
+              </p>
               <p className="truncate text-[11px] text-subtle">
                 lvlltd.com network
               </p>
@@ -85,7 +92,7 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <nav
-            className="hidden items-center gap-0.5 lg:flex"
+            className="hidden min-w-0 items-center gap-0.5 lg:flex"
             aria-label="Primary"
           >
             {BUYER_PRIMARY_NAV.map((item) => {
@@ -115,27 +122,24 @@ export function BuyerShell({ children }: { children: React.ReactNode }) {
             <NetworkMenu className="ml-1" label="All" />
           </nav>
 
-          <div className="flex items-center gap-1.5 lg:hidden">
+          <div className="flex shrink-0 items-center gap-1.5 lg:hidden">
             <Link
               to="/checkout"
-              className="rounded-full border border-border bg-surface-2 px-3 py-1.5 text-xs text-fg"
+              className="max-w-[5.5rem] truncate rounded-full border border-border bg-surface-2 px-2.5 py-1.5 text-xs text-fg"
             >
-              Cart {count > 0 ? `(${count})` : ""}
+              Cart{count > 0 ? ` (${count})` : ""}
             </Link>
             <NetworkMenu variant="pill" label="Menu" />
           </div>
         </div>
 
-        <div className="border-t border-border">
-          <div className="mx-auto flex max-w-6xl items-center gap-1 px-2 sm:px-4">
-            <NavChipRow
-              links={BUYER_SECONDARY_NAV}
-              className="min-w-0 flex-1 border-0 px-0"
-            />
+        <div className="min-w-0 border-t border-border">
+          <div className="mx-auto max-w-6xl min-w-0">
+            <NavChipRow links={BUYER_SECONDARY_NAV} />
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto max-w-6xl min-w-0 overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8">
         {children}
       </main>
     </div>
