@@ -25,7 +25,7 @@ export const LIVE_PRINTIFY_PRODUCTS: MerchProduct[] = [
     status: "published",
     channel: "both",
     printifyUrl: productStoreUrl("30465259", "boston-native-logo-t-shirt"),
-    printifyProductId: "30465259",
+    printifyProductId: "6a6a3fb4b321eb70a0045515",
     mockupUrl: mockupCdnUrl(
       "6a6a3fb4b321eb70a0045515",
       "73207/98445",
@@ -68,7 +68,7 @@ export const LIVE_PRINTIFY_PRODUCTS: MerchProduct[] = [
       "30465298",
       "copy-of-boston-native-logo-t-shirt",
     ),
-    printifyProductId: "30465298",
+    printifyProductId: "6a6a4017f22eef59540f9ae2",
     mockupUrl: mockupCdnUrl(
       "6a6a4017f22eef59540f9ae2",
       "73207/98445",
@@ -109,7 +109,7 @@ export const LIVE_PRINTIFY_PRODUCTS: MerchProduct[] = [
     status: "published",
     channel: "both",
     printifyUrl: productStoreUrl("28713892", "main-character"),
-    printifyProductId: "28713892",
+    printifyProductId: "69a230baf7fc1928080dd1cd",
     mockupUrl: mockupCdnUrl(
       "69a230baf7fc1928080dd1cd",
       "12124/92570",
@@ -149,7 +149,7 @@ export const LIVE_PRINTIFY_PRODUCTS: MerchProduct[] = [
     status: "published",
     channel: "both",
     printifyUrl: productStoreUrl("28713891", "main-character"),
-    printifyProductId: "28713891",
+    printifyProductId: "69a230d87fc2996b8d0a4091",
     mockupUrl: mockupCdnUrl(
       "69a230d87fc2996b8d0a4091",
       "12124/92570",
@@ -189,7 +189,7 @@ export const LIVE_PRINTIFY_PRODUCTS: MerchProduct[] = [
     status: "published",
     channel: "both",
     printifyUrl: productStoreUrl("28713890", "serotonin-dealer"),
-    printifyProductId: "28713890",
+    printifyProductId: "69a2887e1ec5ca402c03157c",
     mockupUrl: mockupCdnUrl(
       "69a2887e1ec5ca402c03157c",
       "12124/92570",
@@ -230,7 +230,7 @@ export const LIVE_PRINTIFY_PRODUCTS: MerchProduct[] = [
     status: "published",
     channel: "both",
     printifyUrl: productStoreUrl("28713888", "soft-era"),
-    printifyProductId: "28713888",
+    printifyProductId: "69a288b146730b56700a03de",
     mockupUrl: mockupCdnUrl(
       "69a288b146730b56700a03de",
       "45150/1530",
