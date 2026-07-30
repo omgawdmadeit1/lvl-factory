@@ -50,6 +50,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/mirror", label: "Mirror" },
       { to: "/circuit", label: "Circuit" },
       { to: "/anchor", label: "Anchor" },
+  { to: "/monitor", label: "Monitor" },
     ],
   },
   {
@@ -60,6 +61,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/bundles", label: "Stacks" },
       { to: "/radar", label: "Radar" },
       { to: "/pulse", label: "Pulse" },
+      { to: "/monitor", label: "Monitor" },
       { to: "/studio", label: "Studio" },
       { to: "/relay", label: "Relay" },
     ],
@@ -88,6 +90,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: "/queue", label: "Queue" },
       { to: "/tier1", label: "Tier 1" },
       { to: "/canary", label: "Canary" },
+      { to: "/monitor", label: "Monitor" },
     ],
   },
 ];

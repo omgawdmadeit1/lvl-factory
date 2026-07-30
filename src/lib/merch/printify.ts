@@ -83,6 +83,7 @@ export const LVL_NETWORK = {
             mirror: "/mirror",
             circuit: "/circuit",
             anchor: "/anchor",
+            monitor: "/monitor",
             drops: "/drops",
             bundles: "/bundles",
             radar: "/radar",

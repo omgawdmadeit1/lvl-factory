@@ -32,7 +32,8 @@ export type DemoKind =
   | "oracle"
   | "mirror"
   | "circuit"
-  | "anchor";
+  | "anchor"
+  | "monitor";
 
 export type LabDemo = {
   id: string;
@@ -65,6 +66,7 @@ export type LabDemo = {
     | "mirror_clone"
     | "circuit_run"
     | "anchor_sub"
+    | "monitor_live"
     | "none";
   badge: string;
   live: boolean;
@@ -72,6 +74,19 @@ export type LabDemo = {
 };
 
 export const LAB_DEMOS: LabDemo[] = [
+  {
+    id: "lab-monitor",
+    kind: "monitor",
+    title: "Perf Monitor",
+    blurb: "Live Web Vitals, FPS, and route timings across the mesh.",
+    path: "/monitor",
+    host: "monitor.lvlltd.com",
+    market: "Observability",
+    widget: "monitor_live",
+    badge: "Monitor",
+    live: true,
+    audience: "operator",
+  },
   {
     id: "lab-mirror",
     kind: "mirror",
@@ -452,6 +467,14 @@ export const LAB_DEMOS: LabDemo[] = [
 ];
 
 export const MARKET_THESES = [
+  {
+    id: "perf-monitor",
+    title: "Real-time performance mesh",
+    thesis: "Every surface should self-report vitals — Monitor turns the browser into an ops dashboard.",
+    host: "monitor.lvlltd.com",
+    path: "/monitor",
+    why: "You can't fix what you can't see in real time.",
+  },
   {
     id: "mirror-clone",
     title: "Clone-a-fit social merch",

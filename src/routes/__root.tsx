@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { Toaster } from "sonner";
 import { CommandPalette } from "@/components/edge/command-palette";
+import { PerformanceProbe } from "@/components/edge/performance-probe";
 import { AppShell } from "@/components/factory/app-shell";
 import { HostRewrite } from "@/components/marketplace/host-rewrite";
 import appCss from "../styles.css?url";
@@ -40,6 +41,7 @@ function RootComponent() {
       </head>
       <body>
         <HostRewrite />
+        <PerformanceProbe />
         <AppShell>
           <Outlet />
         </AppShell>

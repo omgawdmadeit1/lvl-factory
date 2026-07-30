@@ -40,7 +40,8 @@ export type MarketplaceSurface =
   | "oracle"
   | "mirror"
   | "circuit"
-  | "anchor";
+  | "anchor"
+  | "monitor";
 
 export type HostEntry = {
   host: string;
@@ -376,6 +377,15 @@ export const MARKETPLACE_HOSTS: HostEntry[] = [
     publicUrl: "https://anchor.lvlltd.com",
   },
   {
+    host: "monitor.lvlltd.com",
+    surface: "monitor",
+    homePath: "/monitor",
+    role: "perf_monitor",
+    description: "Real-time performance · Web Vitals · FPS",
+    audience: "operator",
+    publicUrl: "https://monitor.lvlltd.com",
+  },
+  {
     host: "music.lvlltd.com",
     surface: "music",
     homePath: "/music",
@@ -436,6 +446,7 @@ export const BUYER_PATH_PREFIXES = [
   "/mirror",
   "/circuit",
   "/anchor",
+  "/monitor",
 ] as const;
 
 export function isBuyerPath(pathname: string): boolean {
@@ -500,6 +511,7 @@ export const MARKETPLACE_URLS = {
   mirror: "https://mirror.lvlltd.com",
   circuit: "https://circuit.lvlltd.com",
   anchor: "https://anchor.lvlltd.com",
+  monitor: "https://monitor.lvlltd.com",
   drops: "https://drops.lvlltd.com",
   pulse: "https://pulse.lvlltd.com",
   studio: "https://studio.lvlltd.com",
@@ -660,6 +672,15 @@ export const MARKETPLACE_TOOLS = [
     blurb: "Recurring boxes & restock",
     audience: "buyer" as const,
   },
+  {
+    id: "monitor",
+    title: "Perf Monitor",
+    path: "/monitor",
+    host: "monitor.lvlltd.com",
+    blurb: "Live Web Vitals · FPS · routes",
+    audience: "operator" as const,
+  },
+
 
 
 

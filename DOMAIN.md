@@ -35,6 +35,7 @@
 | **https://mirror.lvlltd.com** | Clone-a-fit social stacks | `/mirror` |
 | **https://circuit.lvlltd.com** | Agent workflow circuits | `/circuit` |
 | **https://anchor.lvlltd.com** | Subscription boxes / anchors | `/anchor` |
+| **https://monitor.lvlltd.com** | Real-time performance monitor | `/monitor` |
 | **https://music.lvlltd.com** | Music packs | `/music` |
 | **https://api.lvlltd.com** | Catalog API | `/api/store/catalog` |
 | **https://factory.lvlltd.com/shop** | Store path (same app) | `/shop` |

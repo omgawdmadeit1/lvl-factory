@@ -29,6 +29,7 @@ import { Route as LedgerRouteImport } from './routes/ledger'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as MerchRouteImport } from './routes/merch'
 import { Route as MirrorRouteImport } from './routes/mirror'
+import { Route as MonitorRouteImport } from './routes/monitor'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as NetworkRouteImport } from './routes/network'
 import { Route as OracleRouteImport } from './routes/oracle'
@@ -165,6 +166,11 @@ const MerchRoute = MerchRouteImport.update({
 const MirrorRoute = MirrorRouteImport.update({
   id: '/mirror',
   path: '/mirror',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MonitorRoute = MonitorRouteImport.update({
+  id: '/monitor',
+  path: '/monitor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MusicRoute = MusicRouteImport.update({
@@ -376,6 +382,7 @@ export interface FileRoutesByFullPath {
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/mirror': typeof MirrorRoute
+  '/monitor': typeof MonitorRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
   '/oracle': typeof OracleRoute
@@ -434,6 +441,7 @@ export interface FileRoutesByTo {
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/mirror': typeof MirrorRoute
+  '/monitor': typeof MonitorRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
   '/oracle': typeof OracleRoute
@@ -494,6 +502,7 @@ export interface FileRoutesById {
   '/marketplace': typeof MarketplaceRoute
   '/merch': typeof MerchRoute
   '/mirror': typeof MirrorRoute
+  '/monitor': typeof MonitorRoute
   '/music': typeof MusicRoute
   '/network': typeof NetworkRoute
   '/oracle': typeof OracleRoute
@@ -555,6 +564,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/merch'
     | '/mirror'
+    | '/monitor'
     | '/music'
     | '/network'
     | '/oracle'
@@ -613,6 +623,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/merch'
     | '/mirror'
+    | '/monitor'
     | '/music'
     | '/network'
     | '/oracle'
@@ -672,6 +683,7 @@ export interface FileRouteTypes {
     | '/marketplace'
     | '/merch'
     | '/mirror'
+    | '/monitor'
     | '/music'
     | '/network'
     | '/oracle'
@@ -732,6 +744,7 @@ export interface RootRouteChildren {
   MarketplaceRoute: typeof MarketplaceRoute
   MerchRoute: typeof MerchRoute
   MirrorRoute: typeof MirrorRoute
+  MonitorRoute: typeof MonitorRoute
   MusicRoute: typeof MusicRoute
   NetworkRoute: typeof NetworkRoute
   OracleRoute: typeof OracleRoute
@@ -903,6 +916,13 @@ declare module '@tanstack/react-router' {
       path: '/mirror'
       fullPath: '/mirror'
       preLoaderRoute: typeof MirrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/monitor': {
+      id: '/monitor'
+      path: '/monitor'
+      fullPath: '/monitor'
+      preLoaderRoute: typeof MonitorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/music': {
@@ -1222,6 +1242,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketplaceRoute: MarketplaceRoute,
   MerchRoute: MerchRoute,
   MirrorRoute: MirrorRoute,
+  MonitorRoute: MonitorRoute,
   MusicRoute: MusicRoute,
   NetworkRoute: NetworkRoute,
   OracleRoute: OracleRoute,

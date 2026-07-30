@@ -42,6 +42,7 @@ import { ORACLE_FORECASTS, useOracleStore } from "@/lib/markets/oracle";
 import { MIRROR_FITS, useMirrorStore } from "@/lib/markets/mirror";
 import { useCircuitStore } from "@/lib/markets/circuit";
 import { ANCHOR_PLANS, useAnchorStore } from "@/lib/markets/anchor";
+import { formatVital, useMonitorStore } from "@/lib/ops/monitor";
 
 import {
   LAB_DEMOS,
@@ -741,6 +742,43 @@ function AnchorSubWidget() {
   );
 }
 
+
+function MonitorLiveWidget() {
+  const latest = useMonitorStore((s) => s.latest);
+  const enabled = useMonitorStore((s) => s.enabled);
+  const setEnabled = useMonitorStore((s) => s.setEnabled);
+  const fps = useMonitorStore((s) => s.fpsSeries);
+  const avg =
+    fps.length === 0
+      ? 0
+      : Math.round(
+          (fps.slice(-10).reduce((a, b) => a + b.fps, 0) /
+            Math.min(10, fps.length)) *
+            10,
+        ) / 10;
+  const lcp = latest.LCP;
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-surface-2 p-4">
+      <p className="text-sm font-semibold">Live probe</p>
+      <p className="text-xs text-muted">
+        FPS {avg || "—"} · LCP{" "}
+        {lcp ? formatVital("LCP", lcp.value) : "—"} ·{" "}
+        {enabled ? "on" : "paused"}
+      </p>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={() => {
+          setEnabled(!enabled);
+          toast.message(enabled ? "Probe paused" : "Probe live");
+        }}
+      >
+        {enabled ? "Pause probe" : "Resume probe"}
+      </Button>
+    </div>
+  );
+}
+
 function widgetFor(id: LabDemo["widget"]) {
   switch (id) {
     case "drop_claim":
@@ -785,6 +823,8 @@ function widgetFor(id: LabDemo["widget"]) {
       return <CircuitRunWidget />;
     case "anchor_sub":
       return <AnchorSubWidget />;
+    case "monitor_live":
+      return <MonitorLiveWidget />;
     default:
       return null;
   }
