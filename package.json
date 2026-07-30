@@ -35,7 +35,14 @@
     "vercel:oidc:status": "node scripts/enable-vercel-oidc.mjs status",
     "vercel:oidc:enable": "node scripts/enable-vercel-oidc.mjs enable",
     "vercel:oidc:disable": "node scripts/enable-vercel-oidc.mjs disable",
-    "aws:oidc:print": "node scripts/aws-oidc-print.mjs"
+    "aws:oidc:print": "node scripts/aws-oidc-print.mjs",
+    "vercel:token": "node scripts/vercel-token-rotate.mjs status",
+    "vercel:token:status": "node scripts/vercel-token-rotate.mjs status",
+    "vercel:token:list": "node scripts/vercel-token-rotate.mjs list",
+    "vercel:token:rotate": "node scripts/vercel-token-rotate.mjs rotate",
+    "vercel:token:create": "node scripts/vercel-token-rotate.mjs create",
+    "vercel:token:install": "node scripts/vercel-token-rotate.mjs install",
+    "vercel:token:revoke": "node scripts/vercel-token-rotate.mjs revoke"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1098.0",

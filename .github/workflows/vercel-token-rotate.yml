@@ -1,0 +1,80 @@
+# Monthly Vercel PAT rotation for lvl-factory.
+# Requires repo secret VERCEL_TOKEN with permission to create/delete user tokens.
+# Updates the same secret after a successful rotate (needs secrets:write).
+#
+# Manual: Actions → "Vercel token rotate" → Run workflow
+# Local:  npm run vercel:token:rotate
+
+name: Vercel token rotate
+
+on:
+  schedule:
+    # 06:17 UTC on the 1st of each month
+    - cron: "17 6 1 * *"
+  workflow_dispatch:
+    inputs:
+      keep_old:
+        description: "Keep previous token (do not revoke)"
+        type: boolean
+        default: false
+      env_sync:
+        description: "Also run project env sync after rotate"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  rotate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Rotate token
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_EbvXskCGZVZiHauixSNsUAKv
+          VERCEL_PROJECT_ID: prj_0m75OJchmM0HOizAy7hTqdKghyPR
+          GITHUB_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "Missing repo secret VERCEL_TOKEN — add a PAT at Settings → Secrets"
+            exit 2
+          fi
+          EXTRA=()
+          if [ "${{ inputs.keep_old || false }}" = "true" ]; then
+            EXTRA+=(--keep-old)
+          fi
+          if [ "${{ inputs.env_sync || false }}" = "true" ]; then
+            EXTRA+=(--env-sync)
+          fi
+          # Prefer GH_TOKEN for secret write when permissions allow
+          node scripts/vercel-token-rotate.mjs rotate --no-gh "${EXTRA[@]}"
+          # Install new token into this job from .env.vercel for secret update
+          if [ -f .env.vercel ]; then
+            # shellcheck disable=SC1091
+            set -a && . ./.env.vercel && set +a
+          fi
+          if [ -n "${VERCEL_TOKEN:-}" ]; then
+            # Best-effort: requires a PAT in secrets that can write secrets,
+            # or org-level token. GITHUB_TOKEN often cannot update secrets.
+            if gh secret set VERCEL_TOKEN --repo "$GITHUB_REPO" --body "$VERCEL_TOKEN" 2>/tmp/gh-sec.err; then
+              echo "Updated GitHub secret VERCEL_TOKEN"
+            else
+              echo "Could not update GitHub secret (expected without secrets:write on GITHUB_TOKEN):"
+              cat /tmp/gh-sec.err || true
+              echo "Copy the new token from workflow artifacts is disabled — re-run locally:"
+              echo "  npm run vercel:token:rotate"
+            fi
+          fi
+          node scripts/vercel-token-rotate.mjs status

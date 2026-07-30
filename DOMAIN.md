@@ -1421,3 +1421,23 @@ curl -sS "https://factory.lvlltd.com/api/pay/options?amount=25.99" | head -c 200
 | Webhooks ops | https://factory.lvlltd.com/webhooks |
 | Pipeline | https://factory.lvlltd.com/pipeline |
 | Printify | https://lvlxltd.printify.me |
+
+
+## Vercel token rotation
+
+Automate PAT create → install → revoke via Vercel `/v2/user/tokens`.
+
+```bash
+npm run vercel:token:status   # validate current
+npm run vercel:token:list     # list account tokens
+npm run vercel:token:rotate   # create new, write .env.vercel, revoke old
+npm run vercel:token:rotate -- --keep-old --no-gh
+npm run vercel:token:rotate -- --env-sync   # also push project env vars
+```
+
+- Script: `scripts/vercel-token-rotate.mjs`
+- Stores new token in gitignored `.env.vercel` (mode 600)
+- Keeps `VERCEL_TOKEN_PREVIOUS` for emergency rollback until next rotate
+- Optional monthly GitHub Action: `.github/workflows/vercel-token-rotate.yml`
+- Dashboard: https://vercel.com/account/tokens
+
