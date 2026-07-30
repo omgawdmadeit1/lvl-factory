@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Activity, Gauge, Radio, Trash2 } from "lucide-react";
+import { Activity, Gauge, Radio, Timer, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import {
   Area,
@@ -21,6 +21,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  analyzeLongTasks,
+  vitalContext,
+} from "@/lib/ops/long-task-impact";
 import {
   formatVital,
   useMonitorStore,
@@ -152,6 +156,15 @@ function MonitorPage() {
           path: r.path.length > 14 ? r.path.slice(0, 12) + "…" : r.path,
         })),
     [routes],
+  );
+
+  const impact = useMemo(
+    () => analyzeLongTasks(longTasks, { windowMs: 5 * 60_000 }),
+    [longTasks],
+  );
+  const impactNote = useMemo(
+    () => vitalContext(impact, latest.INP),
+    [impact, latest.INP],
   );
 
   const uptimeSec = probeStartedAt
@@ -364,6 +377,122 @@ function MonitorPage() {
           </CardContent>
         </Card>
       </div>
+
+
+      <section className="space-y-3">
+        <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <Timer className="size-4 text-muted" />
+          Long task impact
+        </h2>
+        <p className="max-w-3xl text-sm text-muted">{impactNote}</p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: "Impact score", value: String(impact.impactScore), hint: "0 good · 100 bad" },
+            { label: "Total blocking (TBT)", value: `${impact.tbtMs}ms`, hint: `${impact.count} tasks · 5m window` },
+            { label: "Frames dropped", value: String(impact.framesDropped), hint: "@ 60fps budget" },
+            { label: "INP risk", value: impact.inpRisk, hint: `p95 ${impact.p95Ms}ms · max ${impact.maxMs}ms` },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="rounded-xl border border-border bg-surface px-4 py-3 shadow-soft"
+            >
+              <p className="text-[11px] uppercase tracking-wider text-subtle">
+                {s.label}
+              </p>
+              <p className="text-xl font-semibold tabular tracking-tight capitalize">
+                {s.value}
+              </p>
+              <p className="mt-0.5 text-[11px] text-subtle">{s.hint}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card className="border-border bg-surface shadow-soft">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Severity buckets</CardTitle>
+              <CardDescription>
+                mild 50–100 · moderate 100–200 · heavy 200–500 · severe 500+
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {(
+                [
+                  ["mild", impact.buckets.mild, "success"],
+                  ["moderate", impact.buckets.moderate, "info"],
+                  ["heavy", impact.buckets.heavy, "warning"],
+                  ["severe", impact.buckets.severe, "danger"],
+                ] as const
+              ).map(([label, n, variant]) => (
+                <div
+                  key={label}
+                  className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-center"
+                >
+                  <Badge variant={variant}>{label}</Badge>
+                  <p className="mt-1 text-lg font-semibold tabular">{n}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="border-border bg-surface shadow-soft">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Path heat (by TBT)</CardTitle>
+              <CardDescription>
+                Share of blocking time · collision risk{" "}
+                {Math.round(impact.collisionRisk * 100)}%
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="max-h-48 space-y-2 overflow-y-auto">
+              {impact.byPath.length === 0 ? (
+                <p className="text-sm text-muted">
+                  No path heat yet — navigate the mesh with the probe live.
+                </p>
+              ) : (
+                impact.byPath.slice(0, 8).map((row) => (
+                  <div key={row.path} className="space-y-1">
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      <span className="min-w-0 truncate font-mono text-fg">
+                        {row.path}
+                      </span>
+                      <span className="shrink-0 tabular text-muted">
+                        TBT {row.tbtMs}ms · max {row.maxMs}ms
+                      </span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-3">
+                      <div
+                        className="h-full rounded-full bg-warning/80"
+                        style={{
+                          width: `${Math.min(100, Math.max(4, row.sharePct))}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="border-border bg-surface shadow-soft">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Analyst notes</CardTitle>
+            <CardDescription>
+              Duty cycle {(impact.dutyCycle * 100).toFixed(1)}% of observed span
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2 text-sm text-muted">
+              {impact.notes.map((n) => (
+                <li key={n} className="flex gap-2">
+                  <span className="text-subtle">·</span>
+                  <span>{n}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="border-border bg-surface shadow-soft">
